@@ -1,0 +1,88 @@
+---
+name: Cloudproof Flutter Library
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      extension:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+      copy_regression_files:
+        required: false
+        default: ''
+        type: string
+      regression_files:
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  flutter-job:
+    name: cloudproof_flutter on ${{ inputs.os }}
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Cosmian/cloudproof_flutter
+          ref: ${{ inputs.branch }}
+
+      - name: Cache build
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            build/
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-flutter-
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.3.4
+          channel: stable
+
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: copy fresh build of crate
+        run: cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
+
+      - name: copy non-regression test vectors
+        if: inputs.copy_regression_files != ''
+        run: ${{ inputs.copy_regression_files }}
+
+      - run: flutter pub get
+      - run: flutter test
+        env:
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+
+      - name: Upload non-regression test vectors
+        if: inputs.regression_files != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudproof_flutter
+          path: ${{ inputs.regression_files }}
+          retention-days: 1
+          if-no-files-found: error

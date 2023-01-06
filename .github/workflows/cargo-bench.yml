@@ -1,0 +1,31 @@
+
+---
+name: Cargo benchmarks
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      features:
+        required: true
+        type: string
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          override: true
+
+      - name: Benchmarks
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        uses: actions-rs/cargo@v1
+        with:
+          command: bench
+          args: --features ${{ inputs.features}}

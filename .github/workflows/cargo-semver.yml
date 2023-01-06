@@ -1,0 +1,45 @@
+---
+name: Cargo semver
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  semver:
+    name: Check semver
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-semver-
+          restore-keys: ${{ runner.os }}-cargo-semver-
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          override: true
+
+      - name: Install semver
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: cargo install --locked cargo-semver-checks || true
+
+      - name: Verify semver integrity
+        uses: actions-rs/cargo@v1
+        with:
+          command: semver-checks
+          args: check-release

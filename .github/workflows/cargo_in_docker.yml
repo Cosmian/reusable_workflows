@@ -1,0 +1,98 @@
+---
+name: Cargo in Docker
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      feature:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      pre-requisites:
+        required: true
+        type: string
+      artifacts:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+
+jobs:
+  cargo-job:
+    name: ${{ inputs.feature }} for ${{ inputs.target }}
+    runs-on: ${{ inputs.os }}
+    container: iyxd/centos7-rust
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            pkg/
+            target/
+          key: ${{ runner.os }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-docker-
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          target: ${{ inputs.target }}
+          override: true
+
+      - name: specific-pre-requisites
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: ${{ inputs.pre-requisites }}
+
+      - name: ffi pre-requisites
+        if: steps.cache-primes.outputs.cache-hit != 'true' && inputs.feature == 'ffi'
+        run: |
+          cargo install --locked cbindgen || true
+          mkdir -p target
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/findex.h
+
+      - name: Test release with ffi feature
+        if: inputs.feature == 'ffi'
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+
+      - name: Test release with all features
+        if: inputs.target == 'x86_64-unknown-linux-gnu'
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-features --target ${{ inputs.target }}
+
+      - name: Build release with feature ${{ inputs.feature }}
+        if: inputs.feature == 'ffi'
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+
+      - name: Wasm-pack build release with feature ${{ inputs.feature }}
+        if: inputs.feature == 'wasm_bindgen'
+        run: wasm-pack build -d pkg/web --target web --release --features ${{ inputs.feature }}
+
+      - name: Upload cargo binaries
+        if: inputs.artifacts != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.target }}
+          path: ${{ inputs.artifacts }}
+          retention-days: 1
+          if-no-files-found: error

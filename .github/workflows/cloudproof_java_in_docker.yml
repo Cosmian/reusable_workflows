@@ -1,0 +1,106 @@
+---
+name: Cloudproof Java Library in docker
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      extension:
+        required: true
+        type: string
+      destination:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+      kms-version:
+        required: true
+        type: string
+      copy_regression_files:
+        required: false
+        default: ''
+        type: string
+      regression_files:
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  java-job:
+    name: cloudproof_java on ${{ inputs.os }}
+    services:
+      kms:
+        image: cosmian/kms:${{ inputs.kms-version }}
+        env:
+          COSMIAN_SERVER_URL: http://localhost:9998
+          KMS_PUBLIC_PATH: /tmp
+          KMS_PRIVATE_PATH: /tmp
+          KMS_SHARED_PATH: /tmp
+        ports:
+          - 9998:9998
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    runs-on: ${{ inputs.os }}
+    container: centos:centos7.4.1708
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Cosmian/cloudproof_java
+          ref: ${{ inputs.branch }}
+
+      - name: Cache build
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.m2/repository
+            target
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - run: yum -y install java-1.8.0-openjdk maven
+
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: copy fresh build of crate
+        run: cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} src/main/resources/${{ inputs.destination }}/
+
+      - name: copy non-regression test vectors
+        if: inputs.copy_regression_files != ''
+        run: ${{ inputs.copy_regression_files }}
+
+      - run: mvn package
+        env:
+          COSMIAN_SERVER_URL: http://kms:9998
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+          LANG: en_US.UTF-8
+          LANGUAGE: en_US:en
+          LC_ALL: en_US.UTF-8
+
+      - name: Upload non-regression test vectors
+        if: inputs.regression_files != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudproof_java
+          path: ${{ inputs.regression_files }}
+          retention-days: 1
+          if-no-files-found: error

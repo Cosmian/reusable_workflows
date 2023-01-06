@@ -1,0 +1,55 @@
+---
+name: Cargo audit
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          override: true
+
+      - run: cargo install cargo-audit cargo-outdated
+
+      - name: Verify outdated dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: outdated
+          args: -wR
+
+      - name: Verify deprecated dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          args: --deny warnings --ignore RUSTSEC-2021-0145
+
+#
+# Ignoring deprecated criterion since no new version is available
+#
+
+#      Fetching advisory database from `https://github.com/RustSec/advisory-db.git`
+#       Loaded 477 security advisories (from /home/runner/.cargo/advisory-db)
+#     Updating crates.io index
+#     Scanning Cargo.lock for vulnerabilities (155 crate dependencies)
+# Crate:     atty
+# Version:   0.2.14
+# Warning:   unsound
+# Title:     Potential unaligned read
+# Date:      2021-07-04
+# ID:        RUSTSEC-2021-0145
+# URL:       https://rustsec.org/advisories/RUSTSEC-2021-0145
+# Dependency tree:
+# atty 0.2.14
+# └── criterion 0.4.0
+#     └── cosmian_findex 1.0.1

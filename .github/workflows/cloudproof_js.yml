@@ -1,0 +1,87 @@
+---
+name: Cloudproof Javascript Library
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      kms-version:
+        required: true
+        type: string
+      copy_regression_files:
+        required: false
+        default: ''
+        type: string
+      regression_files:
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  js-job:
+    name: cloudproof_js on container node:18
+
+    services:
+      kms:
+        image: cosmian/kms:${{ inputs.kms-version }}
+        env:
+          COSMIAN_SERVER_URL: http://localhost:9998
+          KMS_PUBLIC_PATH: /tmp
+          KMS_PRIVATE_PATH: /tmp
+          KMS_SHARED_PATH: /tmp
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    runs-on: ubuntu-20.04
+    container: node:18
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Cosmian/cloudproof_js
+          ref: ${{ inputs.branch }}
+
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: copy fresh build of crate
+        run: cp -r ${{ inputs.target }}/* src/pkg/findex/
+
+      - name: copy non-regression test vectors
+        if: inputs.copy_regression_files != ''
+        run: ${{ inputs.copy_regression_files }}
+
+      - run: npm install
+      - run: npm test
+        env:
+          REDIS_HOST: redis
+          KMS_HOST: kms
+
+      - name: Upload non-regression test vectors
+        if: inputs.regression_files != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudproof_js
+          path: ${{ inputs.regression_files }}
+          retention-days: 1
+          if-no-files-found: error

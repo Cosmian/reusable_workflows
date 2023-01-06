@@ -1,0 +1,28 @@
+---
+name: Cargo lints & tests
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  cargo-lint:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-lint.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-semver:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-semver.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-audit:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-audit.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-dry-publish:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-publish.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      publish: false

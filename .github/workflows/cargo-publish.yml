@@ -1,0 +1,38 @@
+
+---
+name: Release and cargo publish
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      publish:
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Publishing - dry run
+        if: inputs.publish == false
+        run: |
+          cargo publish --dry-run
+
+      - name: Publishing
+        if: inputs.publish == true
+        run: |
+          echo "[registry]" > ~/.cargo/credentials
+          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
+          cargo publish --token $CRATES_IO
+        env:
+          CRATES_IO: ${{ secrets.CRATES_IO }}
+
+      - name: Release
+        if: inputs.publish == true
+        uses: softprops/action-gh-release@v1

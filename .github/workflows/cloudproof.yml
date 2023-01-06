@@ -1,0 +1,422 @@
+---
+name: Build all interfaces
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      toolchain:
+        required: true
+        type: string
+      kms-version:
+        required: true
+        type: string
+      regression-filename:
+        required: true
+        type: string
+      branch-java:
+        required: true
+        type: string
+      branch-js:
+        required: true
+        type: string
+      branch-flutter:
+        required: true
+        type: string
+      branch-python:
+        required: true
+        type: string
+      bench-features:
+        required: true
+        type: string
+
+jobs:
+  ##############################################################################
+  ### Check if release can be done
+  ##############################################################################
+  pre-build:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-nursery.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-bench:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-bench.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      features: ${{ inputs.bench-features }}
+
+  ##############################################################################
+  ### Build all interfaces
+  ##############################################################################
+  windows:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: x86_64-pc-windows-gnu
+      feature: ffi
+      os: ubuntu-20.04
+      pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64
+      artifacts: |
+        target/x86_64-pc-windows-gnu/release/*.dll
+        target/${{ inputs.project-name }}.h
+        target/wheels/*.whl
+  darwin:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: x86_64-apple-darwin
+      feature: ffi
+      os: macos-12
+      pre-requisites: |
+        rustup target add aarch64-apple-ios x86_64-apple-ios
+        cargo install --locked cargo-lipo || true
+        cargo lipo --release --features ffi
+      artifacts: |
+        target/x86_64-apple-darwin/release/*.dylib
+        target/${{ inputs.project-name }}.h
+        target/universal/release/*.a
+        target/wheels/*.whl
+  wasm:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: wasm32-unknown-unknown
+      feature: wasm_bindgen
+      os: ubuntu-20.04
+      pre-requisites: cargo install --locked wasm-pack || true
+      artifacts: |
+        pkg/web
+  linux-ubuntu:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: x86_64-unknown-linux-gnu
+      feature: ffi
+      os: ubuntu-20.04
+      pre-requisites: |
+        sudo apt update
+        sudo apt install -y gnuplot
+        cat /proc/cpuinfo
+      artifacts: ''
+      publish: false
+  linux-centos7:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo_in_docker.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: x86_64-unknown-linux-gnu
+      feature: ffi
+      os: ubuntu-20.04
+      pre-requisites: echo
+      artifacts: |
+        target/x86_64-unknown-linux-gnu/release/*.so
+        target/${{ inputs.project-name }}.h
+        target/${{ inputs.regression-filename }}
+  pyo3-linux:
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/pyo3/maturin:v0.14.1
+      options: --entrypoint ''
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup default ${{ inputs.toolchain }}
+
+      - name: Python maturin build
+        run: maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+      - name: Upload python files
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-x86_64-unknown-linux-gnu
+          path: |
+            target/wheels/*.whl
+          retention-days: 1
+          if-no-files-found: error
+  merge-linux-artifacts:
+    needs:
+      - linux-centos7
+      - pyo3-linux
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v3
+      - name: Upload python files
+        uses: actions/upload-artifact@v3
+        with:
+          name: x86_64-unknown-linux-gnu
+          path: |
+            python-x86_64-unknown-linux-gnu/*
+            x86_64-unknown-linux-gnu/*
+          retention-days: 1
+          if-no-files-found: error
+
+  ##############################################################################
+  ### Cloudproof Java library
+  ##############################################################################
+  java-windows:
+    needs:
+      - windows
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java.yml@main
+    with:
+      branch: ${{ inputs.branch-java }}
+      target: x86_64-pc-windows-gnu
+      extension: dll
+      destination: win32-x86-64
+      os: windows-2019
+      regression_files: ./target/${{ inputs.regression-filename }}
+
+  java-darwin:
+    needs:
+      - darwin
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java.yml@main
+    with:
+      branch: ${{ inputs.branch-java }}
+      target: x86_64-apple-darwin
+      extension: dylib
+      destination: darwin-x86-64
+      os: macos-12
+      regression_files: ./target/${{ inputs.regression-filename }}
+
+  java-linux:
+    needs:
+      - linux-centos7
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java_in_docker.yml@main
+    with:
+      branch: ${{ inputs.branch-java }}
+      target: x86_64-unknown-linux-gnu
+      extension: so
+      destination: linux-x86-64
+      os: ubuntu-20.04
+      kms-version: ${{ inputs.kms-version }}
+      regression_files: ./target/${{ inputs.regression-filename }}
+
+  ##############################################################################
+  ### Cloudproof Flutter library
+  ##############################################################################
+  flutter-linux:
+    needs:
+      - linux-centos7
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_flutter.yml@main
+    with:
+      branch: ${{ inputs.branch-flutter }}
+      target: x86_64-unknown-linux-gnu
+      extension: so
+      os: ubuntu-20.04
+      regression_files: ./build/${{ inputs.regression-filename }}
+
+  ##############################################################################
+  ### Cloudproof Python library
+  ##############################################################################
+  python-linux:
+    needs:
+      - pyo3-linux
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_python.yml@main
+    with:
+      branch: main
+      target: x86_64-unknown-linux-gnu
+      # regression_files: |
+      #   ./node_modules/non_regression_test_vector.json
+      #   ./node_modules/sqlite.db
+
+  ##############################################################################
+  ### Cloudproof JS library
+  ##############################################################################
+  js:
+    needs:
+      - wasm
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
+    with:
+      branch: ${{ inputs.branch-js }}
+      target: wasm32-unknown-unknown
+      kms-version: ${{ inputs.kms-version }}
+      regression_files: ./node_modules/${{ inputs.regression-filename }}
+
+  ##############################################################################
+  ### Cross languages tests
+  ##############################################################################
+  cross-java-linux:
+    needs:
+      - linux-centos7
+      - flutter-linux
+      - java-linux
+      - js
+      - python-linux
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java_in_docker.yml@main
+    with:
+      branch: ${{ inputs.branch-java }}
+      target: x86_64-unknown-linux-gnu
+      extension: so
+      destination: linux-x86-64
+      os: ubuntu-20.04
+      kms-version: ${{ inputs.kms-version }}
+      copy_regression_files: |
+        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_${{ inputs.regression-filename }}
+        cp ./cloudproof_java/${{ inputs.regression-filename }}          src/test/resources/${{ inputs.project-name }}/non_regression/java_${{ inputs.regression-filename }}
+        cp ./cloudproof_js/${{ inputs.regression-filename }}            src/test/resources/${{ inputs.project-name }}/non_regression/js_${{ inputs.regression-filename }}
+        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} src/test/resources/${{ inputs.project-name }}/non_regression/rust_${{ inputs.regression-filename }}
+
+  cross-js:
+    needs:
+      - linux-centos7
+      - flutter-linux
+      - java-linux
+      - js
+      - python-linux
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
+    with:
+      branch: ${{ inputs.branch-js }}
+      target: wasm32-unknown-unknown
+      kms-version: ${{ inputs.kms-version }}
+      copy_regression_files: |
+        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
+        cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
+        cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+
+  cross-python:
+    needs:
+      - linux-centos7
+      - flutter-linux
+      - java-linux
+      - js
+      - python-linux
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_python.yml@main
+    with:
+      branch: main
+      target: x86_64-unknown-linux-gnu
+      # copy_regression_files:
+      #     cp ./cloudproof_flutter/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_flutter_${{ inputs.regression-filename }}
+      #     cp ./cloudproof_java/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_java_${{ inputs.regression-filename }}
+      #     cp ./cloudproof_js/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_js_${{ inputs.regression-filename }}
+      #     cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_rust_${{ inputs.regression-filename }}
+
+  cross-flutter-linux:
+    needs:
+      - linux-centos7
+      - flutter-linux
+      - java-linux
+      - js
+      - python-linux
+    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_flutter.yml@main
+    with:
+      branch: ${{ inputs.branch-flutter }}
+      target: x86_64-unknown-linux-gnu
+      extension: so
+      os: ubuntu-20.04
+      copy_regression_files: |
+        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
+        cp ./cloudproof_java/${{ inputs.regression-filename }}          test/resources/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
+        cp ./cloudproof_js/${{ inputs.regression-filename }}            test/resources/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} test/resources/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+
+  ##############################################################################
+  ### Findex packages
+  ##############################################################################
+  packages:
+    name: push to package.cosmian.com
+    needs:
+      - pre-build
+      - merge-linux-artifacts
+      - java-darwin
+      - java-windows
+      - linux-ubuntu
+      - cross-java-linux
+      - cross-js
+      - cross-flutter-linux
+      - cross-python
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: Creating zip to be attached to release
+        run: |
+          zip -r all.zip x86* wasm*
+
+      - name: Push to package.cosmian.com
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p /mnt/package/${{ inputs.project-name }}/$VERSION
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:/mnt/package/${{ inputs.project-name }}/$VERSION/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
+
+  ##############################################################################
+  ### Findex releases
+  ##############################################################################
+  release:
+    name: release
+    needs:
+      - packages
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - archive_name: windows
+            target: x86_64-pc-windows-gnu
+          - archive_name: linux
+            target: x86_64-unknown-linux-gnu
+          - archive_name: darwin
+            target: x86_64-apple-darwin
+          - archive_name: wasm
+            target: wasm32-unknown-unknown
+
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: Creating zip to be attached to release
+        run: |
+          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
+
+      - name: Push to package.cosmian.com
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p /mnt/package/${{ inputs.project-name }}/$VERSION
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:/mnt/package/${{ inputs.project-name }}/$VERSION/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
+
+      - name: Release on tags, attach asset on release
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ matrix.archive_name }}.zip
+
+  publish:
+    needs:
+      - packages
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      target: x86_64-unknown-linux-gnu
+      feature: ffi
+      os: ubuntu-20.04
+      pre-requisites: echo
+      artifacts: ''
+      publish: true
+
+  cargo-publish:
+    needs:
+      - packages
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-publish.yml@main
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    with:
+      toolchain: ${{ inputs.toolchain }}
+
+  cleanup:
+    needs:
+      - packages
+    uses: Cosmian/reusable_workflows/.github/workflows/cleanup_cache.yml@main
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
