@@ -43,8 +43,8 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-          key: ${{ runner.os }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-docker-
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-
 
       - uses: actions-rs/toolchain@v1
         with:
