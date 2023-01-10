@@ -406,6 +406,7 @@ jobs:
       pre-requisites: echo
       artifacts: ''
       publish: true
+    secrets: inherit
 
   cargo-publish:
     needs:
@@ -414,9 +415,11 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     with:
       toolchain: ${{ inputs.toolchain }}
+    secrets: inherit
 
   cleanup:
     needs:
       - packages
     uses: Cosmian/reusable_workflows/.github/workflows/cleanup_cache.yml@main
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    secrets: inherit
