@@ -73,8 +73,7 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - run: flutter pub get
-      - run: mkdir -p build
-      - run: flutter test --concurrency 1
+      - run: flutter test
         env:
           REDIS_HOST: redis
           REDIS_PORT: 6379
