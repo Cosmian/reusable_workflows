@@ -4,6 +4,9 @@ name: Cloudproof Javascript Library
 on:
   workflow_call:
     inputs:
+      project-name:
+        required: true
+        type: string
       branch:
         required: true
         type: string
@@ -65,7 +68,7 @@ jobs:
       - run: find .
 
       - name: copy fresh build of crate
-        run: cp -r ${{ inputs.target }}/* src/pkg/findex/
+        run: cp -r ${{ inputs.target }}/* src/pkg/${{ inputs.project-name }}/
 
       - name: copy non-regression test vectors
         if: inputs.copy_regression_files != ''

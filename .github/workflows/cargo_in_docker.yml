@@ -4,6 +4,9 @@ name: Cargo in Docker
 on:
   workflow_call:
     inputs:
+      project-name:
+        required: true
+        type: string
       toolchain:
         required: true
         type: string
@@ -57,11 +60,11 @@ jobs:
         run: ${{ inputs.pre-requisites }}
 
       - name: ffi pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true' && inputs.feature == 'ffi'
+        if: inputs.feature == 'ffi'
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/findex.h
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/${{ inputs.project-name }}.h
 
       - name: Test release with ffi feature
         if: inputs.feature == 'ffi'

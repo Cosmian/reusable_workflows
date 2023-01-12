@@ -52,6 +52,7 @@ jobs:
   windows:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
       feature: ffi
@@ -64,6 +65,7 @@ jobs:
   darwin:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
       feature: ffi
@@ -80,6 +82,7 @@ jobs:
   wasm:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
       feature: wasm_bindgen
@@ -90,6 +93,7 @@ jobs:
   linux-ubuntu:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       feature: ffi
@@ -103,6 +107,7 @@ jobs:
   linux-centos7:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo_in_docker.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       feature: ffi
@@ -224,6 +229,7 @@ jobs:
       - wasm
     uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       branch: ${{ inputs.branch-js }}
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
@@ -262,6 +268,7 @@ jobs:
       - python-linux
     uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
     with:
+      project-name: ${{ inputs.project-name }}
       branch: ${{ inputs.branch-js }}
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
@@ -308,7 +315,7 @@ jobs:
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} test/resources/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   ##############################################################################
-  ### Findex packages
+  ### Packages
   ##############################################################################
   packages:
     name: push to package.cosmian.com
@@ -364,7 +371,7 @@ jobs:
           VERSION: ${{ github.ref_name }}
 
   ##############################################################################
-  ### Findex releases
+  ### Releases
   ##############################################################################
   release:
     name: release
@@ -393,6 +400,20 @@ jobs:
           zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
 
       - name: Push to package.cosmian.com
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.target }}/${{ matrix.target }}/release/* cosmian@package.cosmian.com:$DESTINATION_DIR/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
+
+      - name: Push to package.cosmian.com
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
           set -x
@@ -401,6 +422,7 @@ jobs:
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
           ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.target }}/${{ matrix.target }}/release/* cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
@@ -418,6 +440,7 @@ jobs:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     with:
+      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       feature: ffi
