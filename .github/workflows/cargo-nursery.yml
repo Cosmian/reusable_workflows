@@ -13,6 +13,10 @@ jobs:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo-lint.yml@main
     with:
       toolchain: ${{ inputs.toolchain }}
+  cargo-semver:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-semver.yml@main
+    with:
+      toolchain: ${{ inputs.toolchain }}
   cargo-audit:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo-audit.yml@main
     with:
