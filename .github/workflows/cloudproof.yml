@@ -348,7 +348,20 @@ jobs:
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
           VERSION: ${{ github.ref_name }}
-          RELEASE_DATE: ${{ steps.date.outputs.date }}
+
+      - name: Push to package.cosmian.com - tags
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
 
   ##############################################################################
   ### Findex releases
@@ -385,8 +398,9 @@ jobs:
           set -x
           echo "$PACKAGE_SSH_KEY" > ~/id_rsa
           chmod 600 ~/id_rsa
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p /mnt/package/${{ inputs.project-name }}/$VERSION
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:/mnt/package/${{ inputs.project-name }}/$VERSION/
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
