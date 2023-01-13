@@ -1,0 +1,78 @@
+---
+name: Cargo
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      feature:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  android-job:
+    name: ${{ inputs.feature }} for ${{ inputs.target }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            pkg/
+            target/
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          target: ${{ inputs.target }}
+          override: true
+
+      - name: specific-pre-requisites
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: |
+          ANDROID_NDK_HOME=/opt/android-ndk
+          ANDROID_NDK_VERSION=r25b
+
+          sudo apt-get update
+          sudo apt-get install -y libunwind-dev build-essential pkg-config libssl-dev time unzip binaryen
+
+          mkdir /opt/android-ndk-tmp
+          cd /opt/android-ndk-tmp
+          wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux.zip
+          unzip -q android-ndk-${ANDROID_NDK_VERSION}-linux.zip
+          mv ./android-ndk-${ANDROID_NDK_VERSION} ${ANDROID_NDK_HOME}
+          cd ${ANDROID_NDK_HOME}
+          rm -rf /opt/android-ndk-tmp
+          export PATH=$PATH:$ANDROID_NDK_HOME
+
+          rustup target add i686-linux-android x86_64-linux-android armv7-linux-androideabi aarch64-linux-android
+          cargo install --locked cargo-ndk || true
+
+      - name: Build release with feature ${{ inputs.feature }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: ndk
+          args: -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
+
+      - name: Upload cargo binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.target }}
+          path: jniLibs
+          retention-days: 1
+          if-no-files-found: error

@@ -91,33 +91,12 @@ jobs:
       artifacts: |
         pkg/web
   android:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: Cosmian/reusable_workflows/.github/workflows/ndk.yml@main
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: aarch64-linux-android
       feature: ffi
-      os: ubuntu-22.04
-      pre-requisites: |
-        ANDROID_NDK_HOME=/opt/android-ndk
-        ANDROID_NDK_VERSION=r25b
 
-        sudo apt-get update
-        sudo apt-get install -y libunwind-dev build-essential pkg-config libssl-dev time unzip binaryen
-
-        mkdir /opt/android-ndk-tmp
-        cd /opt/android-ndk-tmp
-        wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux.zip
-        unzip -q android-ndk-${ANDROID_NDK_VERSION}-linux.zip
-        mv ./android-ndk-${ANDROID_NDK_VERSION} ${ANDROID_NDK_HOME}
-        cd ${ANDROID_NDK_HOME}
-        rm -rf /opt/android-ndk-tmp
-        export PATH=$PATH:$ANDROID_NDK_HOME
-
-        rustup target add i686-linux-android x86_64-linux-android armv7-linux-androideabi aarch64-linux-android
-        cargo install --locked cargo-ndk || true
-      artifacts: |
-        jniLibs
   linux-ubuntu:
     uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
     with:
