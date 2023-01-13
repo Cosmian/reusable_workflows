@@ -102,6 +102,7 @@ jobs:
         ANDROID_NDK_HOME=/opt/android-ndk
         ANDROID_NDK_VERSION=r25b
 
+        sudo apt-get update
         sudo apt-get install -y libunwind-dev build-essential pkg-config libssl-dev time unzip binaryen
 
         mkdir /opt/android-ndk-tmp
