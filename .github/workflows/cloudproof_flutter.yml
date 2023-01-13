@@ -68,7 +68,8 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: 3.7
-      - run: python get_native_libraries.py
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/get_native_libraries.py
 
       - name: copy fresh build of crate
         run: cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
