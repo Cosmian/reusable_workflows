@@ -221,11 +221,9 @@ jobs:
       - pyo3-linux
     uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_python.yml@main
     with:
-      branch: main
+      branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
-      # regression_files: |
-      #   ./node_modules/non_regression_test_vector.json
-      #   ./node_modules/sqlite.db
+      regression_files: ./tests/data/export/${{ inputs.regression-filename }}
 
   ##############################################################################
   ### Cloudproof JS library
@@ -263,6 +261,7 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          src/test/resources/${{ inputs.project-name }}/non_regression/java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            src/test/resources/${{ inputs.project-name }}/non_regression/js_${{ inputs.regression-filename }}
+        cp ./cloudproof_python/${{ inputs.regression-filename }}        src/test/resources/${{ inputs.project-name }}/non_regression/python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} src/test/resources/${{ inputs.project-name }}/non_regression/rust_${{ inputs.regression-filename }}
 
   cross-js:
@@ -282,6 +281,7 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   cross-python:
@@ -295,11 +295,12 @@ jobs:
     with:
       branch: main
       target: x86_64-unknown-linux-gnu
-      # copy_regression_files:
-      #     cp ./cloudproof_flutter/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_flutter_${{ inputs.regression-filename }}
-      #     cp ./cloudproof_java/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_java_${{ inputs.regression-filename }}
-      #     cp ./cloudproof_js/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_js_${{ inputs.regression-filename }}
-      #     cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/copy_rust_${{ inputs.regression-filename }}
+      copy_regression_files:
+        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
+        cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
+        cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
+        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   cross-flutter-linux:
     needs:
@@ -318,6 +319,7 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          test/resources/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            test/resources/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+        cp ./cloudproof_python/${{ inputs.regression-filename }}        test/resources/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} test/resources/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   ##############################################################################
