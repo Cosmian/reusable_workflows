@@ -28,7 +28,7 @@ on:
 
 jobs:
   cargo-job:
-    name: ${{ inputs.feature }} for ${{ inputs.target }}
+    name: ${{ inputs.feature }} for docker ${{ inputs.target }}
     runs-on: ${{ inputs.os }}
     container: iyxd/centos7-rust
 
