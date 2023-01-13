@@ -10,13 +10,10 @@ on:
       feature:
         required: true
         type: string
-      target:
-        required: true
-        type: string
 
 jobs:
   android-job:
-    name: ${{ inputs.feature }} for ${{ inputs.target }}
+    name: NDK for feature ${{ inputs.feature }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -34,8 +31,8 @@ jobs:
             pkg/
             target/
             /opt/android-ndk/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-
+          key: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-android-cargo-
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -74,7 +71,7 @@ jobs:
       - name: Upload cargo binaries
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.target }}
+          name: aarch64-linux-android
           path: jniLibs
           retention-days: 1
           if-no-files-found: error
