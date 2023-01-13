@@ -94,7 +94,6 @@ jobs:
     uses: Cosmian/reusable_workflows/.github/workflows/ndk.yml@main
     with:
       toolchain: ${{ inputs.toolchain }}
-      target: aarch64-linux-android
       feature: ffi
 
   linux-ubuntu:
