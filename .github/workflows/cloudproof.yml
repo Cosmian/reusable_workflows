@@ -113,7 +113,7 @@ jobs:
         export PATH=$PATH:$ANDROID_NDK_HOME
 
         rustup target add i686-linux-android x86_64-linux-android armv7-linux-androideabi aarch64-linux-android
-        cargo install --locked ndk || true
+        cargo install --locked cargo-ndk || true
       artifacts: |
         jniLibs
   linux-ubuntu:

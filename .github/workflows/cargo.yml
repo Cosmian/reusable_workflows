@@ -70,7 +70,7 @@ jobs:
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/${{ inputs.project-name }}.h
 
       - name: Test release with ffi feature
-        if: inputs.feature == 'ffi'
+        if: inputs.feature == 'ffi' && inputs.target != 'aarch64-linux-android'
         uses: actions-rs/cargo@v1
         with:
           command: test
