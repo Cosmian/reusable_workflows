@@ -90,7 +90,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          use-cross: true
+          use-cross: inputs.target != 'aarch64-linux-android
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release with feature ${{ inputs.feature }}
