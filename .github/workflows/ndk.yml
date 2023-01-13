@@ -33,13 +33,14 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
+            /opt/android-ndk/
           key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-
 
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          target: i686-linux-android x86_64-linux-android armv7-linux-androideabi aarch64-linux-android
           override: true
 
       - name: specific-pre-requisites
@@ -63,7 +64,7 @@ jobs:
           rustup target add i686-linux-android x86_64-linux-android armv7-linux-androideabi aarch64-linux-android
           cargo install --locked cargo-ndk || true
 
-      - name: Build release with feature ${{ inputs.feature }}
+      - name: NDK build release with feature ${{ inputs.feature }}
         uses: actions-rs/cargo@v1
         with:
           command: ndk
