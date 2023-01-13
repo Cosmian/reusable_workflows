@@ -398,7 +398,7 @@ jobs:
           - archive_name: wasm
             target: wasm32-unknown-unknown
           - archive_name: android
-            target: aarch64-linux-android
+            target: android
 
     steps:
       - uses: actions/download-artifact@v3
