@@ -97,11 +97,12 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
       target: aarch64-linux-android
       feature: ffi
-      os: ubuntu-20.04
+      os: ubuntu-22.04
       pre-requisites: |
         ANDROID_NDK_HOME=/opt/android-ndk
         ANDROID_NDK_VERSION=r25b
 
+        sudo apt-get install -y libunwind-dev
         mkdir /opt/android-ndk-tmp
         cd /opt/android-ndk-tmp
         wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux.zip
