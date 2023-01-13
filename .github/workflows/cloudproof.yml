@@ -452,7 +452,7 @@ jobs:
       target: x86_64-unknown-linux-gnu
       feature: ffi
       os: ubuntu-20.04
-      pre-requisites: echo
+      pre-requisites: cargo install --locked wasm-pack || true
       artifacts: ''
       publish: true
     secrets: inherit
