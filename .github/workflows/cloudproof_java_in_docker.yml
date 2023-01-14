@@ -81,6 +81,7 @@ jobs:
         with:
           python-version: 3.7
       - run: pip install -r scripts/requirements.txt
+      - run: python scripts/get_native_libraries.py
 
       - uses: actions/download-artifact@v3
       - run: find .
