@@ -33,7 +33,7 @@ on:
 
 jobs:
   java-job:
-    name: cloudproof_java on ${{ inputs.os }}
+    name: cloudproof_java for docker on ${{ inputs.os }}
     services:
       kms:
         image: cosmian/kms:${{ inputs.kms-version }}
@@ -75,11 +75,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - run: yum -y install java-1.8.0-openjdk maven
-
-      - uses: actions/setup-python@v3
-        with:
-          python-version: 3.7
+      - run: yum -y install java-1.8.0-openjdk maven python3
       - run: pip install -r scripts/requirements.txt
       - run: python scripts/get_native_libraries.py
 
