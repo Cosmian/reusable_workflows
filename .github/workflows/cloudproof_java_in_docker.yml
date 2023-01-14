@@ -75,9 +75,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - run: yum -y install java-1.8.0-openjdk maven python python-pip
-      - run: pip install -r scripts/requirements.txt
-      - run: python scripts/get_native_libraries.py
+      - run: yum -y install java-1.8.0-openjdk maven python3 python3-pip
+      - run: pip3 install -r scripts/requirements.txt
+      - run: python3 scripts/get_native_libraries.py
 
       - uses: actions/download-artifact@v3
       - run: find .
