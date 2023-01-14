@@ -58,6 +58,11 @@ jobs:
           distribution: adopt
           architecture: x64
 
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.7
+      - run: pip install -r scripts/requirements.txt
+
       - uses: actions/download-artifact@v3
 
       - name: copy fresh build of crate

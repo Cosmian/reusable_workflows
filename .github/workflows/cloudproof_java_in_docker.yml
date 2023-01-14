@@ -77,6 +77,11 @@ jobs:
 
       - run: yum -y install java-1.8.0-openjdk maven
 
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.7
+      - run: pip install -r scripts/requirements.txt
+
       - uses: actions/download-artifact@v3
       - run: find .
 
