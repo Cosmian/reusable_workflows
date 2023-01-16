@@ -210,7 +210,6 @@ jobs:
       branch: ${{ inputs.branch-flutter }}
       target: x86_64-unknown-linux-gnu
       extension: so
-      os: ubuntu-20.04
       regression_files: ./build/${{ inputs.regression-filename }}
 
   ##############################################################################
@@ -314,7 +313,6 @@ jobs:
       branch: ${{ inputs.branch-flutter }}
       target: x86_64-unknown-linux-gnu
       extension: so
-      os: ubuntu-20.04
       copy_regression_files: |
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          test/resources/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}

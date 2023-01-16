@@ -13,9 +13,6 @@ on:
       extension:
         required: true
         type: string
-      os:
-        required: true
-        type: string
       copy_regression_files:
         required: false
         default: ''
@@ -27,7 +24,7 @@ on:
 
 jobs:
   flutter-job:
-    name: cloudproof_flutter on ${{ inputs.os }}
+    name: cloudproof_flutter on ubuntu-22.04
 
     services:
       redis:
@@ -40,7 +37,7 @@ jobs:
         ports:
           - 6379:6379
 
-    runs-on: ${{ inputs.os }}
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -59,7 +56,8 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: 3.7
-      - run: python scripts/get_native_libraries.py
+
+      - run: sudo apt install libclang-dev llvm
 
       - name: copy fresh build of crate
         run: cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
@@ -68,9 +66,8 @@ jobs:
         if: inputs.copy_regression_files != ''
         run: ${{ inputs.copy_regression_files }}
 
-      - run: flutter pub run ffigen --config ffigen_cover_crypt.yaml'
-      - run: flutter pub run ffigen --config ffigen_findex.yaml'
       - run: flutter pub get
+      - run: python scripts/get_native_libraries.py
       - run: flutter test --concurrency 1
         env:
           REDIS_HOST: redis
