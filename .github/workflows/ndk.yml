@@ -30,7 +30,6 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-            /opt/android-ndk/
           key: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-android-cargo-
 
