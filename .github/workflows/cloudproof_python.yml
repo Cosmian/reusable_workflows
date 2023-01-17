@@ -21,7 +21,7 @@ on:
 
 jobs:
   python-job:
-    name: cloudproof_python on ${{ inputs.os }}
+    name: cloudproof_python on ubuntu-20.04
 
     runs-on: ubuntu-20.04
 
@@ -48,7 +48,7 @@ jobs:
           pip install -r requirements.txt
           python -m build
           pip install dist/cloudproof_py*.whl
-          pip install python-${{ inputs.target }}/*.whl
+          pip install --force-reinstall python-${{ inputs.target }}/*.whl
       - name: Run tests
         run: |
           python -m unittest tests/test*.py
