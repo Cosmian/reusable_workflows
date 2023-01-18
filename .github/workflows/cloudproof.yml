@@ -173,11 +173,11 @@ jobs:
       matrix:
         include:
           - os: macos-12
-            source-dir: wheels
+            source-dir: x86_64-apple-darwin/wheels
           - os: ubuntu-20.04
             source-dir: python-x86_64-unknown-linux-gnu
           - os: windows-2019
-            source-dir: wheels
+            source-dir: x86_64-pc-windows-gnu/wheels
 
     steps:
       - uses: actions/checkout@v3
