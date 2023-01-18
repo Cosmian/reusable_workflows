@@ -160,6 +160,47 @@ jobs:
           if-no-files-found: error
 
   ##############################################################################
+  ### Core python tests
+  ##############################################################################
+  pyo3-tests:
+    needs:
+      - windows
+      - darwin
+      - pyo3-linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-12
+            source-dir: python-x86_64-unknown-linux-gnu
+          - os: ubuntu-20.04
+            source-dir: wheels
+          - os: windows-2019
+            source-dir: wheels
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+          cache: pip # caching pip dependencies
+
+      - name: Install requirements
+        run: |
+          pip install -r python/requirements.txt
+
+      - name: Install .whl
+        run: |
+          pip install --force-reinstall ${{ matrix.source-dir }}/*.whl
+
+      - name: Python tests
+        run: |
+          mypy python/scripts/test_${{ inputs.project-name }}.py
+          python python/scripts/test_${{ inputs.project-name }}.py
+
+  ##############################################################################
   ### Cloudproof Java library
   ##############################################################################
   java-windows:
