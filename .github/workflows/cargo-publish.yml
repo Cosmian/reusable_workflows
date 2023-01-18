@@ -1,4 +1,3 @@
-
 ---
 name: Release and cargo publish
 
@@ -17,6 +16,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Dump context for debug
+        uses: crazy-max/ghaction-dump-context@v1
+
       - uses: actions/checkout@v1
 
       - name: Publishing - dry run

@@ -37,11 +37,11 @@ jobs:
   ### Check if release can be done
   ##############################################################################
   pre-build:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-nursery.yml@main
+    uses: ./.github/workflows/cargo-nursery.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-bench:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-bench.yml@main
+    uses: ./.github/workflows/cargo-bench.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       features: ${{ inputs.bench-features }}
@@ -50,7 +50,7 @@ jobs:
   ### Build all interfaces
   ##############################################################################
   windows:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: ./.github/workflows/cargo.yml
     with:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
@@ -63,7 +63,7 @@ jobs:
         target/${{ inputs.project-name }}.h
         target/wheels/*.whl
   darwin:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: ./.github/workflows/cargo.yml
     with:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
@@ -80,7 +80,7 @@ jobs:
         target/universal/release/*.a
         target/wheels/*.whl
   wasm:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: ./.github/workflows/cargo.yml
     with:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
@@ -91,13 +91,13 @@ jobs:
       artifacts: |
         pkg/web
   android:
-    uses: Cosmian/reusable_workflows/.github/workflows/ndk.yml@main
+    uses: ./.github/workflows/ndk.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       feature: ffi
 
   linux-ubuntu:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: ./.github/workflows/cargo.yml
     with:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
@@ -111,7 +111,7 @@ jobs:
       artifacts: ''
       publish: false
   linux-centos7:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo_in_docker.yml@main
+    uses: ./.github/workflows/cargo_in_docker.yml
     with:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
@@ -160,12 +160,53 @@ jobs:
           if-no-files-found: error
 
   ##############################################################################
+  ### Core python tests
+  ##############################################################################
+  pyo3-tests:
+    needs:
+      - windows
+      - darwin
+      - pyo3-linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-12
+            source-dir: wheels
+          - os: ubuntu-20.04
+            source-dir: python-x86_64-unknown-linux-gnu
+          - os: windows-2019
+            source-dir: wheels
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+          cache: pip # caching pip dependencies
+
+      - name: Install requirements
+        run: |
+          pip install -r python/requirements.txt
+
+      - name: Install .whl
+        run: |
+          pip install --force-reinstall ${{ matrix.source-dir }}/*.whl
+
+      - name: Python tests
+        run: |
+          mypy python/scripts/test_${{ inputs.project-name }}.py
+          python python/scripts/test_${{ inputs.project-name }}.py
+
+  ##############################################################################
   ### Cloudproof Java library
   ##############################################################################
   java-windows:
     needs:
       - windows
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java.yml@main
+    uses: ./.github/workflows/cloudproof_java.yml
     with:
       branch: ${{ inputs.branch-java }}
       target: x86_64-pc-windows-gnu
@@ -177,7 +218,7 @@ jobs:
   java-darwin:
     needs:
       - darwin
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java.yml@main
+    uses: ./.github/workflows/cloudproof_java.yml
     with:
       branch: ${{ inputs.branch-java }}
       target: x86_64-apple-darwin
@@ -189,7 +230,7 @@ jobs:
   java-linux:
     needs:
       - linux-centos7
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java_in_docker.yml@main
+    uses: ./.github/workflows/cloudproof_java_in_docker.yml
     with:
       branch: ${{ inputs.branch-java }}
       target: x86_64-unknown-linux-gnu
@@ -205,7 +246,7 @@ jobs:
   flutter-linux:
     needs:
       - linux-centos7
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_flutter.yml@main
+    uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
       target: x86_64-unknown-linux-gnu
@@ -218,7 +259,7 @@ jobs:
   python-linux:
     needs:
       - pyo3-linux
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_python.yml@main
+    uses: ./.github/workflows/cloudproof_python.yml
     with:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
@@ -230,7 +271,7 @@ jobs:
   js:
     needs:
       - wasm
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
+    uses: ./.github/workflows/cloudproof_js.yml
     with:
       project-name: ${{ inputs.project-name }}
       branch: ${{ inputs.branch-js }}
@@ -248,7 +289,7 @@ jobs:
       - java-linux
       - js
       - python-linux
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_java_in_docker.yml@main
+    uses: ./.github/workflows/cloudproof_java_in_docker.yml
     with:
       branch: ${{ inputs.branch-java }}
       target: x86_64-unknown-linux-gnu
@@ -270,7 +311,7 @@ jobs:
       - java-linux
       - js
       - python-linux
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_js.yml@main
+    uses: ./.github/workflows/cloudproof_js.yml
     with:
       project-name: ${{ inputs.project-name }}
       branch: ${{ inputs.branch-js }}
@@ -290,7 +331,7 @@ jobs:
       - java-linux
       - js
       - python-linux
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_python.yml@main
+    uses: ./.github/workflows/cloudproof_python.yml
     with:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
@@ -308,7 +349,7 @@ jobs:
       - java-linux
       - js
       - python-linux
-    uses: Cosmian/reusable_workflows/.github/workflows/cloudproof_flutter.yml@main
+    uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
       target: x86_64-unknown-linux-gnu
@@ -444,7 +485,7 @@ jobs:
   publish:
     needs:
       - packages
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo.yml@main
+    uses: ./.github/workflows/cargo.yml
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     with:
       project-name: ${{ inputs.project-name }}
@@ -460,7 +501,7 @@ jobs:
   cargo-publish:
     needs:
       - packages
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-publish.yml@main
+    uses: ./.github/workflows/cargo-publish.yml
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     with:
       toolchain: ${{ inputs.toolchain }}
@@ -469,6 +510,6 @@ jobs:
   cleanup:
     needs:
       - packages
-    uses: Cosmian/reusable_workflows/.github/workflows/cleanup_cache.yml@main
+    uses: ./.github/workflows/cleanup_cache.yml
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     secrets: inherit
