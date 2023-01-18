@@ -10,19 +10,19 @@ on:
 
 jobs:
   cargo-lint:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-lint.yml@main
+    uses: ./.github/workflows/cargo-lint.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-semver:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-semver.yml@main
+    uses: ./.github/workflows/cargo-semver.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-audit:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-audit.yml@main
+    uses: ./.github/workflows/cargo-audit.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish:
-    uses: Cosmian/reusable_workflows/.github/workflows/cargo-publish.yml@main
+    uses: ./.github/workflows/cargo-publish.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       publish: false
