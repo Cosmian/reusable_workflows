@@ -370,6 +370,7 @@ jobs:
       - pre-build
       - android
       - merge-linux-artifacts
+      - pyo3-tests
       - java-darwin
       - java-windows
       - linux-ubuntu
