@@ -103,9 +103,13 @@ jobs:
           cache: pip # caching pip dependencies
       - run: pip install -r python/requirements.txt
 
-      - name: Python maturin build
+      - name: Python maturin build and tests
         if: inputs.feature != 'wasm_bindgen'
-        run: maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+        run: |
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          pip install target/wheels/${{ inputs.project-name }}*.whl
+          mypy python/scripts/test_${{ inputs.project-name }}.py
+          python python/scripts/test_${{ inputs.project-name }}.py
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
