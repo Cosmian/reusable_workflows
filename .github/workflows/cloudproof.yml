@@ -173,9 +173,9 @@ jobs:
       matrix:
         include:
           - os: macos-12
-            source-dir: python-x86_64-unknown-linux-gnu
-          - os: ubuntu-20.04
             source-dir: wheels
+          - os: ubuntu-20.04
+            source-dir: python-x86_64-unknown-linux-gnu
           - os: windows-2019
             source-dir: wheels
 
