@@ -197,8 +197,7 @@ jobs:
 
       - name: Install .whl
         run: |
-          cp ${{ matrix.source-dir }}/*.whl findex.whl
-          pip install --force-reinstall findex.whl
+          pip install --force-reinstall $(ls ${{ matrix.source-dir }}/*.whl)
 
       - name: Python tests
         run: |
