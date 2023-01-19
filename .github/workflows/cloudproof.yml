@@ -197,7 +197,7 @@ jobs:
 
       - name: Install .whl
         run: |
-          pip install --force-reinstall ${{ matrix.source-dir }}/*.whl
+          pip install --force-reinstall --find-links=${{ matrix.source-dir }} ${{ inputs.project-name }}
 
       - name: Python tests
         run: |
