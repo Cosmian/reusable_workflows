@@ -187,6 +187,10 @@ jobs:
           python-version: 3.7
           cache: pip # caching pip dependencies
 
+      - name: List directory
+        if: contains(runner.os, 'Linux')
+        run: find .
+
       - name: Install requirements
         run: |
           pip install -r python/requirements.txt
