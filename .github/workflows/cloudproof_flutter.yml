@@ -59,6 +59,9 @@ jobs:
 
       - run: sudo apt install libclang-dev llvm
 
+      - run: flutter pub get
+      - run: python scripts/get_native_libraries.py
+
       - name: copy fresh build of crate
         run: cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
 
@@ -66,8 +69,6 @@ jobs:
         if: inputs.copy_regression_files != ''
         run: ${{ inputs.copy_regression_files }}
 
-      - run: flutter pub get
-      - run: python scripts/get_native_libraries.py
       - run: flutter test --concurrency 1
         env:
           REDIS_HOST: redis
