@@ -23,10 +23,15 @@ jobs:
           sudo apt install -y gnuplot
 
       - uses: actions-rs/toolchain@v1
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         with:
           toolchain: ${{ inputs.toolchain }}
           override: true
+
+      - name: Benchmarks build but do not run
+        uses: actions-rs/cargo@v1
+        with:
+          command: bench
+          args: --features ${{ inputs.features}} --no-run
 
       - name: Benchmarks
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
