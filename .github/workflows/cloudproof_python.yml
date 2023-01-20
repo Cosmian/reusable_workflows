@@ -18,10 +18,25 @@ on:
         required: false
         default: ''
         type: string
+      kms-version:
+        required: true
+        type: string
+
 
 jobs:
   python-job:
     name: cloudproof_python on ubuntu-20.04
+
+    services:
+      kms:
+        image: cosmian/kms:${{ inputs.kms-version }}
+        env:
+          COSMIAN_SERVER_URL: http://localhost:9998
+          KMS_PUBLIC_PATH: /tmp
+          KMS_PRIVATE_PATH: /tmp
+          KMS_SHARED_PATH: /tmp
+        ports:
+          - 9998:9998
 
     runs-on: ubuntu-20.04
 
@@ -31,9 +46,10 @@ jobs:
           repository: Cosmian/cloudproof_python
           ref: ${{ inputs.branch }}
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
+          cache: pip   # caching pip dependencies
 
       - uses: actions/download-artifact@v3
       - run: find .
