@@ -60,6 +60,9 @@ jobs:
       - run: sudo apt install libclang-dev llvm
 
       - run: flutter pub get
+      - run: flutter pub run ffigen --config ffigen_findex.yaml
+      - run: flutter pub run ffigen --config ffigen_cover_crypt.yaml
+
       - run: python scripts/get_native_libraries.py
 
       - name: copy fresh build of crate
