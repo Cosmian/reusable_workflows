@@ -67,10 +67,10 @@ jobs:
       - uses: actions/download-artifact@v3
       - run: find .
 
-      # - uses: actions/setup-python@v4
-      #   with:
-      #     python-version: 3.7
-      # TODO: python3 scripts/download_wasm.py
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+      - run: python3 scripts/download_wasm.py
 
       - name: copy fresh build of crate
         run: cp -r ${{ inputs.target }}/* src/pkg/${{ inputs.project-name }}/
