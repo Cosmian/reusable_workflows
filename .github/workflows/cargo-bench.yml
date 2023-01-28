@@ -21,12 +21,26 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Install gnuplot
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            pkg/
+            target/
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo
+
+      - name: Install tooling for benchmarks
         run: |
           sudo apt update
           sudo apt install -y gnuplot
-          cargo install criterion-table
-          cargo install cargo-criterion
+          cargo install --locked criterion-table || true
+          cargo install --locked cargo-criterion || true
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -38,20 +52,18 @@ jobs:
       - name: Benchmarks build but do not run
         uses: actions-rs/cargo@v1
         with:
-          command: bench
-          args: --features ${{ inputs.features}} --no-run
+          command: criterion
+          args: --features ${{ inputs.features }} --no-run
 
       - name: Benchmarks
         if: (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) || inputs.force
-        uses: actions-rs/cargo@v1
-        with:
-          command: criterion
-          args: --features ${{ inputs.features}} --message-format=json | criterion-table > BENCHMARKS.md
+        run: |
+          cargo criterion --features ${{ inputs.features }} --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks
         uses: actions/upload-artifact@v3
         with:
-          name: benchmarks
+          name: benchmarks_${{ inputs.features }}
           path: BENCHMARKS.md
           retention-days: 1
           if-no-files-found: error
