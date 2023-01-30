@@ -60,9 +60,9 @@ jobs:
         with:
           path: |
             node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ github.ref_name }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ github.ref_name }}
 
       - uses: actions/download-artifact@v3
       - run: find .

@@ -32,8 +32,8 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install tooling for benchmarks
         run: |
