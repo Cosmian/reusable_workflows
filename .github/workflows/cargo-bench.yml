@@ -61,6 +61,7 @@ jobs:
           cargo criterion --features ${{ inputs.features }} --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks
+        if: (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) || inputs.force
         uses: actions/upload-artifact@v3
         with:
           name: benchmarks_${{ inputs.features }}
