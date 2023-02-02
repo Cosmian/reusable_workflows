@@ -523,7 +523,7 @@ jobs:
 
       - name: Publish .whl
         run: |
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" $(ls ${{ matrix.source-dir }}/*.whl)
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
 
   cargo-publish:
     needs:
