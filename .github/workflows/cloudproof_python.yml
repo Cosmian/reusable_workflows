@@ -59,10 +59,14 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - name: Install Cloudproof python
+        env:
+          COVER_CRYPT_TAG: last_build
+          FINDEX_TAG: last_build
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m build
+          scripts/ci_install_pyo3_builds.sh
           pip install dist/cloudproof_py*.whl
           pip install --force-reinstall python-${{ inputs.target }}/*.whl
       - name: Run tests
