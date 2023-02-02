@@ -457,6 +457,7 @@ jobs:
           zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
 
       - name: Push to package.cosmian.com
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/') == false
         run: |
           set -x
           echo "$PACKAGE_SSH_KEY" > ~/id_rsa
