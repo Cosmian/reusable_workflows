@@ -492,21 +492,38 @@ jobs:
         with:
           files: ${{ matrix.archive_name }}.zip
 
-  publish:
-    needs:
-      - packages
-    uses: ./.github/workflows/cargo.yml
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    with:
-      project-name: ${{ inputs.project-name }}
-      toolchain: ${{ inputs.toolchain }}
-      target: x86_64-unknown-linux-gnu
-      feature: ffi
-      os: ubuntu-20.04
-      pre-requisites: cargo install --locked wasm-pack || true
-      artifacts: ''
-      publish: true
-    secrets: inherit
+  ##############################################################################
+  ### Core publish
+  ##############################################################################
+  python-publish:
+    needs: packages
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - source-dir: x86_64-apple-darwin/wheels
+          - source-dir: python-x86_64-unknown-linux-gnu
+          - source-dir: x86_64-pc-windows-gnu/wheels
+
+    steps:
+      - uses: actions/download-artifact@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+          cache: pip # caching pip dependencies
+
+      - name: List directory
+        if: contains(runner.os, 'Linux')
+        run: find .
+
+      - name: Install requirements
+        run: |
+          pip install twine
+
+      - name: Publish .whl
+        run: |
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
 
   cargo-publish:
     needs:
@@ -516,6 +533,34 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
     secrets: inherit
+
+  wasm-publish:
+    needs: packages
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          target: ${{ inputs.target }}
+          override: true
+
+      - name: Install wasm-pack
+        run: |
+          cargo install wasm-pack
+
+      - name: Publishing Wasm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
+          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack pack
+          wasm-pack publish
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
   cleanup:
     needs:

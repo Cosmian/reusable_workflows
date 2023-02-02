@@ -25,10 +25,6 @@ on:
       os:
         required: true
         type: string
-      publish:
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   cargo-job:
@@ -116,20 +112,3 @@ jobs:
           path: ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
-
-      - name: Publishing
-        if: inputs.publish == true
-        run: |
-          rm -rf target_python
-
-          pip install twine
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" target/wheels/${{ inputs.project-name }}-*.whl
-
-          echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
-          wasm-pack build --target web --release --features wasm_bindgen
-          wasm-pack pack
-          wasm-pack publish
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
