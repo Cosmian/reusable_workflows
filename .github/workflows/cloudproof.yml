@@ -507,6 +507,7 @@ jobs:
           - source-dir: x86_64-pc-windows-gnu/wheels
 
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
       - uses: actions/setup-python@v4
         with:
@@ -522,6 +523,7 @@ jobs:
           pip install twine
 
       - name: Publish .whl
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
 
@@ -552,6 +554,7 @@ jobs:
           cargo install wasm-pack
 
       - name: Publishing Wasm
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
           wasm-pack build --target web --release --features wasm_bindgen
