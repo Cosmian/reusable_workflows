@@ -21,6 +21,10 @@ jobs:
     uses: ./.github/workflows/cargo-audit.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+  cargo-udeps:
+    uses: ./.github/workflows/cargo-udeps.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish:
     uses: ./.github/workflows/cargo-publish.yml
     with:

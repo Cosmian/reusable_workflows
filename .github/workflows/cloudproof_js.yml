@@ -60,9 +60,9 @@ jobs:
         with:
           path: |
             node_modules
-          key: ${{ runner.os }}-node-${{ github.ref_name }}
+          key: ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ github.ref_name }}
+            ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
 
       - uses: actions/download-artifact@v3
       - run: find .

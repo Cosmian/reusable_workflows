@@ -1,0 +1,45 @@
+---
+name: Cargo udeps
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  udeps:
+    name: Check udeps
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-udeps-
+          restore-keys: ${{ runner.os }}-cargo-udeps-
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          override: true
+
+      - name: Install udeps
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: cargo install --locked cargo-udeps || true
+
+      - name: Verify useless dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: udeps
+          args: --workspace --all-targets --all-features
