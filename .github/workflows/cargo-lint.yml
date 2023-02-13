@@ -32,11 +32,16 @@ jobs:
         with:
           toolchain: ${{ inputs.toolchain }}
           override: true
-          components: rustfmt, clippy
+          components: clippy
+      - uses: actions-rs/toolchain@v2
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v2
         with:
           command: fmt
           args: --all -- --check --color always
