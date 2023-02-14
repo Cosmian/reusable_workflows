@@ -3,10 +3,6 @@ name: Cargo udeps
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   udeps:
@@ -31,7 +27,7 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ inputs.toolchain }}
+          toolchain: nightly
           override: true
 
       - name: Install udeps
