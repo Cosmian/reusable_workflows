@@ -13,9 +13,6 @@ on:
       kms-version:
         required: true
         type: string
-      regression-filename:
-        required: true
-        type: string
       branch-java:
         required: true
         type: string
@@ -123,7 +120,8 @@ jobs:
       artifacts: |
         target/x86_64-unknown-linux-gnu/release/*.so
         target/${{ inputs.project-name }}.h
-        target/${{ inputs.regression-filename }}
+        target/non_regression_vector.json
+        target/sqlite.db
   pyo3-linux:
     runs-on: ubuntu-20.04
     container:
@@ -218,7 +216,9 @@ jobs:
       extension: dll
       destination: win32-x86-64
       os: windows-2019
-      regression_files: ./target/${{ inputs.regression-filename }}
+      regression_files: |
+        ./target/non_regression_vector.json
+        ./target/sqlite.db
 
   java-darwin:
     needs:
@@ -230,7 +230,9 @@ jobs:
       extension: dylib
       destination: darwin-x86-64
       os: macos-12
-      regression_files: ./target/${{ inputs.regression-filename }}
+      regression_files: |
+        ./target/non_regression_vector.json
+        ./target/sqlite.db
 
   java-linux:
     needs:
@@ -243,7 +245,9 @@ jobs:
       destination: linux-x86-64
       os: ubuntu-20.04
       kms-version: ${{ inputs.kms-version }}
-      regression_files: ./target/${{ inputs.regression-filename }}
+      regression_files: |
+        ./target/non_regression_vector.json
+        ./target/sqlite.db
 
   ##############################################################################
   ### Cloudproof Flutter library
@@ -256,7 +260,9 @@ jobs:
       branch: ${{ inputs.branch-flutter }}
       target: x86_64-unknown-linux-gnu
       extension: so
-      regression_files: ./build/${{ inputs.regression-filename }}
+      regression_files: |
+        ./build/non_regression_vector.json
+        ./build/sqlite.db
 
   ##############################################################################
   ### Cloudproof Python library
@@ -269,7 +275,9 @@ jobs:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
-      regression_files: ./tests/data/export/${{ inputs.regression-filename }}
+      regression_files: |
+        ./tests/data/export/non_regression_vector.json
+        ./tests/data/export/sqlite.db
 
   ##############################################################################
   ### Cloudproof JS library
@@ -283,7 +291,9 @@ jobs:
       branch: ${{ inputs.branch-js }}
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
-      regression_files: ./node_modules/${{ inputs.regression-filename }}
+      regression_files: |
+        ./node_modules/non_regression_vector.json
+        ./node_modules/sqlite.db
 
   ##############################################################################
   ### Cross languages tests
@@ -304,11 +314,16 @@ jobs:
       os: ubuntu-20.04
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_${{ inputs.regression-filename }}
-        cp ./cloudproof_java/${{ inputs.regression-filename }}          src/test/resources/${{ inputs.project-name }}/non_regression/java_${{ inputs.regression-filename }}
-        cp ./cloudproof_js/${{ inputs.regression-filename }}            src/test/resources/${{ inputs.project-name }}/non_regression/js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        src/test/resources/${{ inputs.project-name }}/non_regression/python_${{ inputs.regression-filename }}
-        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} src/test/resources/${{ inputs.project-name }}/non_regression/rust_${{ inputs.regression-filename }}
+        cp ./cloudproof_flutter/non_regression_vector.json       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_non_regression_vector.json
+        cp ./cloudproof_java/non_regression_vector.json          src/test/resources/${{ inputs.project-name }}/non_regression/java_non_regression_vector.json
+        cp ./cloudproof_js/non_regression_vector.json            src/test/resources/${{ inputs.project-name }}/non_regression/js_non_regression_vector.json
+        cp ./cloudproof_python/non_regression_vector.json        src/test/resources/${{ inputs.project-name }}/non_regression/python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json src/test/resources/${{ inputs.project-name }}/non_regression/rust_non_regression_vector.json
+        cp ./cloudproof_flutter/sqlite.db       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db          src/test/resources/${{ inputs.project-name }}/non_regression/java_sqlite.db
+        cp ./cloudproof_js/sqlite.db            src/test/resources/${{ inputs.project-name }}/non_regression/js_sqlite.db
+        cp ./cloudproof_python/sqlite.db        src/test/resources/${{ inputs.project-name }}/non_regression/python_sqlite.db
+        # cp ./x86_64-unknown-linux-gnu/sqlite.db src/test/resources/${{ inputs.project-name }}/non_regression/rust_sqlite.db
 
   cross-js:
     needs:
@@ -324,11 +339,16 @@ jobs:
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
-        cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
-        cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
-        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+        cp ./cloudproof_flutter/non_regression_vector.json       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java/non_regression_vector.json          tests/data/${{ inputs.project-name }}/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js/non_regression_vector.json            tests/data/${{ inputs.project-name }}/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python/non_regression_vector.json        tests/data/${{ inputs.project-name }}/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/${{ inputs.project-name }}/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter/sqlite.db       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db          tests/data/${{ inputs.project-name }}/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db            tests/data/${{ inputs.project-name }}/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db        tests/data/${{ inputs.project-name }}/non_regression/copy_python_sqlite.db
+        # cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/${{ inputs.project-name }}/non_regression/copy_rust_sqlite.db
 
   cross-python:
     needs:
@@ -343,11 +363,16 @@ jobs:
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
-        cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
-        cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
-        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+        cp ./cloudproof_flutter/non_regression_vector.json       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java/non_regression_vector.json          tests/data/${{ inputs.project-name }}/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js/non_regression_vector.json            tests/data/${{ inputs.project-name }}/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python/non_regression_vector.json        tests/data/${{ inputs.project-name }}/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/${{ inputs.project-name }}/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter/sqlite.db       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db          tests/data/${{ inputs.project-name }}/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db            tests/data/${{ inputs.project-name }}/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db        tests/data/${{ inputs.project-name }}/non_regression/copy_python_sqlite.db
+        # cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/${{ inputs.project-name }}/non_regression/copy_rust_sqlite.db
 
   cross-flutter-linux:
     needs:
@@ -362,11 +387,16 @@ jobs:
       target: x86_64-unknown-linux-gnu
       extension: so
       copy_regression_files: |
-        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
-        cp ./cloudproof_java/${{ inputs.regression-filename }}          test/resources/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
-        cp ./cloudproof_js/${{ inputs.regression-filename }}            test/resources/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        test/resources/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
-        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} test/resources/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+        cp ./cloudproof_flutter/non_regression_vector.json       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java/non_regression_vector.json          test/resources/${{ inputs.project-name }}/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js/non_regression_vector.json            test/resources/${{ inputs.project-name }}/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python/non_regression_vector.json        test/resources/${{ inputs.project-name }}/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json test/resources/${{ inputs.project-name }}/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter/sqlite.db       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db          test/resources/${{ inputs.project-name }}/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db            test/resources/${{ inputs.project-name }}/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db        test/resources/${{ inputs.project-name }}/non_regression/copy_python_sqlite.db
+        # cp ./x86_64-unknown-linux-gnu/sqlite.db test/resources/${{ inputs.project-name }}/non_regression/copy_rust_sqlite.db
 
   ##############################################################################
   ### Packages
