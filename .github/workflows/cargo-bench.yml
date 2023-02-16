@@ -8,7 +8,8 @@ on:
         required: true
         type: string
       features:
-        required: true
+        required: false
+        default: ''
         type: string
       force:
         required: false
@@ -50,21 +51,43 @@ jobs:
       - run: cat /proc/cpuinfo
 
       - name: Benchmarks build but do not run
+        if: inputs.features != ''
         uses: actions-rs/cargo@v1
         with:
           command: criterion
           args: --features ${{ inputs.features }} --no-run
 
       - name: Benchmarks
-        if: inputs.force
+        if: inputs.force && inputs.features != ''
         run: |
           cargo criterion --features ${{ inputs.features }} --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks
-        if: inputs.force
+        if: inputs.force && inputs.features != ''
         uses: actions/upload-artifact@v3
         with:
           name: benchmarks_${{ inputs.features }}
+          path: BENCHMARKS.md
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Benchmarks all features build but do not run
+        if: inputs.features == ''
+        uses: actions-rs/cargo@v1
+        with:
+          command: criterion
+          args: --all-features --no-run
+
+      - name: Benchmarks all features
+        if: inputs.force && inputs.features == ''
+        run: |
+          cargo criterion --all-features --message-format=json | criterion-table > BENCHMARKS.md
+
+      - name: Upload benchmarks all features
+        if: inputs.force && inputs.features == ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmarks
           path: BENCHMARKS.md
           retention-days: 1
           if-no-files-found: error

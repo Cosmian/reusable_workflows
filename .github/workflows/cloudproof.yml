@@ -29,7 +29,8 @@ on:
         required: true
         type: string
       bench-features:
-        required: true
+        required: false
+        default: ''
         type: string
 
 jobs:
