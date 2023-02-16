@@ -90,7 +90,7 @@ jobs:
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release with feature ${{ inputs.feature }}
-        if: inputs.feature == 'wasm_bindgen'
+        if: inputs.feature == 'wasm'
         run: wasm-pack build -d pkg/web --target web --release --features ${{ inputs.feature }}
 
       - uses: actions/setup-python@v4
@@ -100,7 +100,7 @@ jobs:
       - run: pip install -r python/requirements.txt
 
       - name: Python maturin build
-        if: inputs.feature != 'wasm_bindgen'
+        if: inputs.feature != 'wasm'
         run: |
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
 

@@ -88,7 +88,7 @@ jobs:
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release with feature ${{ inputs.feature }}
-        if: inputs.feature == 'wasm_bindgen'
+        if: inputs.feature == 'wasm'
         run: wasm-pack build -d pkg/web --target web --release --features ${{ inputs.feature }}
 
       - name: Upload cargo binaries

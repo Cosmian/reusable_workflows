@@ -85,7 +85,7 @@ jobs:
       project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
-      feature: wasm_bindgen
+      feature: wasm
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
@@ -560,7 +560,7 @@ jobs:
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish
         env:
