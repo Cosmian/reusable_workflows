@@ -21,6 +21,10 @@ on:
       kms-version:
         required: true
         type: string
+      copy_fresh_build:
+        required: false
+        default: true
+        type: boolean
 
 
 jobs:
@@ -68,7 +72,12 @@ jobs:
           python -m build
           scripts/ci_install_pyo3_builds.sh
           pip install dist/cloudproof_py*.whl
+
+      - name: Install fresh build of CoverCrypt and Findex
+        if: inputs.copy_fresh_build
+        run: |
           pip install --force-reinstall python-${{ inputs.target }}/*.whl
+
       - name: Run tests
         run: |
           python -m unittest tests/test*.py

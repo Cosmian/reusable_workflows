@@ -21,6 +21,10 @@ on:
         required: false
         default: ''
         type: string
+      copy_fresh_build:
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   flutter-job:
@@ -64,6 +68,7 @@ jobs:
       - run: python scripts/get_native_libraries.py
 
       - name: copy fresh build of crate
+        if: inputs.copy_fresh_build
         run: |
           cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
           cp ${{ inputs.target }}/*.h resources/
