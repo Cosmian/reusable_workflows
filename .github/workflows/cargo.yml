@@ -4,9 +4,6 @@ name: Cargo
 on:
   workflow_call:
     inputs:
-      project-name:
-        required: true
-        type: string
       toolchain:
         required: true
         type: string
@@ -63,7 +60,13 @@ jobs:
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/${{ inputs.project-name }}.h
+          pushd cover_crypt
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/cover_crypt.h
+          popd
+
+          pushd findex
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/findex.h
+          popd
 
       - name: Test release with ffi feature
         if: inputs.feature == 'ffi' && inputs.target != 'aarch64-linux-android'
@@ -89,20 +92,34 @@ jobs:
           use-cross: true
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
-      - name: Wasm-pack build release with feature ${{ inputs.feature }}
+      - name: Wasm-pack build release
         if: inputs.feature == 'wasm'
-        run: wasm-pack build -d pkg/web --target web --release --features ${{ inputs.feature }}
+        run: |
+          pushd cover_crypt
+          wasm-pack build -d ../target/web/cover_crypt --target web --release --features wasm_bindgen
+          popd
+
+          pushd findex
+          wasm-pack build -d ../target/web/findex --target web --release --features wasm_bindgen
+          popd
 
       - uses: actions/setup-python@v4
         with:
           python-version: 3.7
           cache: pip # caching pip dependencies
-      - run: pip install -r python/requirements.txt
+      - run: |
+          pip install -r cover_crypt/python/requirements.txt
+          pip install -r findex/python/requirements.txt
 
       - name: Python maturin build
         if: inputs.feature != 'wasm'
         run: |
+          pushd cover_crypt
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+          pushd findex
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''

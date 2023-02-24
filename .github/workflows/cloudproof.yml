@@ -50,7 +50,6 @@ jobs:
   windows:
     uses: ./.github/workflows/cargo.yml
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
       feature: ffi
@@ -58,12 +57,11 @@ jobs:
       pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64
       artifacts: |
         target/x86_64-pc-windows-gnu/release/*.dll
-        target/${{ inputs.project-name }}.h
+        target/*.h
         target/wheels/*.whl
   darwin:
     uses: ./.github/workflows/cargo.yml
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
       feature: ffi
@@ -74,20 +72,20 @@ jobs:
         cargo lipo --release --features ffi
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
-        target/${{ inputs.project-name }}.h
+        target/*.h
         target/universal/release/*.a
         target/wheels/*.whl
   wasm:
     uses: ./.github/workflows/cargo.yml
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
       feature: wasm
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
-        pkg/web
+        ./target/web/cover_crypt
+        ./target/web/findex
   android:
     uses: ./.github/workflows/ndk.yml
     with:
@@ -97,7 +95,6 @@ jobs:
   linux-ubuntu:
     uses: ./.github/workflows/cargo.yml
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       feature: ffi
@@ -111,7 +108,6 @@ jobs:
   linux-centos7:
     uses: ./.github/workflows/cargo_in_docker.yml
     with:
-      project-name: ${{ inputs.project-name }}
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       feature: ffi
@@ -119,7 +115,7 @@ jobs:
       pre-requisites: echo
       artifacts: |
         target/x86_64-unknown-linux-gnu/release/*.so
-        target/${{ inputs.project-name }}.h
+        target/*.h
         target/non_regression_vector.json
         target/sqlite.db
   pyo3-linux:
@@ -132,7 +128,14 @@ jobs:
       - run: rustup default ${{ inputs.toolchain }}
 
       - name: Python maturin build
-        run: maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+        run: |
+          pushd cover_crypt
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+          pushd findex
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
       - name: Upload python files
         uses: actions/upload-artifact@v3
         with:
@@ -200,8 +203,10 @@ jobs:
 
       - name: Python tests
         run: |
-          mypy python/scripts/test_${{ inputs.project-name }}.py
-          python python/scripts/test_${{ inputs.project-name }}.py
+          mypy cover_crypt/python/tests/cover_crypt_test.py
+          python cover_crypt/python/tests/cover_crypt_test.py
+          mypy findex/python/tests/findex_test.py
+          python findex/python/tests/findex_test.py
 
   ##############################################################################
   ### Cloudproof Java library
@@ -318,11 +323,11 @@ jobs:
         cp ./cloudproof_js/non_regression_vector.json            src/test/resources/cover_crypt/non_regression/js_non_regression_vector.json
         cp ./cloudproof_python/non_regression_vector.json        src/test/resources/cover_crypt/non_regression/python_non_regression_vector.json
         cp ./x86_64-unknown-linux-gnu/non_regression_vector.json src/test/resources/cover_crypt/non_regression/rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db       src/test/resources/findex/non_regression/flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db          src/test/resources/findex/non_regression/java_sqlite.db
-        cp ./cloudproof_js/sqlite.db            src/test/resources/findex/non_regression/js_sqlite.db
-        cp ./cloudproof_python/sqlite.db        src/test/resources/findex/non_regression/python_sqlite.db
-        # cp ./x86_64-unknown-linux-gnu/sqlite.db src/test/resources/findex/non_regression/rust_sqlite.db
+        cp ./cloudproof_flutter/sqlite.db         src/test/resources/findex/non_regression/flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db            src/test/resources/findex/non_regression/java_sqlite.db
+        cp ./cloudproof_js/sqlite.db              src/test/resources/findex/non_regression/js_sqlite.db
+        cp ./cloudproof_python/sqlite.db          src/test/resources/findex/non_regression/python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu/sqlite.db src/test/resources/findex/non_regression/rust_sqlite.db
 
   cross-js:
     needs:
@@ -342,11 +347,11 @@ jobs:
         cp ./cloudproof_js/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
         cp ./cloudproof_python/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
         cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db       tests/data/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db          tests/data/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db            tests/data/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db        tests/data/findex/non_regression/copy_python_sqlite.db
-        # cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
 
   cross-python:
     needs:
@@ -366,11 +371,11 @@ jobs:
         cp ./cloudproof_js/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
         cp ./cloudproof_python/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
         cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db       tests/data/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db          tests/data/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db            tests/data/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db        tests/data/findex/non_regression/copy_python_sqlite.db
-        # cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
 
   cross-flutter-linux:
     needs:
@@ -390,11 +395,11 @@ jobs:
         cp ./cloudproof_js/non_regression_vector.json            test/resources/cover_crypt/non_regression/copy_js_non_regression_vector.json
         cp ./cloudproof_python/non_regression_vector.json        test/resources/cover_crypt/non_regression/copy_python_non_regression_vector.json
         cp ./x86_64-unknown-linux-gnu/non_regression_vector.json test/resources/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db       test/resources/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db          test/resources/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db            test/resources/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db        test/resources/findex/non_regression/copy_python_sqlite.db
-        # cp ./x86_64-unknown-linux-gnu/sqlite.db test/resources/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter/sqlite.db         test/resources/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java/sqlite.db            test/resources/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js/sqlite.db              test/resources/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python/sqlite.db          test/resources/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu/sqlite.db test/resources/findex/non_regression/copy_rust_sqlite.db
 
   ##############################################################################
   ### Packages
