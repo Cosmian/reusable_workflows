@@ -91,7 +91,7 @@ jobs:
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release
-        if: inputs.feature == 'wasm'
+        if: inputs.feature == 'wasm_bindgen'
         run: |
           pushd cover_crypt
           wasm-pack build -d pkg/web --target web --release --features wasm_bindgen

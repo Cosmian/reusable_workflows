@@ -594,7 +594,7 @@ jobs:
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
-          wasm-pack build --target web --release --features wasm
+          wasm-pack build --target web --release --features wasm_bindgen
           wasm-pack pack
           wasm-pack publish
         env:
