@@ -61,11 +61,11 @@ jobs:
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
-          pushd cover_crypt
+          pushd crates/cover_crypt
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/cover_crypt.h
           popd
 
-          pushd findex
+          pushd crates/findex
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/findex.h
           popd
 
@@ -93,14 +93,16 @@ jobs:
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'
         run: |
-          pushd cover_crypt
+          pushd crates/cover_crypt
           wasm-pack build -d ../target/web/cover_crypt --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
           popd
 
-          pushd findex
+          pushd crates/findex
           wasm-pack build -d ../target/web/findex --target web --release --features wasm_bindgen
-          popd
+          # wasm-pack test --node --features wasm_bindgen
 
+          popd
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''

@@ -69,11 +69,11 @@ jobs:
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
         cargo install --locked cargo-lipo || true
-        pushd cover_crypt
+        pushd crates/cover_crypt
         cargo lipo --release --features ffi
         popd
 
-        pushd findex
+        pushd crates/findex
         cargo lipo --release --features ffi
         popd
 
@@ -136,10 +136,10 @@ jobs:
 
       - name: Python maturin build
         run: |
-          pushd cover_crypt
+          pushd crates/cover_crypt
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
-          pushd findex
+          pushd crates/findex
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
 
@@ -594,13 +594,13 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
 
-          pushd cover_crypt
+          pushd crates/cover_crypt
           wasm-pack build --target web --release --features wasm_bindgen
           wasm-pack pack
           wasm-pack publish
           popd
 
-          pushd findex
+          pushd crates/findex
           wasm-pack build --target web --release --features wasm_bindgen
           wasm-pack pack
           wasm-pack publish
