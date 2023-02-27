@@ -61,11 +61,11 @@ jobs:
           cargo install --locked cbindgen || true
           mkdir -p target
           pushd crates/cover_crypt
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/cover_crypt.h
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
           popd
 
           pushd crates/findex
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../target/findex.h
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
           popd
 
       - name: Test release with ffi feature
