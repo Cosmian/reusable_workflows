@@ -46,6 +46,13 @@ jobs:
           command: clippy
           args: --workspace --all-targets --all-features -- -D warnings
       - name: Check intra-doc links
+        # to be removed when bug fixed in https://github.com/rust-lang/rust/issues/103403
+        if: contains(inputs.toolchain, 'nightly-2022-10-28')
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+      - name: Check intra-doc links
+        if: contains(inputs.toolchain, 'nightly-2022-10-28') == false
         uses: actions-rs/cargo@v1
         with:
           command: doc

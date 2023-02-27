@@ -13,10 +13,6 @@ jobs:
     uses: ./.github/workflows/cargo-lint.yml
     with:
       toolchain: ${{ inputs.toolchain }}
-  cargo-semver:
-    uses: ./.github/workflows/cargo-semver.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
   cargo-audit:
     uses: ./.github/workflows/cargo-audit.yml
     with:
