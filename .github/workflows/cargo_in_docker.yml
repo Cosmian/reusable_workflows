@@ -94,12 +94,12 @@ jobs:
         if: inputs.feature == 'wasm_bindgen'
         run: |
           pushd crates/cover_crypt
-          wasm-pack build -d ../target/web/cover_crypt --target web --release --features wasm_bindgen
+          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
           wasm-pack test --node --features wasm_bindgen
           popd
 
           pushd crates/findex
-          wasm-pack build -d ../target/web/findex --target web --release --features wasm_bindgen
+          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
           # wasm-pack test --node --features wasm_bindgen
 
           popd
