@@ -110,8 +110,8 @@ jobs:
           python-version: 3.7
           cache: pip # caching pip dependencies
       - run: |
-          pip install -r cover_crypt/python/requirements.txt
-          pip install -r findex/python/requirements.txt
+          pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/findex/python/requirements.txt
 
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'

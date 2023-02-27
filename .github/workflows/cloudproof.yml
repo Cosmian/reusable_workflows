@@ -202,8 +202,8 @@ jobs:
 
       - name: Install requirements
         run: |
-          pip install -r cover_crypt/python/requirements.txt
-          pip install -r findex/python/requirements.txt
+          pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/findex/python/requirements.txt
 
       - name: Install .whl
         run: |
@@ -211,10 +211,10 @@ jobs:
 
       - name: Python tests
         run: |
-          mypy cover_crypt/python/tests/cover_crypt_test.py
-          python cover_crypt/python/tests/cover_crypt_test.py
-          mypy findex/python/tests/findex_test.py
-          python findex/python/tests/findex_test.py
+          mypy crates/cover_crypt/python/tests/cover_crypt_test.py
+          python crates/cover_crypt/python/tests/cover_crypt_test.py
+          mypy crates/findex/python/tests/findex_test.py
+          python crates/findex/python/tests/findex_test.py
 
   ##############################################################################
   ### Cloudproof Java library
