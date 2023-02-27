@@ -69,7 +69,14 @@ jobs:
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
         cargo install --locked cargo-lipo || true
+        pushd cover_crypt
         cargo lipo --release --features ffi
+        popd
+
+        pushd findex
+        cargo lipo --release --features ffi
+        popd
+
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
         target/*.h
@@ -80,7 +87,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
-      feature: wasm
+      feature: wasm_bindgen
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
@@ -525,80 +532,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ matrix.archive_name }}.zip
-
-  ##############################################################################
-  ### Core publish
-  ##############################################################################
-  python-publish:
-    needs: packages
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - source-dir: x86_64-apple-darwin/wheels
-          - source-dir: python-x86_64-unknown-linux-gnu
-          - source-dir: x86_64-pc-windows-gnu/wheels
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-          cache: pip # caching pip dependencies
-
-      - name: List directory
-        if: contains(runner.os, 'Linux')
-        run: find .
-
-      - name: Install requirements
-        run: |
-          pip install twine
-
-      - name: Publish .whl
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        run: |
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-
-  cargo-publish:
-    needs:
-      - packages
-    uses: ./.github/workflows/cargo-publish.yml
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    with:
-      toolchain: ${{ inputs.toolchain }}
-    secrets: inherit
-
-  wasm-publish:
-    needs: packages
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
-          override: true
-
-      - name: Install wasm-pack
-        run: |
-          cargo install wasm-pack
-
-      - name: Publishing Wasm
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
-          wasm-pack build --target web --release --features wasm_bindgen
-          wasm-pack pack
-          wasm-pack publish
-        env:
-          NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
   cleanup:
     needs:
