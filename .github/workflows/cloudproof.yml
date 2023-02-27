@@ -202,7 +202,8 @@ jobs:
 
       - name: Install requirements
         run: |
-          pip install -r python/requirements.txt
+          pip install -r cover_crypt/python/requirements.txt
+          pip install -r findex/python/requirements.txt
 
       - name: Install .whl
         run: |

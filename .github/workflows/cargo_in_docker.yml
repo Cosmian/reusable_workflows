@@ -94,11 +94,11 @@ jobs:
         if: inputs.feature == 'wasm_bindgen'
         run: |
           pushd cover_crypt
-          wasm-pack build -d pkg/web --target web --release --features wasm_bindgen
+          wasm-pack build -d ../target/web/cover_crypt --target web --release --features wasm_bindgen
           popd
 
           pushd findex
-          wasm-pack build -d pkg/web --target web --release --features wasm_bindgen
+          wasm-pack build -d ../target/web/findex --target web --release --features wasm_bindgen
           popd
 
 
