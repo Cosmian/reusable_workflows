@@ -13,6 +13,10 @@ jobs:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+  cargo-doc:
+    uses: ./.github/workflows/cargo-doc.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
     with:
