@@ -71,12 +71,15 @@ jobs:
           pip install -r requirements.txt
           python -m build
           scripts/ci_install_pyo3_builds.sh
-          pip install dist/cloudproof_py*.whl
 
       - name: Install fresh build of CoverCrypt and Findex
         if: inputs.copy_fresh_build
         run: |
           pip install --force-reinstall python-${{ inputs.target }}/*.whl
+
+      - name: Install Cloudproof python
+        run: |
+          pip install dist/cloudproof_py*.whl
 
       - name: Run tests
         run: |
