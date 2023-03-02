@@ -56,7 +56,7 @@ jobs:
         run: ${{ inputs.pre-requisites }}
 
       - name: ffi pre-requisites
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
@@ -69,12 +69,12 @@ jobs:
           popd
 
       - name: Test release with ffi feature
-        if: inputs.feature == 'ffi' && inputs.target != 'aarch64-linux-android'
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: test
           use-cross: true
-          args: --release --features ffi --target ${{ inputs.target }}
+          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
@@ -82,15 +82,15 @@ jobs:
         with:
           command: test
           use-cross: true
-          args: --release --all-features --target x86_64-unknown-linux-gnu
+          args: --release --all-features --target ${{ inputs.target }} --workspace
 
-      - name: Build release with feature ffi
-        if: inputs.feature == 'ffi'
+      - name: Build release with feature ${{ inputs.feature }}
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: build
           use-cross: true
-          args: --release --features ffi --target ${{ inputs.target }}
+          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'

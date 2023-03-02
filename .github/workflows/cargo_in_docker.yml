@@ -57,7 +57,7 @@ jobs:
         run: ${{ inputs.pre-requisites }}
 
       - name: ffi pre-requisites
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
@@ -70,7 +70,7 @@ jobs:
           popd
 
       - name: Test release with ffi feature
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: test
@@ -81,10 +81,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --all-features --target ${{ inputs.target }}
+          args: --release --all-features --target ${{ inputs.target }} --workspace
 
       - name: Build release with feature ${{ inputs.feature }}
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: build
@@ -101,7 +101,6 @@ jobs:
           pushd crates/findex
           wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
           # wasm-pack test --node --features wasm_bindgen
-
           popd
 
       - name: Upload cargo binaries
