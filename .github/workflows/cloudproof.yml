@@ -277,6 +277,15 @@ jobs:
         ./build/non_regression_vector.json
         ./build/sqlite.db
 
+  flutter-darwin:
+    needs:
+      - darwin
+    uses: ./.github/workflows/cloudproof_flutter_darwin.yml
+    with:
+      branch: ${{ inputs.branch-flutter }}
+      target: x86_64-apple-darwin
+      extension: dylib
+
   ##############################################################################
   ### Cloudproof Python library
   ##############################################################################

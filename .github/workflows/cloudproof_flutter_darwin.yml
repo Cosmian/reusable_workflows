@@ -17,10 +17,6 @@ on:
         required: false
         default: ''
         type: string
-      regression_files:
-        required: false
-        default: ''
-        type: string
       copy_fresh_build:
         required: false
         default: true
@@ -28,20 +24,9 @@ on:
 
 jobs:
   flutter-job:
-    name: cloudproof_flutter on ubuntu-22.04
+    name: cloudproof_flutter on macos-12
 
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    runs-on: ubuntu-22.04
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v3
@@ -61,8 +46,6 @@ jobs:
         with:
           python-version: 3.7
 
-      - run: sudo apt install libclang-dev llvm
-
       - run: flutter pub get
 
       - run: python scripts/get_native_libraries.py
@@ -71,11 +54,8 @@ jobs:
         if: inputs.copy_fresh_build
         run: |
           cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
-          cp android/armeabi-v7a/*.so   android/src/main/jniLibs/armeabi-v7a/
-          cp android/arm64-v8a/*.so     android/src/main/jniLibs/arm64-v8a/
-          cp android/x86/*.so           android/src/main/jniLibs/x86/
-          cp android/x86_64/*.so        android/src/main/jniLibs/x86_64/
-          cp ${{ inputs.target }}/*.h   resources/
+          cp ${{ inputs.target }}/universal/release/*.a ios/
+          cp ${{ inputs.target }}/*.h resources/
 
         # Generate bindings in case of no binary found on package.cosmian.com
       - run: flutter pub run ffigen --config ffigen_findex.yaml
@@ -85,22 +65,16 @@ jobs:
         if: inputs.copy_regression_files != ''
         run: ${{ inputs.copy_regression_files }}
 
-      - run: flutter test --concurrency 1
+      - run: flutter test --concurrency 1 -x redis # exclude redis tests (no docker for macos)
         env:
           REDIS_HOST: redis
           REDIS_PORT: 6379
 
-      - name: Upload non-regression test vectors
-        if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
-        with:
-          name: cloudproof_flutter
-          path: ${{ inputs.regression_files }}
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Check build Android
+      - name: Check build iOS
         run: |
+          otool -Sv ios/libcloudproof_cover_crypt.a || true
+          otool -L ios/libcloudproof_cover_crypt.a || true
+          nm ios/libcloudproof_cover_crypt.a || true
           cd example
-          flutter build apk
+          flutter build ios --release --no-codesign
           cd ..
