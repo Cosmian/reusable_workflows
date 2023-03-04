@@ -430,6 +430,7 @@ jobs:
       - pyo3-tests
       - java-darwin
       - java-windows
+      - flutter-darwin
       - linux-ubuntu
       - cross-java-linux
       - cross-js
