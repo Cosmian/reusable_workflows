@@ -73,9 +73,7 @@ jobs:
       - name: Check build iOS
         run: |
           otool -Tv ios/libcloudproof_cover_crypt.a || true
-          otool -Sv ios/libcloudproof_cover_crypt.a || true
-          otool -L ios/libcloudproof_cover_crypt.a || true
           nm -g ios/libcloudproof_cover_crypt.a || true
           cd example
-          flutter build ios --release --no-codesign || true
+          flutter build ios --release --no-codesign
           cd ..
