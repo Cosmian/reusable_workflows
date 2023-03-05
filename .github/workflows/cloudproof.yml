@@ -69,14 +69,8 @@ jobs:
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
         cargo install --locked cargo-lipo || true
-
-        pushd crates/cover_crypt
         cargo lipo --release --features ffi
-        popd
-
-        pushd crates/findex
-        cargo lipo --release --features ffi
-        popd
+        find target/universal/release
 
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
