@@ -60,6 +60,7 @@ jobs:
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
+
           pushd crates/cover_crypt
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
           popd
