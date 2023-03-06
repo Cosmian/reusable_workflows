@@ -71,7 +71,7 @@ jobs:
       - name: Upload cargo binaries
         uses: actions/upload-artifact@v3
         with:
-          name: android
+          name: android_${{ github.head_ref }}
           path: jniLibs
           retention-days: 1
           if-no-files-found: error

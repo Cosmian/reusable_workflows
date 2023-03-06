@@ -141,7 +141,7 @@ jobs:
       - name: Upload python files
         uses: actions/upload-artifact@v3
         with:
-          name: python-x86_64-unknown-linux-gnu
+          name: python-x86_64-unknown-linux-gnu_${{ github.head_ref }}
           path: |
             target/wheels/*.whl
           retention-days: 1
@@ -156,10 +156,10 @@ jobs:
       - name: Upload python files
         uses: actions/upload-artifact@v3
         with:
-          name: x86_64-unknown-linux-gnu
+          name: x86_64-unknown-linux-gnu_${{ github.head_ref }}
           path: |
-            python-x86_64-unknown-linux-gnu/*
-            x86_64-unknown-linux-gnu/*
+            python-x86_64-unknown-linux-gnu_${{ github.head_ref }}/*
+            x86_64-unknown-linux-gnu_${{ github.head_ref }}/*
           retention-days: 1
           if-no-files-found: error
 
@@ -177,11 +177,11 @@ jobs:
       matrix:
         include:
           - os: macos-12
-            source-dir: x86_64-apple-darwin/wheels
+            source-dir: x86_64-apple-darwin_${{ github.head_ref }}/wheels
           - os: ubuntu-20.04
-            source-dir: python-x86_64-unknown-linux-gnu
+            source-dir: python-x86_64-unknown-linux-gnu_${{ github.head_ref }}
           - os: windows-2019
-            source-dir: x86_64-pc-windows-gnu/wheels
+            source-dir: x86_64-pc-windows-gnu_${{ github.head_ref }}/wheels
 
     steps:
       - uses: actions/checkout@v3
@@ -220,7 +220,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_java.yml
     with:
       branch: ${{ inputs.branch-java }}
-      target: x86_64-pc-windows-gnu
+      target: x86_64-pc-windows-gnu_${{ github.head_ref }}
       extension: dll
       destination: win32-x86-64
       os: windows-2019
@@ -234,7 +234,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_java.yml
     with:
       branch: ${{ inputs.branch-java }}
-      target: x86_64-apple-darwin
+      target: x86_64-apple-darwin_${{ github.head_ref }}
       extension: dylib
       destination: darwin-x86-64
       os: macos-12
@@ -248,7 +248,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_java_in_docker.yml
     with:
       branch: ${{ inputs.branch-java }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       extension: so
       destination: linux-x86-64
       os: ubuntu-20.04
@@ -266,7 +266,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       extension: so
       regression_files: |
         ./build/non_regression_vector.json
@@ -278,7 +278,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_flutter_darwin.yml
     with:
       branch: ${{ inputs.branch-flutter }}
-      target: x86_64-apple-darwin
+      target: x86_64-apple-darwin_${{ github.head_ref }}
       extension: dylib
 
   ##############################################################################
@@ -290,7 +290,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_python.yml
     with:
       branch: ${{ inputs.branch-python }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       kms-version: ${{ inputs.kms-version }}
       regression_files: |
         ./tests/data/export/non_regression_vector.json
@@ -305,7 +305,7 @@ jobs:
     uses: ./.github/workflows/cloudproof_js.yml
     with:
       branch: ${{ inputs.branch-js }}
-      target: wasm32-unknown-unknown
+      target: wasm32-unknown-unknown_${{ github.head_ref }}
       kms-version: ${{ inputs.kms-version }}
       regression_files: |
         ./node_modules/non_regression_vector.json
@@ -324,22 +324,22 @@ jobs:
     uses: ./.github/workflows/cloudproof_java_in_docker.yml
     with:
       branch: ${{ inputs.branch-java }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       extension: so
       destination: linux-x86-64
       os: ubuntu-20.04
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/non_regression_vector.json       src/test/resources/cover_crypt/non_regression/flutter_non_regression_vector.json
-        cp ./cloudproof_java/non_regression_vector.json          src/test/resources/cover_crypt/non_regression/java_non_regression_vector.json
-        cp ./cloudproof_js/non_regression_vector.json            src/test/resources/cover_crypt/non_regression/js_non_regression_vector.json
-        cp ./cloudproof_python/non_regression_vector.json        src/test/resources/cover_crypt/non_regression/python_non_regression_vector.json
-        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json src/test/resources/cover_crypt/non_regression/rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db         src/test/resources/findex/non_regression/flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db            src/test/resources/findex/non_regression/java_sqlite.db
-        cp ./cloudproof_js/sqlite.db              src/test/resources/findex/non_regression/js_sqlite.db
-        cp ./cloudproof_python/sqlite.db          src/test/resources/findex/non_regression/python_sqlite.db
-        cp ./x86_64-unknown-linux-gnu/sqlite.db src/test/resources/findex/non_regression/rust_sqlite.db
+        cp ./cloudproof_flutter_${{ github.head_ref }}/non_regression_vector.json       src/test/resources/cover_crypt/non_regression/flutter_non_regression_vector.json
+        cp ./cloudproof_java_${{ github.head_ref }}/non_regression_vector.json          src/test/resources/cover_crypt/non_regression/java_non_regression_vector.json
+        cp ./cloudproof_js_${{ github.head_ref }}/non_regression_vector.json            src/test/resources/cover_crypt/non_regression/js_non_regression_vector.json
+        cp ./cloudproof_python_${{ github.head_ref }}/non_regression_vector.json        src/test/resources/cover_crypt/non_regression/python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/non_regression_vector.json src/test/resources/cover_crypt/non_regression/rust_non_regression_vector.json
+        cp ./cloudproof_flutter_${{ github.head_ref }}/sqlite.db         src/test/resources/findex/non_regression/flutter_sqlite.db
+        cp ./cloudproof_java_${{ github.head_ref }}/sqlite.db            src/test/resources/findex/non_regression/java_sqlite.db
+        cp ./cloudproof_js_${{ github.head_ref }}/sqlite.db              src/test/resources/findex/non_regression/js_sqlite.db
+        cp ./cloudproof_python_${{ github.head_ref }}/sqlite.db          src/test/resources/findex/non_regression/python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/sqlite.db src/test/resources/findex/non_regression/rust_sqlite.db
 
   cross-js:
     needs:
@@ -351,19 +351,19 @@ jobs:
     uses: ./.github/workflows/cloudproof_js.yml
     with:
       branch: ${{ inputs.branch-js }}
-      target: wasm32-unknown-unknown
+      target: wasm32-unknown-unknown_${{ github.head_ref }}
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
-        cp ./cloudproof_java/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
-        cp ./cloudproof_js/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
-        cp ./cloudproof_python/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
-        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
-        cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter_${{ github.head_ref }}/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java_${{ github.head_ref }}/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js_${{ github.head_ref }}/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python_${{ github.head_ref }}/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter_${{ github.head_ref }}/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java_${{ github.head_ref }}/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js_${{ github.head_ref }}/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python_${{ github.head_ref }}/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
 
   cross-python:
     needs:
@@ -375,19 +375,19 @@ jobs:
     uses: ./.github/workflows/cloudproof_python.yml
     with:
       branch: ${{ inputs.branch-python }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       kms-version: ${{ inputs.kms-version }}
       copy_regression_files: |
-        cp ./cloudproof_flutter/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
-        cp ./cloudproof_java/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
-        cp ./cloudproof_js/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
-        cp ./cloudproof_python/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
-        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
-        cp ./x86_64-unknown-linux-gnu/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter_${{ github.head_ref }}/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java_${{ github.head_ref }}/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js_${{ github.head_ref }}/non_regression_vector.json            tests/data/cover_crypt/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python_${{ github.head_ref }}/non_regression_vector.json        tests/data/cover_crypt/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/non_regression_vector.json tests/data/cover_crypt/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter_${{ github.head_ref }}/sqlite.db         tests/data/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java_${{ github.head_ref }}/sqlite.db            tests/data/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js_${{ github.head_ref }}/sqlite.db              tests/data/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python_${{ github.head_ref }}/sqlite.db          tests/data/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/sqlite.db tests/data/findex/non_regression/copy_rust_sqlite.db
 
   cross-flutter-linux:
     needs:
@@ -399,19 +399,19 @@ jobs:
     uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
-      target: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
       extension: so
       copy_regression_files: |
-        cp ./cloudproof_flutter/non_regression_vector.json       test/resources/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
-        cp ./cloudproof_java/non_regression_vector.json          test/resources/cover_crypt/non_regression/copy_java_non_regression_vector.json
-        cp ./cloudproof_js/non_regression_vector.json            test/resources/cover_crypt/non_regression/copy_js_non_regression_vector.json
-        cp ./cloudproof_python/non_regression_vector.json        test/resources/cover_crypt/non_regression/copy_python_non_regression_vector.json
-        cp ./x86_64-unknown-linux-gnu/non_regression_vector.json test/resources/cover_crypt/non_regression/copy_rust_non_regression_vector.json
-        cp ./cloudproof_flutter/sqlite.db         test/resources/findex/non_regression/copy_flutter_sqlite.db
-        cp ./cloudproof_java/sqlite.db            test/resources/findex/non_regression/copy_java_sqlite.db
-        cp ./cloudproof_js/sqlite.db              test/resources/findex/non_regression/copy_js_sqlite.db
-        cp ./cloudproof_python/sqlite.db          test/resources/findex/non_regression/copy_python_sqlite.db
-        cp ./x86_64-unknown-linux-gnu/sqlite.db test/resources/findex/non_regression/copy_rust_sqlite.db
+        cp ./cloudproof_flutter_${{ github.head_ref }}/non_regression_vector.json       test/resources/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
+        cp ./cloudproof_java_${{ github.head_ref }}/non_regression_vector.json          test/resources/cover_crypt/non_regression/copy_java_non_regression_vector.json
+        cp ./cloudproof_js_${{ github.head_ref }}/non_regression_vector.json            test/resources/cover_crypt/non_regression/copy_js_non_regression_vector.json
+        cp ./cloudproof_python_${{ github.head_ref }}/non_regression_vector.json        test/resources/cover_crypt/non_regression/copy_python_non_regression_vector.json
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/non_regression_vector.json test/resources/cover_crypt/non_regression/copy_rust_non_regression_vector.json
+        cp ./cloudproof_flutter_${{ github.head_ref }}/sqlite.db         test/resources/findex/non_regression/copy_flutter_sqlite.db
+        cp ./cloudproof_java_${{ github.head_ref }}/sqlite.db            test/resources/findex/non_regression/copy_java_sqlite.db
+        cp ./cloudproof_js_${{ github.head_ref }}/sqlite.db              test/resources/findex/non_regression/copy_js_sqlite.db
+        cp ./cloudproof_python_${{ github.head_ref }}/sqlite.db          test/resources/findex/non_regression/copy_python_sqlite.db
+        cp ./x86_64-unknown-linux-gnu_${{ github.head_ref }}/sqlite.db test/resources/findex/non_regression/copy_rust_sqlite.db
 
   ##############################################################################
   ### Packages
@@ -443,6 +443,11 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
+          mv wasm32-unknown-unknown_${{ github.head_ref }} wasm32-unknown-unknown
+          mv android_${{ github.head_ref }} android
+          mv x86_64-apple-darwin_${{ github.head_ref }} x86_64-apple-darwin
+          mv x86_64-pc-windows-gnu_${{ github.head_ref }} x86_64-pc-windows-gnu
+          mv x86_64-unknown-linux-gnu_${{ github.head_ref }} x86_64-unknown-linux-gnu
           zip -r all.zip x86* wasm* android
 
       - name: Push to package.cosmian.com
@@ -484,15 +489,20 @@ jobs:
       matrix:
         include:
           - archive_name: windows
-            target: x86_64-pc-windows-gnu
+            target: x86_64-pc-windows-gnu_${{ github.head_ref }}
+            renamed_target: x86_64-pc-windows-gnu
           - archive_name: linux
-            target: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-gnu_${{ github.head_ref }}
+            renamed_target: x86_64-unknown-linux-gnu
           - archive_name: darwin
-            target: x86_64-apple-darwin
+            target: x86_64-apple-darwin_${{ github.head_ref }}
+            renamed_target: x86_64-apple-darwin
           - archive_name: wasm
-            target: wasm32-unknown-unknown
+            target: wasm32-unknown-unknown_${{ github.head_ref }}
+            renamed_target: wasm32-unknown-unknown
           - archive_name: android
-            target: android
+            target: android_${{ github.head_ref }}
+            renamed_target: android
 
     steps:
       - uses: actions/download-artifact@v3
@@ -500,7 +510,8 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
-          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
+          mv ${{ matrix.target }} ${{ matrix.renamed_target }}
+          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.renamed_target }}
 
       - name: Push to package.cosmian.com
         if: startsWith(github.ref, 'refs/tags/') != true
@@ -547,9 +558,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - source-dir: x86_64-apple-darwin/wheels
-          - source-dir: python-x86_64-unknown-linux-gnu
-          - source-dir: x86_64-pc-windows-gnu/wheels
+          - source-dir: x86_64-apple-darwin_${{ github.head_ref }}/wheels
+          - source-dir: python-x86_64-unknown-linux-gnu_${{ github.head_ref }}
+          - source-dir: x86_64-pc-windows-gnu_${{ github.head_ref }}/wheels
 
     steps:
       - uses: actions/checkout@v3
@@ -585,7 +596,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          target: x86_64-unknown-linux-gnu
           override: true
 
       - name: Install wasm-pack
