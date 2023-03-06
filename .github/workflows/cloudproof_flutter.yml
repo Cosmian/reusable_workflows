@@ -25,6 +25,10 @@ on:
         required: false
         default: true
         type: boolean
+      android_build:
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   flutter-job:
@@ -100,6 +104,7 @@ jobs:
           if-no-files-found: error
 
       - name: Check build Android
+        if: inputs.android_build
         run: |
           cd example
           flutter build apk
