@@ -450,13 +450,12 @@ jobs:
           set -x
           echo "$PACKAGE_SSH_KEY" > ~/id_rsa
           chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
           ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
 
       - name: Push to package.cosmian.com - tags
         if: startsWith(github.ref, 'refs/tags/')
@@ -509,13 +508,12 @@ jobs:
           set -x
           echo "$PACKAGE_SSH_KEY" > ~/id_rsa
           chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
           ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
 
       - name: Push to package.cosmian.com
         if: startsWith(github.ref, 'refs/tags/')
