@@ -106,7 +106,7 @@ jobs:
         if: inputs.regression_files != ''
         uses: actions/upload-artifact@v3
         with:
-          name: cloudproof_java_${{ github.head_ref }}
+          name: cloudproof_java
           path: ${{ inputs.regression_files }}
           retention-days: 1
           if-no-files-found: error

@@ -128,7 +128,7 @@ jobs:
         if: inputs.artifacts != ''
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.target }}_${{ github.head_ref }}
+          name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error

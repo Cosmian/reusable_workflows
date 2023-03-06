@@ -94,7 +94,7 @@ jobs:
         if: inputs.regression_files != ''
         uses: actions/upload-artifact@v3
         with:
-          name: cloudproof_flutter_${{ github.head_ref }}
+          name: cloudproof_flutter
           path: ${{ inputs.regression_files }}
           retention-days: 1
           if-no-files-found: error
