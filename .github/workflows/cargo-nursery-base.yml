@@ -1,0 +1,21 @@
+---
+name: Cargo lints & tests
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  cargo-lint:
+    uses: ./.github/workflows/cargo-lint.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-audit:
+    uses: ./.github/workflows/cargo-audit.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-udeps:
+    uses: ./.github/workflows/cargo-udeps.yml

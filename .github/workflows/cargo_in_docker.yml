@@ -4,9 +4,6 @@ name: Cargo in Docker
 on:
   workflow_call:
     inputs:
-      project-name:
-        required: true
-        type: string
       toolchain:
         required: true
         type: string
@@ -60,14 +57,20 @@ jobs:
         run: ${{ inputs.pre-requisites }}
 
       - name: ffi pre-requisites
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/${{ inputs.project-name }}.h
+          pushd crates/cover_crypt
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
+          popd
+
+          pushd crates/findex
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
+          popd
 
       - name: Test release with ffi feature
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: test
@@ -78,18 +81,27 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --all-features --target ${{ inputs.target }}
+          args: --release --all-features --target ${{ inputs.target }} --workspace
 
       - name: Build release with feature ${{ inputs.feature }}
-        if: inputs.feature == 'ffi'
+        if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
-      - name: Wasm-pack build release with feature ${{ inputs.feature }}
+      - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'
-        run: wasm-pack build -d pkg/web --target web --release --features ${{ inputs.feature }}
+        run: |
+          pushd crates/cover_crypt
+          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
+          pushd crates/findex
+          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
+          # wasm-pack test --node --features wasm_bindgen
+          popd
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
