@@ -618,6 +618,25 @@ jobs:
         env:
           NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
+  cargo-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Publishing
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "[registry]" > ~/.cargo/credentials
+          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
+
+          pushd crates/cover_crypt
+          cargo publish --token $CRATES_IO
+          popd
+          pushd crates/findex
+          cargo publish --token $CRATES_IO
+          popd
+        env:
+          CRATES_IO: ${{ secrets.CRATES_IO }}
+
   cleanup:
     needs:
       - packages
