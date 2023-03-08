@@ -34,8 +34,12 @@ jobs:
   ##############################################################################
   ### Check if release can be done
   ##############################################################################
-  pre-build:
-    uses: ./.github/workflows/cargo-nursery-base.yml
+  cargo-lint:
+    uses: ./.github/workflows/cargo-lint.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-audit:
+    uses: ./.github/workflows/cargo-audit.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-bench:
