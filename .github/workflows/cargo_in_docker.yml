@@ -69,6 +69,10 @@ jobs:
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
           popd
 
+          pushd crates/cloudproof
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
+          popd
+
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
