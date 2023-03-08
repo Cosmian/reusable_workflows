@@ -424,7 +424,8 @@ jobs:
   packages:
     name: push to package.cosmian.com
     needs:
-      - pre-build
+      - cargo-lint
+      - cargo-audit
       - android
       - merge-linux-artifacts
       - pyo3-tests
