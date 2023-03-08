@@ -34,12 +34,8 @@ jobs:
   ##############################################################################
   ### Check if release can be done
   ##############################################################################
-  cargo-lint:
-    uses: ./.github/workflows/cargo-lint.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
-  cargo-audit:
-    uses: ./.github/workflows/cargo-audit.yml
+  pre-build:
+    uses: ./.github/workflows/cargo-nursery-base.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-bench:
@@ -424,8 +420,7 @@ jobs:
   packages:
     name: push to package.cosmian.com
     needs:
-      - cargo-lint
-      - cargo-audit
+      - pre-build
       - android
       - merge-linux-artifacts
       - pyo3-tests
