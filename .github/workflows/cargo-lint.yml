@@ -59,3 +59,9 @@ jobs:
         with:
           command: test
           args: --release --workspace --all-targets --all-features
+
+      - name: Run doc tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-targets --doc

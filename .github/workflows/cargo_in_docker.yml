@@ -107,6 +107,11 @@ jobs:
           # wasm-pack test --node --features wasm_bindgen
           popd
 
+          pushd crates/fpe
+          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
         uses: actions/upload-artifact@v3

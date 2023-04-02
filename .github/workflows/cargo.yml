@@ -110,6 +110,11 @@ jobs:
           # wasm-pack test --node --features wasm_bindgen
           popd
 
+          pushd crates/fpe
+          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
       - uses: actions/setup-python@v4
         with:
           python-version: 3.7
@@ -117,6 +122,7 @@ jobs:
       - run: |
           pip install -r crates/cover_crypt/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
+          pip install -r crates/fpe/python/requirements.txt
 
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'
@@ -125,6 +131,9 @@ jobs:
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
           pushd crates/findex
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+          pushd crates/fpe
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
