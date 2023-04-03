@@ -127,15 +127,9 @@ jobs:
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'
         run: |
-          pushd crates/cover_crypt
-          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
-          popd
-          pushd crates/findex
-          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
-          popd
-          pushd crates/fpe
-          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
-          popd
+          maturin build --release --features python --target-dir target_python --manifest-path crates/cover_crypt/Cargo.toml
+          maturin build --release --features python --target-dir target_python --manifest-path crates/findex/Cargo.toml
+          maturin build --release --features python --target-dir target_python --manifest-path crates/fpe/Cargo.toml
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''

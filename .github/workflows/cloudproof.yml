@@ -88,6 +88,7 @@ jobs:
       artifacts: |
         ./target/web/cover_crypt
         ./target/web/findex
+        ./target/web/fpe
   android:
     uses: ./.github/workflows/ndk.yml
     with:
@@ -131,12 +132,9 @@ jobs:
 
       - name: Python maturin build
         run: |
-          pushd crates/cover_crypt
-          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
-          popd
-          pushd crates/findex
-          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
-          popd
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/cover_crypt/Cargo.toml
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/findex/Cargo.toml
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/fpe/Cargo.toml
 
       - name: Upload python files
         uses: actions/upload-artifact@v3
@@ -199,6 +197,7 @@ jobs:
         run: |
           pip install -r crates/cover_crypt/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
+          pip install -r crates/fpe/python/requirements.txt
 
       - name: Install .whl
         run: |
@@ -210,6 +209,8 @@ jobs:
           python crates/cover_crypt/python/tests/cover_crypt_test.py
           mypy crates/findex/python/tests/findex_test.py
           python crates/findex/python/tests/findex_test.py
+          mypy crates/fpe/python/tests/fpe_test.py
+          python crates/fpe/python/tests/fpe_test.py
 
   ##############################################################################
   ### Cloudproof Java library
@@ -610,6 +611,12 @@ jobs:
           wasm-pack publish || true
           popd
 
+          pushd crates/fpe
+          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
+
         env:
           NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
@@ -628,6 +635,9 @@ jobs:
           cargo publish --token $CRATES_IO || true
           popd
           pushd crates/findex
+          cargo publish --token $CRATES_IO || true
+          popd
+          pushd crates/fpe
           cargo publish --token $CRATES_IO || true
           popd
         env:

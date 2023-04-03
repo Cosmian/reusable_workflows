@@ -78,6 +78,7 @@ jobs:
         run: |
           cp -r ${{ inputs.target }}/cover_crypt/* src/pkg/cover_crypt/
           cp -r ${{ inputs.target }}/findex/* src/pkg/findex/
+          cp -r ${{ inputs.target }}/fpe/* src/pkg/fpe/
 
       - name: copy non-regression test vectors
         if: inputs.copy_regression_files != ''
