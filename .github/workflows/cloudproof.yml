@@ -132,9 +132,17 @@ jobs:
 
       - name: Python maturin build
         run: |
-          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/cover_crypt/Cargo.toml
-          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/findex/Cargo.toml
-          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python --manifest-path crates/fpe/Cargo.toml
+          pushd crates/cover_crypt
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
+          pushd crates/findex
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
+          pushd crates/fpe
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
 
       - name: Upload python files
         uses: actions/upload-artifact@v3
