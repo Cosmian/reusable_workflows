@@ -209,7 +209,9 @@ jobs:
           python crates/cover_crypt/python/tests/cover_crypt_test.py
           mypy crates/findex/python/tests/findex_test.py
           python crates/findex/python/tests/findex_test.py
-          mypy crates/fpe/python/tests/fpe_test.py
+          pushd crates/fpe/python
+          mypy tests/fpe_test.py
+          popd
           python crates/fpe/python/tests/fpe_test.py
 
   ##############################################################################
@@ -273,6 +275,8 @@ jobs:
       regression_files: |
         ./build/non_regression_vector.json
         ./build/sqlite.db
+        ./lib/src/cover_crypt/generated_bindings.dart
+        ./lib/src/findex/generated_bindings.dart
 
   flutter-darwin:
     needs:
