@@ -205,10 +205,16 @@ jobs:
 
       - name: Python tests
         run: |
-          mypy crates/cover_crypt/python/tests/cover_crypt_test.py
+          pushd crates/cover_crypt/python
+          mypy tests/cover_crypt_test.py
+          popd
           python crates/cover_crypt/python/tests/cover_crypt_test.py
-          mypy crates/findex/python/tests/findex_test.py
+
+          pushd crates/findex/python
+          mypy tests/findex_test.py
+          popd
           python crates/findex/python/tests/findex_test.py
+
           pushd crates/fpe/python
           mypy tests/fpe_test.py
           popd
