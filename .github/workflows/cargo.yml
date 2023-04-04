@@ -128,15 +128,15 @@ jobs:
         if: inputs.feature != 'wasm_bindgen'
         run: |
           pushd crates/cover_crypt
-          maturin build --release --features python --target-dir target_python
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
           pushd crates/findex
-          maturin build --release --features python --target-dir target_python
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
           pushd crates/fpe
-          maturin build --release --features python --target-dir target_python
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
       - name: Upload cargo binaries
