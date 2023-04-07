@@ -229,6 +229,116 @@ jobs:
           python crates/fpe/python/tests/fpe_test.py
 
   ##############################################################################
+  ### Packages
+  ##############################################################################
+  packages:
+    name: push to package.cosmian.com
+    needs:
+      - windows
+      - darwin
+      - wasm
+      - android
+      - linux-centos7
+      - merge-linux-artifacts
+      - pyo3-tests
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%-m-%d-%H-%M-%S')"
+
+      - name: Creating zip to be attached to release
+        run: |
+          zip -r all.zip x86* wasm* android
+
+      - name: Push to package.cosmian.com
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+
+      - name: Push to package.cosmian.com - tags
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
+
+  packages-per-arch:
+    name: push to package.cosmian.com (individual zip)
+    needs:
+      - packages
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - archive_name: windows
+            target: x86_64-pc-windows-gnu
+          - archive_name: linux
+            target: x86_64-unknown-linux-gnu
+          - archive_name: darwin
+            target: x86_64-apple-darwin
+          - archive_name: wasm
+            target: wasm32-unknown-unknown
+          - archive_name: android
+            target: android
+
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - name: Creating zip to be attached to release
+        run: |
+          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
+
+      - name: Push to package.cosmian.com
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+
+      - name: Push to package.cosmian.com
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -x
+          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
+          chmod 600 ~/id_rsa
+          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
+          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
+          #DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
+          #ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
+          rm ~/id_rsa
+        env:
+          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          VERSION: ${{ github.ref_name }}
+
+  ##############################################################################
   ### Cloudproof Java library
   ##############################################################################
   java-windows:
@@ -434,15 +544,17 @@ jobs:
         cp ./x86_64-unknown-linux-gnu/sqlite.db test/resources/findex/non_regression/copy_rust_sqlite.db
 
   ##############################################################################
-  ### Packages
+  ### Releases
   ##############################################################################
-  packages:
-    name: push to package.cosmian.com
+  release:
+    name: release
     needs:
       - pre-build
       - android
       - merge-linux-artifacts
       - pyo3-tests
+      - packages
+      - packages-per-arch
       - java-darwin
       - java-windows
       - flutter-darwin
@@ -452,105 +564,17 @@ jobs:
       - cross-flutter-linux
       - cross-python
     runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y%-m-%d-%H-%M-%S')"
-
-      - name: Creating zip to be attached to release
-        run: |
-          zip -r all.zip x86* wasm* android
-
-      - name: Push to package.cosmian.com
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com - tags
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
-
-  ##############################################################################
-  ### Releases
-  ##############################################################################
-  release:
-    name: release
-    needs:
-      - packages
-    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         include:
           - archive_name: windows
-            target: x86_64-pc-windows-gnu
           - archive_name: linux
-            target: x86_64-unknown-linux-gnu
           - archive_name: darwin
-            target: x86_64-apple-darwin
           - archive_name: wasm
-            target: wasm32-unknown-unknown
           - archive_name: android
-            target: android
 
     steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Creating zip to be attached to release
-        run: |
-          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/') != true
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          # DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
-          # ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
-
       - name: Release on tags, attach asset on release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -561,7 +585,7 @@ jobs:
   ### Core publish
   ##############################################################################
   python-publish:
-    needs: packages
+    needs: release
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -596,7 +620,7 @@ jobs:
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
   wasm-publish:
-    needs: packages
+    needs: release
     runs-on: ubuntu-22.04
 
     steps:
@@ -639,7 +663,7 @@ jobs:
           NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
   cargo-publish:
-    needs: packages
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -658,14 +682,11 @@ jobs:
           pushd crates/fpe
           cargo publish --token $CRATES_IO || true
           popd
-          pushd crates/cloudproof
-          cargo publish --token $CRATES_IO || true
-          popd
         env:
           CRATES_IO: ${{ secrets.CRATES_IO }}
 
   cleanup:
     needs:
-      - packages
+      - release
     uses: ./.github/workflows/cleanup_cache.yml
     secrets: inherit
