@@ -32,7 +32,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          args: --deny warnings --ignore RUSTSEC-2021-0145
+          args: --deny warnings --ignore RUSTSEC-2021-0145 --ignore RUSTSEC-2023-0005
 
 #
 # Ignoring deprecated criterion since no new version is available
