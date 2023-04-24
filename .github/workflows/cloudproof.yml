@@ -33,9 +33,6 @@ on:
         type: string
 
 jobs:
-  cleanup_to_remove:
-    uses: ./.github/workflows/cleanup_cache.yml
-    secrets: inherit
   ##############################################################################
   ### Check if release can be done
   ##############################################################################
