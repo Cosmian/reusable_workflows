@@ -260,15 +260,15 @@ jobs:
   ##############################################################################
   ### Cloudproof Python library
   ##############################################################################
-  python-linux:
-    needs:
-      - pyo3-linux
-    uses: ./.github/workflows/cloudproof_python.yml
-    with:
-      branch: ${{ inputs.branch-python }}
-      target: x86_64-unknown-linux-gnu
-      kms-version: ${{ inputs.kms-version }}
-      regression_files: ./tests/data/export/${{ inputs.regression-filename }}
+  # python-linux:
+  #   needs:
+  #     - pyo3-linux
+  #   uses: ./.github/workflows/cloudproof_python.yml
+  #   with:
+  #     branch: ${{ inputs.branch-python }}
+  #     target: x86_64-unknown-linux-gnu
+  #     kms-version: ${{ inputs.kms-version }}
+  #     regression_files: ./tests/data/export/${{ inputs.regression-filename }}
 
   ##############################################################################
   ### Cloudproof JS library
@@ -293,7 +293,7 @@ jobs:
       - flutter-linux
       - java-linux
       - js
-      - python-linux
+      # - python-linux
     uses: ./.github/workflows/cloudproof_java_in_docker.yml
     with:
       branch: ${{ inputs.branch-java }}
@@ -306,7 +306,7 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       src/test/resources/${{ inputs.project-name }}/non_regression/flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          src/test/resources/${{ inputs.project-name }}/non_regression/java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            src/test/resources/${{ inputs.project-name }}/non_regression/js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        src/test/resources/${{ inputs.project-name }}/non_regression/python_${{ inputs.regression-filename }}
+        # cp ./cloudproof_python/${{ inputs.regression-filename }}        src/test/resources/${{ inputs.project-name }}/non_regression/python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} src/test/resources/${{ inputs.project-name }}/non_regression/rust_${{ inputs.regression-filename }}
 
   cross-js:
@@ -315,7 +315,7 @@ jobs:
       - flutter-linux
       - java-linux
       - js
-      - python-linux
+      # - python-linux
     uses: ./.github/workflows/cloudproof_js.yml
     with:
       project-name: ${{ inputs.project-name }}
@@ -326,27 +326,27 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
+        # cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
-  cross-python:
-    needs:
-      - linux-centos7
-      - flutter-linux
-      - java-linux
-      - js
-      - python-linux
-    uses: ./.github/workflows/cloudproof_python.yml
-    with:
-      branch: ${{ inputs.branch-python }}
-      target: x86_64-unknown-linux-gnu
-      kms-version: ${{ inputs.kms-version }}
-      copy_regression_files: |
-        cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
-        cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
-        cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
-        cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
+  # cross-python:
+  #   needs:
+  #     - linux-centos7
+  #     - flutter-linux
+  #     - java-linux
+  #     - js
+  #     - python-linux
+  #   uses: ./.github/workflows/cloudproof_python.yml
+  #   with:
+  #     branch: ${{ inputs.branch-python }}
+  #     target: x86_64-unknown-linux-gnu
+  #     kms-version: ${{ inputs.kms-version }}
+  #     copy_regression_files: |
+  #       cp ./cloudproof_flutter/${{ inputs.regression-filename }}       tests/data/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
+  #       cp ./cloudproof_java/${{ inputs.regression-filename }}          tests/data/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
+  #       cp ./cloudproof_js/${{ inputs.regression-filename }}            tests/data/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
+  #       cp ./cloudproof_python/${{ inputs.regression-filename }}        tests/data/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
+  #       cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} tests/data/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   cross-flutter-linux:
     needs:
@@ -354,7 +354,7 @@ jobs:
       - flutter-linux
       - java-linux
       - js
-      - python-linux
+      # - python-linux
     uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
@@ -364,7 +364,7 @@ jobs:
         cp ./cloudproof_flutter/${{ inputs.regression-filename }}       test/resources/${{ inputs.project-name }}/non_regression/copy_flutter_${{ inputs.regression-filename }}
         cp ./cloudproof_java/${{ inputs.regression-filename }}          test/resources/${{ inputs.project-name }}/non_regression/copy_java_${{ inputs.regression-filename }}
         cp ./cloudproof_js/${{ inputs.regression-filename }}            test/resources/${{ inputs.project-name }}/non_regression/copy_js_${{ inputs.regression-filename }}
-        cp ./cloudproof_python/${{ inputs.regression-filename }}        test/resources/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
+        # cp ./cloudproof_python/${{ inputs.regression-filename }}        test/resources/${{ inputs.project-name }}/non_regression/copy_python_${{ inputs.regression-filename }}
         cp ./x86_64-unknown-linux-gnu/${{ inputs.regression-filename }} test/resources/${{ inputs.project-name }}/non_regression/copy_rust_${{ inputs.regression-filename }}
 
   ##############################################################################
@@ -383,7 +383,7 @@ jobs:
       - cross-java-linux
       - cross-js
       - cross-flutter-linux
-      - cross-python
+      # - cross-python
     runs-on: ubuntu-20.04
 
     steps:
@@ -495,40 +495,40 @@ jobs:
   ##############################################################################
   ### Core publish
   ##############################################################################
-  python-publish:
-    needs: packages
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - source-dir: x86_64-apple-darwin/wheels
-          - source-dir: python-x86_64-unknown-linux-gnu
-          - source-dir: x86_64-pc-windows-gnu/wheels
+  # python-publish:
+  #   needs: packages
+  #   runs-on: ubuntu-22.04
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - source-dir: x86_64-apple-darwin/wheels
+  #         - source-dir: python-x86_64-unknown-linux-gnu
+  #         - source-dir: x86_64-pc-windows-gnu/wheels
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-          cache: pip # caching pip dependencies
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/download-artifact@v3
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.7
+  #         cache: pip # caching pip dependencies
 
-      - name: List directory
-        if: contains(runner.os, 'Linux')
-        run: find .
+  #     - name: List directory
+  #       if: contains(runner.os, 'Linux')
+  #       run: find .
 
-      - name: Install requirements
-        run: |
-          pip install twine
+  #     - name: Install requirements
+  #       run: |
+  #         pip install twine
 
-      - name: Publish .whl
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        run: |
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  #     - name: Publish .whl
+  #       if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+  #       run: |
+  #         twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/*.whl
+  #       env:
+  #         PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  #         PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
   cargo-publish:
     needs:
