@@ -544,8 +544,8 @@ jobs:
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
           ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
+          # DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
+          # ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
           rm ~/id_rsa
         env:
           PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
