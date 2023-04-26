@@ -658,6 +658,9 @@ jobs:
           pushd crates/fpe
           cargo publish --token $CRATES_IO || true
           popd
+          pushd crates/cloudproof
+          cargo publish --token $CRATES_IO || true
+          popd
         env:
           CRATES_IO: ${{ secrets.CRATES_IO }}
 
