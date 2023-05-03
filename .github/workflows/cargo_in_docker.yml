@@ -95,7 +95,7 @@ jobs:
           wasm-pack test --node --features wasm_bindgen
           popd
 
-      - name: ffi pre-requisites
+      - name: cbindgen header generation
         if: contains(inputs.feature, 'ffi')
         run: |
           cargo install --locked cbindgen || true
