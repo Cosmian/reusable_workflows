@@ -68,6 +68,7 @@ jobs:
           sed -i 's/cloudproof_findex = { version = "[0-9]\+\.[0-9]\+\.[0-9]/cloudproof_findex = { path = "..\/findex/g' Cargo.toml
           sed -i 's/cloudproof_fpe = { version = "[0-9]\+\.[0-9]\+\.[0-9]/cloudproof_fpe = { path = "..\/fpe/g' Cargo.toml
           cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
+          git checkout Cargo.toml
           popd
 
       - name: Test release with ffi feature
