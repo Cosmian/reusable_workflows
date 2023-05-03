@@ -55,24 +55,6 @@ jobs:
         if: steps.cache-primes.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
 
-      - name: ffi pre-requisites
-        if: contains(inputs.feature, 'ffi')
-        run: |
-          cargo install --locked cbindgen || true
-          mkdir -p target
-
-          pushd crates/cover_crypt
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
-          popd
-
-          pushd crates/findex
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
-          popd
-
-          pushd crates/cloudproof
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
-          popd
-
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
