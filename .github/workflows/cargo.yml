@@ -121,6 +121,19 @@ jobs:
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
+      - name: ffi pre-requisites
+        if: contains(inputs.feature, 'ffi')
+        run: |
+          cargo install --locked cbindgen || true
+          mkdir -p target
+
+          pushd crates/cloudproof
+          # a hack here for cbindgen: we replace the versions by local paths since during dev we need last generated header file
+          sed -i 's/cloudproof_cover_crypt = { version = "[0-9]\+\.[0-9]\+\.[0-9]/cloudproof_cover_crypt = { path = "..\/cover_crypt/g' Cargo.toml
+          sed -i 's/cloudproof_findex = { version = "[0-9]\+\.[0-9]\+\.[0-9]/cloudproof_findex = { path = "..\/findex/g' Cargo.toml
+          sed -i 's/cloudproof_fpe = { version = "[0-9]\+\.[0-9]\+\.[0-9]/cloudproof_fpe = { path = "..\/fpe/g' Cargo.toml
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
+          popd
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
         uses: actions/upload-artifact@v3

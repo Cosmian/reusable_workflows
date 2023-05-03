@@ -57,6 +57,7 @@ jobs:
       pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64
       artifacts: |
         target/x86_64-pc-windows-gnu/release/*.dll
+        target/*.h
         target/wheels/*win_amd64.whl
   darwin:
     uses: ./.github/workflows/cargo.yml
@@ -73,6 +74,7 @@ jobs:
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
+        target/*.h
         target/wheels/*cp37-abi3*.whl
   wasm:
     uses: ./.github/workflows/cargo.yml
