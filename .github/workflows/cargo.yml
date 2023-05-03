@@ -82,6 +82,11 @@ jobs:
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'
         run: |
+          pushd crates/anonymization
+          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
           pushd crates/cover_crypt
           wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
           wasm-pack test --node --features wasm_bindgen
@@ -102,6 +107,7 @@ jobs:
           python-version: 3.7
           cache: pip # caching pip dependencies
       - run: |
+          pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
@@ -109,6 +115,10 @@ jobs:
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'
         run: |
+          pushd crates/anonymization
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
           pushd crates/cover_crypt
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
