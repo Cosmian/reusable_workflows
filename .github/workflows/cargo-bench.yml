@@ -35,17 +35,17 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          override: true
+
       - name: Install tooling for benchmarks
         run: |
           sudo apt update
           sudo apt install -y gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          override: true
 
       - run: cat /proc/cpuinfo
 
