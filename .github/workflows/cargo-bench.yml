@@ -19,6 +19,7 @@ on:
 jobs:
   benchmark:
     runs-on: self-hosted
+    container: iyxd/centos7-rust
     steps:
       - uses: actions/checkout@v1
 
