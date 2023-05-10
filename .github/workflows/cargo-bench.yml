@@ -37,14 +37,8 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
-
-      - uses: actions-rs/toolchain@v1
-        with:
           toolchain: ${{ inputs.toolchain }}
-          target: x86_64-unknown-linux-gnu
           override: true
-          components: rustfmt, clippy
 
       - name: Install tooling for benchmarks
         run: |
