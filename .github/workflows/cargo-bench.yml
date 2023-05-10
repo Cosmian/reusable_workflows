@@ -38,14 +38,15 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: ${{ inputs.toolchain }}
           override: true
 
       - name: Install tooling for benchmarks
         run: |
-          sudo apt update
-          sudo apt install -y gnuplot
+          # apt update
+          # apt install -y gnuplot
+          yum - update
+          yum -y install gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
 
