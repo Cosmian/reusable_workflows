@@ -43,9 +43,7 @@ jobs:
 
       - name: Install tooling for benchmarks
         run: |
-          # apt update
-          # apt install -y gnuplot
-          yum - update
+          yum -y update
           yum -y install gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
