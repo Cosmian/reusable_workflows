@@ -402,7 +402,7 @@ jobs:
   flutter-darwin:
     needs:
       - darwin
-      - linux-centos7
+      - linux-centos7 # for the cloudproof.h
     uses: ./.github/workflows/cloudproof_flutter_darwin.yml
     with:
       branch: ${{ inputs.branch-flutter }}
