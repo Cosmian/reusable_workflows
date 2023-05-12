@@ -19,20 +19,20 @@ on:
 jobs:
   benchmark:
     runs-on: self-hosted
-    permissions:
-      packages: write
-      contents: read
-    container:
-      image: iyxd/centos7-rust
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - /tmp:/tmp
+    # permissions:
+    #   packages: write
+    #   contents: read
+    # container:
+    #   image: iyxd/centos7-rust
+    #   volumes:
+    #     - /var/run/docker.sock:/var/run/docker.sock
+    #     - /tmp:/tmp
     steps:
-      # Solve perm denied issue on GA
-      # see: https://github.com/actions/checkout/issues/211
-      - name: Chown user
-        run: |
-          chown -R $USER:$USER $GITHUB_WORKSPACE
+      # # Solve perm denied issue on GA
+      # # see: https://github.com/actions/checkout/issues/211
+      # - name: Chown user
+      #   run: |
+      #     chown -R $USER:$USER $GITHUB_WORKSPACE
       - uses: actions/checkout@v1
       - name: Set up cargo cache
         uses: actions/cache@v3
