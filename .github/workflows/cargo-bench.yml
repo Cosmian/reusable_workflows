@@ -51,6 +51,8 @@ jobs:
         with:
           toolchain: ${{ inputs.toolchain }}
           override: true
+          default: true
+          profile: minimal
 
       - name: Install tooling for benchmarks
         run: |
