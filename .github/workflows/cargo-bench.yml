@@ -19,7 +19,11 @@ on:
 jobs:
   benchmark:
     runs-on: self-hosted
-    container: iyxd/centos7-rust
+    container:
+      image: iyxd/centos7-rust
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /tmp:/tmp
     steps:
       - uses: actions/checkout@v1
 
