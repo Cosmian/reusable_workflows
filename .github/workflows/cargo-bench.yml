@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          # toolchain: ${{ inputs.toolchain }}
+          toolchain: ${{ inputs.toolchain }}
           override: true
           default: true
           profile: minimal
