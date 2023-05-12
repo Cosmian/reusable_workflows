@@ -22,11 +22,12 @@ jobs:
     # permissions:
     #   packages: write
     #   contents: read
-    # container:
-    #   image: iyxd/centos7-rust
-    #   volumes:
-    #     - /var/run/docker.sock:/var/run/docker.sock
-    #     - /tmp:/tmp
+    container:
+      image: rust:latest
+      # image: iyxd/centos7-rust
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /tmp:/tmp
     steps:
       # # Solve perm denied issue on GA
       # # see: https://github.com/actions/checkout/issues/211
