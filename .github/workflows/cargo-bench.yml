@@ -29,11 +29,11 @@ jobs:
         - /var/run/docker.sock:/var/run/docker.sock
         - /tmp:/tmp
     steps:
-      # # Solve perm denied issue on GA
-      # # see: https://github.com/actions/checkout/issues/211
-      # - name: Chown user
-      #   run: |
-      #     chown -R $USER:$USER $GITHUB_WORKSPACE
+      # Solve perm denied issue on GA
+      # see: https://github.com/actions/checkout/issues/211
+      - name: Chown user
+        run: |
+          chown -R $USER:$USER $GITHUB_WORKSPACE
       - uses: actions/checkout@v1
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -45,8 +45,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             pkg/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
         with:
