@@ -17,7 +17,18 @@ on:
         type: boolean
 
 jobs:
+  cleanup:
+    runs-on: self-hosted
+
+    steps:
+      - name: Chown user
+        run: |
+          echo "USER: $USER"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+
   benchmark:
+    needs: cleanup
     runs-on: self-hosted
     # permissions:
     #   packages: write
@@ -106,6 +117,11 @@ jobs:
           path: BENCHMARKS.md
           retention-days: 1
           if-no-files-found: error
+
+      - name: Cargo clean
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
 
       - name: Chown user
         run: |
