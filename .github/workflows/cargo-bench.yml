@@ -117,12 +117,3 @@ jobs:
           path: BENCHMARKS.md
           retention-days: 1
           if-no-files-found: error
-
-      - name: Cargo clean
-        uses: actions-rs/cargo@v1
-        with:
-          command: clean
-
-      - name: Chown user
-        run: |
-          chown -R cosmian:cosmian .
