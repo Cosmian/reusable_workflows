@@ -249,15 +249,11 @@ jobs:
       - linux-centos7
       - merge-linux-artifacts
       - pyo3-tests
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
 
     steps:
       - uses: actions/download-artifact@v3
       - run: find .
-
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y%-m-%d-%H-%M-%S')"
 
       - name: Creating zip to be attached to release
         run: |
@@ -293,7 +289,7 @@ jobs:
     name: push to package.cosmian.com (individual zip)
     needs:
       - packages
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
@@ -587,6 +583,13 @@ jobs:
       - uses: actions/download-artifact@v3
       - run: find .
 
+      - name: Test artifact existence
+        run: |
+          set -x
+          test -f ${ARCHIVE_NAME}
+        env:
+          ARCHIVE_NAME: ${{ matrix.archive_name }}
+
       - name: Release on tags, attach asset on release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -641,7 +644,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          target: wasm32-unknown-unknown
           override: true
 
       - name: Install wasm-pack
