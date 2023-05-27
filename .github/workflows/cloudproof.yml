@@ -394,6 +394,7 @@ jobs:
   flutter-linux:
     needs:
       - linux-centos7
+      - android
     uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
