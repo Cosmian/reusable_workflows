@@ -34,25 +34,17 @@ jobs:
       - name: Push to package.cosmian.com
         run: |
           set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}
-          ssh -vvv -i ~/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
+          ssh -vvv cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
 
       - name: Push to package.cosmian.com - tags
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
+          ssh cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          scp ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
           VERSION: ${{ github.ref_name }}
