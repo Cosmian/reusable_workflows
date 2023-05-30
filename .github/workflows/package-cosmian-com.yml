@@ -20,7 +20,7 @@ jobs:
   ##############################################################################
   packages:
     name: push to package.cosmian.com
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-docker]
 
     steps:
       - uses: actions/download-artifact@v3
@@ -45,6 +45,5 @@ jobs:
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
           ssh cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
         env:
           VERSION: ${{ github.ref_name }}
