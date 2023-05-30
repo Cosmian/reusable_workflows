@@ -252,39 +252,11 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Creating zip to be attached to release
-        run: |
-          sudo apt-get install zip
-          zip -r all.zip x86* wasm* android
-
-      - name: Push to package.cosmian.com
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com - tags
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
+      - uses: ./.github/workflows/package-cosmian-com.yml
+        with:
+          project-name: ${{ inputs.project-name }}
+          archive-name: all.zip
+          artifacts-name: x86* wasm* android
 
   packages-per-arch:
     name: push to package.cosmian.com (individual zip)
@@ -307,42 +279,11 @@ jobs:
             target: android
 
     steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Creating zip to be attached to release
-        run: |
-          sudo apt-get install zip
-          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/') != true
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          #DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
-          #ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
+      - uses: ./.github/workflows/package-cosmian-com.yml
+        with:
+          project-name: ${{ inputs.project-name }}
+          archive-name: ${{ matrix.archive_name }}.zip
+          artifacts-name: ${{ matrix.target }}
 
   ##############################################################################
   ### Cloudproof Java library
@@ -588,7 +529,7 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
-          sudo apt-get install zip
+          sudo apt-get install -y zip
           zip -r ${{ matrix.archive_name }}.zip ${{ matrix.archive_name }}
 
       - name: Test artifact existence
