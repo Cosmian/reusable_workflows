@@ -113,7 +113,8 @@ jobs:
       target: x86_64-unknown-linux-gnu
       feature: ffi,cloud
       os: ubuntu-20.04
-      pre-requisites: echo
+      pre-requisites: |
+        cargo install --locked cbindgen || true
       artifacts: |
         target/x86_64-unknown-linux-gnu/release/*.so
         target/*.h

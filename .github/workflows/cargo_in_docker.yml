@@ -48,6 +48,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
+        if: steps.github-cache.outputs.cache-hit != 'true'
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
@@ -81,7 +82,6 @@ jobs:
       - name: cbindgen header generation
         if: contains(inputs.feature, 'ffi')
         run: |
-          cargo install --locked cbindgen || true
           mkdir -p target
 
           pushd crates/cloudproof
