@@ -21,7 +21,7 @@ jobs:
 
       - name: Set up cargo cache
         uses: actions/cache@v3
-        id: cache-primes
+        id: github_cache
         continue-on-error: false
         with:
           path: |
@@ -41,7 +41,6 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: |
           ANDROID_NDK_HOME=/opt/android-ndk
           ANDROID_NDK_VERSION=r25b
@@ -70,7 +69,6 @@ jobs:
       #     args: -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
 
       - name: Upload cargo binaries
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v3
         with:
           name: android
