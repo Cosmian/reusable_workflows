@@ -249,41 +249,9 @@ jobs:
       - linux-centos7
       - merge-linux-artifacts
       - pyo3-tests
-    runs-on: self-hosted
-
-    steps:
-      - uses: ./.github/workflows/package-cosmian-com.yml
-        with:
-          project-name: ${{ inputs.project-name }}
-          archive-name: all.zip
-          artifacts-name: x86* wasm* android
-
-  packages-per-arch:
-    name: push to package.cosmian.com (individual zip)
-    needs:
-      - packages
-    runs-on: self-hosted
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - archive_name: windows
-            target: x86_64-pc-windows-gnu
-          - archive_name: linux
-            target: x86_64-unknown-linux-gnu
-          - archive_name: darwin
-            target: x86_64-apple-darwin
-          - archive_name: wasm
-            target: wasm32-unknown-unknown
-          - archive_name: android
-            target: android
-
-    steps:
-      - uses: ./.github/workflows/package-cosmian-com.yml
-        with:
-          project-name: ${{ inputs.project-name }}
-          archive-name: ${{ matrix.archive_name }}.zip
-          artifacts-name: ${{ matrix.target }}
+    uses: ./.github/workflows/cloudproof-packages.yml
+    with:
+      project-name: ${{ inputs.project-name }}
 
   ##############################################################################
   ### Cloudproof Java library
@@ -503,7 +471,6 @@ jobs:
       - merge-linux-artifacts
       - pyo3-tests
       - packages
-      - packages-per-arch
       - java-darwin
       - java-windows
       - flutter-darwin
