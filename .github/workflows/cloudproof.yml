@@ -485,10 +485,15 @@ jobs:
       matrix:
         include:
           - archive_name: windows
+            target: x86_64-pc-windows-gnu
           - archive_name: linux
+            target: x86_64-unknown-linux-gnu
           - archive_name: darwin
+            target: x86_64-apple-darwin
           - archive_name: wasm
+            target: wasm32-unknown-unknown
           - archive_name: android
+            target: android
 
     steps:
       - uses: actions/download-artifact@v3
@@ -497,7 +502,7 @@ jobs:
       - name: Creating zip to be attached to release
         run: |
           sudo apt-get install -y zip
-          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.archive_name }}
+          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
 
       - name: Test artifact existence
         run: |
