@@ -37,7 +37,7 @@ jobs:
           echo "$PACKAGE_SSH_KEY" > ~/id_rsa
           chmod 600 ~/id_rsa
           DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}
-          ssh -i ~/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
+          ssh -vvv -i ~/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -i ~/id_rsa ${{ inputs.archive-name }} cosmian@package.cosmian.com:$DESTINATION_DIR/
           rm ~/id_rsa
         env:
