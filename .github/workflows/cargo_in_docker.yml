@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up cargo cache
-        id: github_cache
+        id: github-cache
         uses: actions/cache@v3
         continue-on-error: false
         with:
@@ -54,7 +54,7 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.github_cache.outputs.cache-hit != 'true'
+        if: steps.github-cache.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
 
       - name: Test release with ffi feature
