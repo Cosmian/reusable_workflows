@@ -257,6 +257,7 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
+          sudo apt-get install zip
           zip -r all.zip x86* wasm* android
 
       - name: Push to package.cosmian.com
@@ -311,6 +312,7 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
+          sudo apt-get install zip
           zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
 
       - name: Push to package.cosmian.com
@@ -586,6 +588,7 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
+          sudo apt-get install zip
           zip -r ${{ matrix.archive_name }}.zip ${{ matrix.archive_name }}
 
       - name: Test artifact existence
