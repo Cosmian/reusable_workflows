@@ -33,7 +33,7 @@ jobs:
 
       - name: Set up cargo cache
         uses: actions/cache@v3
-        id: cache-primes
+        id: github-cache
         continue-on-error: false
         with:
           path: |
@@ -47,13 +47,14 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
+        if: steps.github-cache.outputs.cache-hit != 'true'
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: steps.github-cache.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
 
       - name: Test release with ffi feature
