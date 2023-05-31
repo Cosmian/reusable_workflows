@@ -54,7 +54,7 @@ jobs:
       target: x86_64-pc-windows-gnu
       feature: ffi,cloud
       os: ubuntu-20.04
-      pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64
+      pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
       artifacts: |
         target/x86_64-pc-windows-gnu/release/*.dll
         target/wheels/*win_amd64.whl
@@ -83,6 +83,7 @@ jobs:
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
+        ./target/web/anonymization
         ./target/web/cover_crypt
         ./target/web/findex
         ./target/web/fpe
@@ -112,7 +113,8 @@ jobs:
       target: x86_64-unknown-linux-gnu
       feature: ffi,cloud
       os: ubuntu-20.04
-      pre-requisites: echo
+      pre-requisites: |
+        cargo install --locked cbindgen || true
       artifacts: |
         target/x86_64-unknown-linux-gnu/release/*.so
         target/*.h
@@ -129,6 +131,10 @@ jobs:
 
       - name: Python maturin build
         run: |
+          pushd crates/anonymization
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
           pushd crates/cover_crypt
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
@@ -203,6 +209,7 @@ jobs:
           pip install -r crates/cover_crypt/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
+          pip install -r crates/anonymization/python/requirements.txt
 
       - name: Install .whl
         run: |
@@ -225,6 +232,11 @@ jobs:
           popd
           python crates/fpe/python/tests/fpe_test.py
 
+          pushd crates/anonymization/python
+          mypy tests/anonymization_test.py
+          popd
+          python crates/anonymization/python/tests/anonymization_test.py
+
   ##############################################################################
   ### Packages
   ##############################################################################
@@ -238,102 +250,9 @@ jobs:
       - linux-centos7
       - merge-linux-artifacts
       - pyo3-tests
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y%-m-%d-%H-%M-%S')"
-
-      - name: Creating zip to be attached to release
-        run: |
-          zip -r all.zip x86* wasm* android
-
-      - name: Push to package.cosmian.com
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com - tags
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" all.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
-
-  packages-per-arch:
-    name: push to package.cosmian.com (individual zip)
-    needs:
-      - packages
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - archive_name: windows
-            target: x86_64-pc-windows-gnu
-          - archive_name: linux
-            target: x86_64-unknown-linux-gnu
-          - archive_name: darwin
-            target: x86_64-apple-darwin
-          - archive_name: wasm
-            target: wasm32-unknown-unknown
-          - archive_name: android
-            target: android
-
-    steps:
-      - uses: actions/download-artifact@v3
-      - run: find .
-
-      - name: Creating zip to be attached to release
-        run: |
-          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/') != true
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build/${{ github.head_ref }}/
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-
-      - name: Push to package.cosmian.com
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          set -x
-          echo "$PACKAGE_SSH_KEY" > ~/id_rsa
-          chmod 600 ~/id_rsa
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$VERSION
-          ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
-          scp -i ~/id_rsa -o "StrictHostKeyChecking no" ${{ matrix.archive_name }}.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
-          #DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/last_build
-          #ssh -i ~/id_rsa -o "StrictHostKeyChecking no" cosmian@package.cosmian.com rm -rf $DESTINATION_DIR
-          rm ~/id_rsa
-        env:
-          PACKAGE_SSH_KEY: ${{ secrets.PACKAGE_SSH_KEY }}
-          VERSION: ${{ github.ref_name }}
+    uses: ./.github/workflows/cloudproof-packages.yml
+    with:
+      project-name: ${{ inputs.project-name }}
 
   ##############################################################################
   ### Cloudproof Java library
@@ -387,6 +306,7 @@ jobs:
   flutter-linux:
     needs:
       - linux-centos7
+      - android
     uses: ./.github/workflows/cloudproof_flutter.yml
     with:
       branch: ${{ inputs.branch-flutter }}
@@ -552,7 +472,6 @@ jobs:
       - merge-linux-artifacts
       - pyo3-tests
       - packages
-      - packages-per-arch
       - java-darwin
       - java-windows
       - flutter-darwin
@@ -567,14 +486,31 @@ jobs:
       matrix:
         include:
           - archive_name: windows
+            target: x86_64-pc-windows-gnu
           - archive_name: linux
+            target: x86_64-unknown-linux-gnu
           - archive_name: darwin
+            target: x86_64-apple-darwin
           - archive_name: wasm
+            target: wasm32-unknown-unknown
           - archive_name: android
+            target: android
 
     steps:
       - uses: actions/download-artifact@v3
       - run: find .
+
+      - name: Creating zip to be attached to release
+        run: |
+          sudo apt-get install -y zip
+          zip -r ${{ matrix.archive_name }}.zip ${{ matrix.target }}
+
+      - name: Test artifact existence
+        run: |
+          set -x
+          test -f ${ARCHIVE_NAME}.zip
+        env:
+          ARCHIVE_NAME: ${{ matrix.archive_name }}
 
       - name: Release on tags, attach asset on release
         if: startsWith(github.ref, 'refs/tags/')
@@ -630,7 +566,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          target: wasm32-unknown-unknown
           override: true
 
       - name: Install wasm-pack
@@ -641,6 +577,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
+
+          pushd crates/anonymization
+          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
 
           pushd crates/cover_crypt
           wasm-pack build --target web --release --features wasm_bindgen
@@ -674,6 +616,9 @@ jobs:
           echo "[registry]" > ~/.cargo/credentials
           echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
 
+          pushd crates/anonymization
+          cargo publish --token $CRATES_IO || true
+          popd
           pushd crates/cover_crypt
           cargo publish --token $CRATES_IO || true
           popd

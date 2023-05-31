@@ -76,6 +76,7 @@ jobs:
       - name: copy fresh build of crate
         if: inputs.copy_fresh_build
         run: |
+          cp -r ${{ inputs.target }}/anonymization/* src/pkg/anonymization/
           cp -r ${{ inputs.target }}/cover_crypt/* src/pkg/cover_crypt/
           cp -r ${{ inputs.target }}/findex/* src/pkg/findex/
           cp -r ${{ inputs.target }}/fpe/* src/pkg/fpe/

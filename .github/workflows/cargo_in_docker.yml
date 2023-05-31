@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up cargo cache
+        id: github-cache
         uses: actions/cache@v3
         continue-on-error: false
         with:
@@ -47,13 +48,14 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
+        if: steps.github-cache.outputs.cache-hit != 'true'
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: steps.github-cache.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
 
       - name: Test release with ffi feature
@@ -77,28 +79,9 @@ jobs:
           command: build
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
-      - name: Wasm-pack build release
-        if: inputs.feature == 'wasm_bindgen'
-        run: |
-          pushd crates/cover_crypt
-          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
-          popd
-
-          pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
-          # wasm-pack test --node --features wasm_bindgen
-          popd
-
-          pushd crates/fpe
-          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
-          popd
-
       - name: cbindgen header generation
         if: contains(inputs.feature, 'ffi')
         run: |
-          cargo install --locked cbindgen || true
           mkdir -p target
 
           pushd crates/cloudproof
