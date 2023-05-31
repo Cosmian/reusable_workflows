@@ -43,8 +43,8 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
 
       - uses: actions-rs/toolchain@v1
         if: steps.github-cache.outputs.cache-hit != 'true'
