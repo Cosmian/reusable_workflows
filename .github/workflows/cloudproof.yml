@@ -396,6 +396,7 @@ jobs:
       destination: linux-x86-64
       os: ubuntu-20.04
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       copy_regression_files: |
         cp ./cloudproof_flutter/non_regression_vector.json       src/test/resources/cover_crypt/non_regression/flutter_non_regression_vector.json
         cp ./cloudproof_java/non_regression_vector.json          src/test/resources/cover_crypt/non_regression/java_non_regression_vector.json
