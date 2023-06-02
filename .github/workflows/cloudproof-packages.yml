@@ -1,0 +1,61 @@
+---
+name: Push artifacts to package.cosmian.com
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+
+jobs:
+  ##############################################################################
+  ### Packages
+  ##############################################################################
+  packages:
+    name: push to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: all.zip
+      artifacts-name: x86* wasm* android
+
+  packages-windows:
+    name: push windows package to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: windows.zip
+      artifacts-name: x86_64-pc-windows-gnu
+
+  packages-linux:
+    name: push linux package to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: linux.zip
+      artifacts-name: x86_64-unknown-linux-gnu
+
+  packages-darwin:
+    name: push darwin package to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: darwin.zip
+      artifacts-name: x86_64-apple-darwin
+
+  packages-wasm:
+    name: push wasm package to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: wasm.zip
+      artifacts-name: wasm32-unknown-unknown
+
+  packages-android:
+    name: push android package to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: android.zip
+      artifacts-name: android

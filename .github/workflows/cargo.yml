@@ -33,6 +33,7 @@ jobs:
 
       - name: Set up cargo cache
         uses: actions/cache@v3
+        id: github-cache
         continue-on-error: false
         with:
           path: |
@@ -42,8 +43,8 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -52,22 +53,7 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
-
-      - name: ffi pre-requisites
-        if: contains(inputs.feature, 'ffi')
-        run: |
-          cargo install --locked cbindgen || true
-          mkdir -p target
-
-          pushd crates/cover_crypt
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
-          popd
-
-          pushd crates/findex
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
-          popd
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
@@ -96,6 +82,11 @@ jobs:
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'
         run: |
+          pushd crates/anonymization
+          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
           pushd crates/cover_crypt
           wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
           wasm-pack test --node --features wasm_bindgen
@@ -106,21 +97,37 @@ jobs:
           # wasm-pack test --node --features wasm_bindgen
           popd
 
+          pushd crates/fpe
+          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
       - uses: actions/setup-python@v4
         with:
           python-version: 3.7
           cache: pip # caching pip dependencies
       - run: |
+          pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
+          pip install -r crates/fpe/python/requirements.txt
 
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'
         run: |
+          pushd crates/anonymization
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
           pushd crates/cover_crypt
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
+
           pushd crates/findex
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
+          pushd crates/fpe
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 

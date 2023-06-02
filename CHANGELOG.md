@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3] - 2023-06-02
+
+### Features
+
+- Support of cloudproof_rust 2.0.0
+
 ## [0.2] - 2023-03-08
 
 ### Bug Fixes

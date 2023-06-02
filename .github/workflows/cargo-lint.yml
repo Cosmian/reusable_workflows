@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Dump Github variables
+        uses: crazy-max/ghaction-dump-context@v1
+
       - uses: actions/checkout@v1
 
       - name: Set up cargo cache
@@ -59,3 +62,9 @@ jobs:
         with:
           command: test
           args: --release --workspace --all-targets --all-features
+
+      - name: Run doc tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --workspace --all-features --doc

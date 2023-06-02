@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up cargo cache
+        id: github-cache
         uses: actions/cache@v3
         continue-on-error: false
         with:
@@ -43,8 +44,9 @@ jobs:
             ~/.cargo/git/db/
             pkg/
             target/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
+          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name
+            }}
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -53,21 +55,7 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
-
-      - name: ffi pre-requisites
-        if: contains(inputs.feature, 'ffi')
-        run: |
-          cargo install --locked cbindgen || true
-          mkdir -p target
-          pushd crates/cover_crypt
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cover_crypt.h
-          popd
-
-          pushd crates/findex
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/findex.h
-          popd
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
@@ -90,17 +78,13 @@ jobs:
           command: build
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
-      - name: Wasm-pack build release
-        if: inputs.feature == 'wasm_bindgen'
+      - name: cbindgen header generation
+        if: contains(inputs.feature, 'ffi')
         run: |
-          pushd crates/cover_crypt
-          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
-          popd
+          mkdir -p target
 
-          pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
-          # wasm-pack test --node --features wasm_bindgen
+          pushd crates/cloudproof
+          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
           popd
 
       - name: Upload cargo binaries

@@ -55,11 +55,10 @@ jobs:
         run: |
           cp ${{ inputs.target }}/${{ inputs.target }}/release/*.${{ inputs.extension }} resources/
           cp ${{ inputs.target }}/universal/release/*.a ios/
-          cp ${{ inputs.target }}/*.h resources/
+          cp x86_64-unknown-linux-gnu/*.h resources/
 
         # Generate bindings in case of no binary found on package.cosmian.com
-      - run: flutter pub run ffigen --config ffigen_findex.yaml
-      - run: flutter pub run ffigen --config ffigen_cover_crypt.yaml
+      - run: flutter pub run ffigen --config ffigen_cloudproof.yaml
 
       - name: copy non-regression test vectors
         if: inputs.copy_regression_files != ''
@@ -72,8 +71,8 @@ jobs:
 
       - name: Check build iOS
         run: |
-          otool -Tv ios/libcloudproof_cover_crypt.a || true
-          nm -g ios/libcloudproof_cover_crypt.a || true
+          otool -Tv ios/libcloudproof.a || true
+          nm -g ios/libcloudproof.a || true
           cd example
           flutter build ios --release --no-codesign
           cd ..

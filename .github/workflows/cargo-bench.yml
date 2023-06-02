@@ -17,11 +17,36 @@ on:
         type: boolean
 
 jobs:
-  benchmark:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
+  bench_cleanup:
+    runs-on: self-hosted
 
+    steps:
+      - name: Chown user
+        run: |
+          echo "USER: $USER"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+
+  benchmark:
+    needs: bench_cleanup
+    runs-on: self-hosted
+    # permissions:
+    #   packages: write
+    #   contents: read
+    container:
+      image: rust:latest
+      # image: iyxd/centos7-rust
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /tmp:/tmp
+    steps:
+      # # Solve perm denied issue on GA
+      # # see: https://github.com/actions/checkout/issues/211
+      # - name: Chown user
+      #   run: |
+      #     chown -R $USER:$USER $GITHUB_WORKSPACE
+      #     env
+      - uses: actions/checkout@v1
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -32,20 +57,22 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             pkg/
-          key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install tooling for benchmarks
-        run: |
-          sudo apt update
-          sudo apt install -y gnuplot
-          cargo install --locked criterion-table || true
-          cargo install --locked cargo-criterion || true
+          key: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ inputs.toolchain }}
           override: true
+          default: true
+          profile: minimal
+
+      - name: Install tooling for benchmarks
+        run: |
+          apt update
+          apt install -y gnuplot
+          cargo install --locked criterion-table || true
+          cargo install --locked cargo-criterion || true
 
       - run: cat /proc/cpuinfo
 

@@ -21,6 +21,7 @@ jobs:
 
       - name: Set up cargo cache
         uses: actions/cache@v3
+        id: github-cache
         continue-on-error: false
         with:
           path: |
@@ -40,7 +41,6 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: |
           ANDROID_NDK_HOME=/opt/android-ndk
           ANDROID_NDK_VERSION=r25b
