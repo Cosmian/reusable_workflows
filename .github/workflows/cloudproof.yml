@@ -69,7 +69,23 @@ jobs:
         rustup target add aarch64-apple-ios x86_64-apple-ios
         cargo install --locked cargo-lipo || true
         cargo lipo --all --release --features ffi
-        ls -al target/universal/release
+        ls -al target/universal/release/
+        # the dart package must not be greater than 100M
+        file_path="target/universal/release/libcloudproof.a"
+        threshold_size=$((80 * 1024 * 1024)) # 80MB to make sure the package is publishable
+
+        if [ -f "$file_path" ]; then
+          file_size=$(stat -f %z "$file_path")
+          if [ "$file_size" -gt "$threshold_size" ]; then
+            echo "File size exceeds 80M: $file_path ($file_size)"
+            exit 1  # Fails the test with a non-zero exit code
+          fi
+        else
+          echo "File not found: $file_path"
+          exit 1  # Fails the test with a non-zero exit code
+        fi
+
+
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
