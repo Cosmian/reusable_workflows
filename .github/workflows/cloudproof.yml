@@ -52,7 +52,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
-      feature: ffi,cloud
+      feature: ffi,cloud,compact_live
       os: ubuntu-20.04
       pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
       artifacts: |
@@ -98,7 +98,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud
+      feature: ffi,cloud,compact_live
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt update
@@ -111,7 +111,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud
+      feature: ffi,cloud,compact_live
       os: ubuntu-20.04
       pre-requisites: |
         cargo install --locked cbindgen || true
