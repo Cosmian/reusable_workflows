@@ -22,6 +22,9 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
       copy_regression_files:
         required: false
         default: ''
@@ -48,6 +51,11 @@ jobs:
           KMS_SHARED_PATH: /tmp
         ports:
           - 9998:9998
+
+      findex_cloud:
+        image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
+        ports:
+          - 8080:8080
 
       redis:
         image: redis
@@ -96,6 +104,7 @@ jobs:
       - run: mvn package
         env:
           COSMIAN_SERVER_URL: http://kms:9998
+          COSMIAN_FINDEX_CLOUD_BASE_URL: http://findex_cloud:8080
           REDIS_HOSTNAME: redis
           REDIS_PORT: 6379
           LANG: en_US.UTF-8

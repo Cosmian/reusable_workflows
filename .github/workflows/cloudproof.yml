@@ -13,6 +13,9 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
       branch-java:
         required: true
         type: string
@@ -311,6 +314,7 @@ jobs:
       destination: linux-x86-64
       os: ubuntu-20.04
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       regression_files: |
         ./target/non_regression_vector.json
         ./target/sqlite.db
