@@ -86,7 +86,7 @@ jobs:
           if [ -f "$file_path" ]; then
             file_size=$(stat -f %z "$file_path")
             if [ "$file_size" -gt "$threshold_size" ]; then
-              echo "File size exceeds 100M: $file_path"
+              echo "File size exceeds 80M: $file_path"
               exit 1  # Fails the test with a non-zero exit code
             fi
           else
