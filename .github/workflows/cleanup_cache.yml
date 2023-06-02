@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 jobs:
-  cleanup:
+  cache_cleanup:
     runs-on: ubuntu-latest
     steps:
       - name: Dump context

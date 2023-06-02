@@ -17,7 +17,7 @@ on:
         type: boolean
 
 jobs:
-  cleanup:
+  bench_cleanup:
     runs-on: self-hosted
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           sudo chown -R $USER:$USER $GITHUB_WORKSPACE
 
   benchmark:
-    needs: cleanup
+    needs: bench_cleanup
     runs-on: self-hosted
     # permissions:
     #   packages: write
