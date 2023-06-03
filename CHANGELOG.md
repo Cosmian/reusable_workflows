@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4] - 2023-06-03
+
+### Bug Fixes
+
+- Add features cloud and compact_live for cloudproof
+
+### Features
+
+- Include findex cloud in java tests
+
 ## [0.3] - 2023-06-02
 
 ### Features
