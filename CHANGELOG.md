@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5] - 2023-06-05
+
+### Bug Fixes
+
+- Individual package publishing
+
+### Miscellaneous Tasks
+
+- Merge tag 'v0.4' into develop
+
 ## [0.4] - 2023-06-03
 
 ### Bug Fixes
