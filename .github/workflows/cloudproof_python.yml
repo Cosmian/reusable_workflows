@@ -26,14 +26,13 @@ on:
         default: true
         type: boolean
 
-
 jobs:
   python-job:
     name: cloudproof_python on ubuntu-20.04
 
     services:
       kms:
-        image: cosmian/kms:${{ inputs.kms-version }}
+        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
           KMS_PUBLIC_PATH: /tmp
@@ -53,7 +52,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-          cache: pip   # caching pip dependencies
+          cache: pip # caching pip dependencies
 
       - uses: actions/download-artifact@v3
       - run: find .
