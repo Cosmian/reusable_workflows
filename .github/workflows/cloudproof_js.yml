@@ -72,7 +72,7 @@ jobs:
           python-version: 3.7
       - run: |
           apt-get update
-          apt-get install -y openssl libssl-dev
+          apt-get install -y openssl libssl-dev libssl1.1
       - run: python3 scripts/download_wasm.py
 
       - name: copy fresh build of crate
