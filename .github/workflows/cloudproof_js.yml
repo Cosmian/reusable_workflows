@@ -27,7 +27,7 @@ on:
 
 jobs:
   js-job:
-    name: cloudproof_js on container node:18
+    name: cloudproof_js on container node:18.0.0
 
     services:
       kms:
@@ -47,7 +47,7 @@ jobs:
           --health-retries 5
 
     runs-on: ubuntu-20.04
-    container: node:18
+    container: node:18.0.0
 
     steps:
       - uses: actions/checkout@v3
@@ -70,9 +70,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.7
-      - run: |
-          apt-get update
-          apt-get install -y openssl libssl-dev libssl1.1
       - run: python3 scripts/download_wasm.py
 
       - name: copy fresh build of crate
