@@ -55,7 +55,6 @@ jobs:
           override: true
 
       - name: specific-pre-requisites
-        if: steps.cache-primes.outputs.cache-hit != 'true'
         run: ${{ inputs.pre-requisites }}
 
       - name: ffi pre-requisites
