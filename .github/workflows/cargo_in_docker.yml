@@ -63,7 +63,7 @@ jobs:
         run: |
           cargo install --locked cbindgen || true
           mkdir -p target
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >target/${{ inputs.project-name }}.h
+          cbindgen . -c cbindgen.toml | uniq >target/${{ inputs.project-name }}.h
 
       - name: Test release with ffi feature
         if: inputs.feature == 'ffi'
