@@ -84,7 +84,7 @@ jobs:
           mkdir -p target
 
           pushd crates/cloudproof
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
+          cbindgen . -c cbindgen.toml | uniq >../../target/cloudproof.h
           popd
 
       - name: Upload cargo binaries
