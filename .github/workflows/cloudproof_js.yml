@@ -13,6 +13,9 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
       copy_regression_files:
         required: false
         default: ''
@@ -28,7 +31,7 @@ on:
 
 jobs:
   js-job:
-    name: cloudproof_js on container node:18
+    name: cloudproof_js on container node:18.0.0
 
     services:
       kms:
@@ -38,6 +41,9 @@ jobs:
           KMS_PUBLIC_PATH: /tmp
           KMS_PRIVATE_PATH: /tmp
           KMS_SHARED_PATH: /tmp
+
+      findex_cloud:
+        image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
 
       redis:
         image: redis
