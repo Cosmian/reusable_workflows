@@ -20,7 +20,9 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           override: true
 
-      - run: cargo +${{ inputs.toolchain }} install cargo-audit cargo-outdated
+      - run: |
+          cargo install cargo-audit
+          cargo install cargo-outdated --version 0.11.2
 
       - name: Verify outdated dependencies
         uses: actions-rs/cargo@v1
