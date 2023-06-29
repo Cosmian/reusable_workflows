@@ -18,7 +18,7 @@ jobs:
           override: true
 
       - name: Install udeps
-        run: cargo install --locked cargo-udeps || true
+        run: cargo +nightly install --locked cargo-udeps || true
 
       - name: Verify useless dependencies
         run: |
