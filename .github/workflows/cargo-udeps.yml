@@ -36,7 +36,5 @@ jobs:
         run: cargo install --locked cargo-udeps || true
 
       - name: Verify useless dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: udeps
-          args: +nightly --workspace --all-targets --all-features
+        run: |
+          cargo udeps +nightly --workspace --all-targets --all-features
