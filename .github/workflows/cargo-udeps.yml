@@ -33,7 +33,7 @@ jobs:
 
       - name: Install udeps
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +nightly install --locked cargo-udeps || true
+        run: cargo +nightly install cargo-udeps
 
       - name: Verify useless dependencies
         run: |
