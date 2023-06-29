@@ -12,13 +12,28 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Set up cargo cache
+        id: github-cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-udeps-
+          restore-keys: ${{ runner.os }}-cargo-udeps-
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
 
       - name: Install udeps
-        run: cargo +nightly install cargo-udeps
+        if: steps.github-cache.outputs.cache-hit != 'true'
+        run: cargo +nightly install --locked cargo-udeps || true
 
       - name: Verify useless dependencies
         run: |
