@@ -59,6 +59,7 @@ jobs:
       os: ubuntu-20.04
       pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
       artifacts: |
+        target/x86_64-pc-windows-gnu/debug/*.dll
         target/x86_64-pc-windows-gnu/release/*.dll
         target/wheels/*win_amd64.whl
   darwin:
@@ -73,22 +74,8 @@ jobs:
         cargo install --locked cargo-lipo || true
         cargo lipo --all --release --features ffi
         ls -al target/universal/release/
-        # # the dart package must not be greater than 100M
-        # file_path="target/universal/release/libcloudproof.a"
-        # threshold_size=$((80 * 1024 * 1024)) # 80MB to make sure the package is publishable
-
-        # if [ -f "$file_path" ]; then
-        #   file_size=$(stat -f %z "$file_path")
-        #   if [ "$file_size" -gt "$threshold_size" ]; then
-        #     echo "File size exceeds 80M: $file_path ($file_size)"
-        #     exit 1  # Fails the test with a non-zero exit code
-        #   fi
-        # else
-        #   echo "File not found: $file_path"
-        #   exit 1  # Fails the test with a non-zero exit code
-        # fi
-
       artifacts: |
+        target/x86_64-apple-darwin/debug/*.dylib
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
         target/wheels/*cp37-abi3*.whl
@@ -134,6 +121,7 @@ jobs:
       pre-requisites: |
         cargo install --locked cbindgen || true
       artifacts: |
+        target/x86_64-unknown-linux-gnu/debug/*.so
         target/x86_64-unknown-linux-gnu/release/*.so
         target/*.h
         target/non_regression_vector.json

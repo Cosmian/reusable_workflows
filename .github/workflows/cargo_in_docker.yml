@@ -71,6 +71,13 @@ jobs:
           command: test
           args: --release --all-features --target ${{ inputs.target }} --workspace
 
+      - name: Build debug with feature ${{ inputs.feature }}
+        if: contains(inputs.feature, 'ffi')
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --features ${{ inputs.feature }} --target ${{ inputs.target }}
+
       - name: Build release with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
