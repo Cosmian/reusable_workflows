@@ -90,6 +90,11 @@ jobs:
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'
         run: |
+          pushd crates/aesgcm
+          wasm-pack build -d ../../target/web/aesgcm --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
+          popd
+
           pushd crates/anonymization
           wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm_bindgen
           wasm-pack test --node --features wasm_bindgen
@@ -103,6 +108,11 @@ jobs:
           pushd crates/findex
           wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
           # wasm-pack test --node --features wasm_bindgen
+          popd
+
+          pushd crates/ecies
+          wasm-pack build -d ../../target/web/ecies --target web --release --features wasm_bindgen
+          wasm-pack test --node --features wasm_bindgen
           popd
 
           pushd crates/fpe

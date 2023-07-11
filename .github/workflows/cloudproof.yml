@@ -90,8 +90,10 @@ jobs:
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
+        ./target/web/aesgcm
         ./target/web/anonymization
         ./target/web/cover_crypt
+        ./target/web/ecies
         ./target/web/findex
         ./target/web/fpe
   android:
@@ -139,6 +141,10 @@ jobs:
 
       - name: Python maturin build
         run: |
+          pushd crates/aesgcm
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
           pushd crates/anonymization
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
@@ -148,6 +154,10 @@ jobs:
           popd
 
           pushd crates/findex
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
+          pushd crates/ecies
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
 
@@ -214,10 +224,12 @@ jobs:
 
       - name: Install requirements
         run: |
+          pip install -r crates/aesgcm/python/requirements.txt
+          pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
-          pip install -r crates/anonymization/python/requirements.txt
 
       - name: Install .whl
         run: |
@@ -225,10 +237,25 @@ jobs:
 
       - name: Python tests
         run: |
+          pushd crates/aesgcm/python
+          mypy tests/aesgcm_test.py
+          popd
+          python crates/aesgcm/python/tests/aesgcm_test.py
+
+          pushd crates/anonymization/python
+          mypy tests/anonymization_test.py
+          popd
+          python crates/anonymization/python/tests/anonymization_test.py
+
           pushd crates/cover_crypt/python
           mypy tests/cover_crypt_test.py
           popd
           python crates/cover_crypt/python/tests/cover_crypt_test.py
+
+          pushd crates/ecies/python
+          mypy tests/ecies_test.py
+          popd
+          python crates/ecies/python/tests/ecies_test.py
 
           pushd crates/findex/python
           mypy tests/findex_test.py
@@ -239,11 +266,6 @@ jobs:
           mypy tests/fpe_test.py
           popd
           python crates/fpe/python/tests/fpe_test.py
-
-          pushd crates/anonymization/python
-          mypy tests/anonymization_test.py
-          popd
-          python crates/anonymization/python/tests/anonymization_test.py
 
   ##############################################################################
   ### Packages
@@ -563,9 +585,11 @@ jobs:
       - name: Publish .whl
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_aesgcm*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_anonymization*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_fpe*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/covercrypt*.whl || true
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_ecies*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/findex*.whl || true
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -593,6 +617,12 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
 
+          pushd crates/aesgcm
+          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
+
           pushd crates/anonymization
           wasm-pack build --target web --release --features wasm_bindgen
           wasm-pack pack
@@ -600,6 +630,12 @@ jobs:
           popd
 
           pushd crates/cover_crypt
+          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
+
+          pushd crates/ecies
           wasm-pack build --target web --release --features wasm_bindgen
           wasm-pack pack
           wasm-pack publish || true
@@ -631,10 +667,16 @@ jobs:
           echo "[registry]" > ~/.cargo/credentials
           echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
 
+          pushd crates/aesgcm
+          cargo publish --token $CRATES_IO || true
+          popd
           pushd crates/anonymization
           cargo publish --token $CRATES_IO || true
           popd
           pushd crates/cover_crypt
+          cargo publish --token $CRATES_IO || true
+          popd
+          pushd crates/ecies
           cargo publish --token $CRATES_IO || true
           popd
           pushd crates/findex
