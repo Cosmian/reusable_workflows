@@ -219,7 +219,7 @@ jobs:
           cache: pip # caching pip dependencies
 
       - name: List directory
-        if: contains(runner.os, 'Linux')
+        if: contains(runner.os, 'Linux') || contains(runner.os, 'macOS')
         run: find .
 
       - name: Install requirements
@@ -233,6 +233,7 @@ jobs:
 
       - name: Install .whl
         run: |
+          ls ${{ matrix.source-dir }}/*.whl
           pip install --force-reinstall $(ls ${{ matrix.source-dir }}/*.whl)
 
       - name: Python tests
