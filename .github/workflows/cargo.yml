@@ -125,8 +125,10 @@ jobs:
           python-version: 3.7
           cache: pip # caching pip dependencies
       - run: |
+          pip install -r crates/aesgcm/python/requirements.txt
           pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
 
@@ -137,7 +139,15 @@ jobs:
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
+          pushd crates/aesgcm
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
           pushd crates/cover_crypt
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
+          pushd crates/ecies
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
