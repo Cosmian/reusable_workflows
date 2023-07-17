@@ -173,6 +173,7 @@ jobs:
             target/wheels/*.whl
           retention-days: 1
           if-no-files-found: error
+
   merge-linux-artifacts:
     needs:
       - linux-centos7
@@ -180,13 +181,15 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/download-artifact@v3
+      - name: List directory
+        run: find .
       - name: Upload python files
         uses: actions/upload-artifact@v3
         with:
           name: x86_64-unknown-linux-gnu
           path: |
             python-x86_64-unknown-linux-gnu/*
-            x86_64-unknown-linux-gnu/*
+            x86_64-unknown-linux-gnu
           retention-days: 1
           if-no-files-found: error
 
@@ -589,7 +592,7 @@ jobs:
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_aesgcm*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_anonymization*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_fpe*.whl || true
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/covercrypt*.whl || true
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cover_crypt*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_ecies*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/findex*.whl || true
         env:
