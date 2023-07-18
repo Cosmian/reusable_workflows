@@ -19,6 +19,9 @@ on:
       artifacts:
         required: true
         type: string
+      debug_artifacts:
+        required: false
+        type: string
       os:
         required: true
         type: string
@@ -165,5 +168,14 @@ jobs:
         with:
           name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Upload cargo debug binaries
+        if: inputs.debug_artifacts != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug_${{ inputs.target }}
+          path: ${{ inputs.debug_artifacts }}
           retention-days: 1
           if-no-files-found: error

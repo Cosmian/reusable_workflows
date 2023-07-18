@@ -20,6 +20,14 @@ jobs:
       archive-name: all.zip
       artifacts-name: x86* wasm* android
 
+  packages-debug:
+    name: push to package.cosmian.com
+    uses: ./.github/workflows/package-cosmian-com.yml
+    with:
+      project-name: ${{ inputs.project-name }}
+      archive-name: debug.zip
+      artifacts-name: debug*
+
   packages-windows:
     name: push windows package to package.cosmian.com
     uses: ./.github/workflows/package-cosmian-com.yml
