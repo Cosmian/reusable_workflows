@@ -37,10 +37,10 @@ jobs:
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo install --locked cargo-semver-checks --version 0.19.0 || true
+        run: cargo install --locked cargo-semver-checks || true
 
       - name: Verify semver integrity
         uses: actions-rs/cargo@v1
         with:
           command: semver-checks
-          args: check-release
+          args: check-release --baseline-root=.
