@@ -20,7 +20,7 @@ jobs:
   ##############################################################################
   packages:
     name: push to package.cosmian.com
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, not-sgx]
 
     steps:
       - uses: actions/download-artifact@v3
