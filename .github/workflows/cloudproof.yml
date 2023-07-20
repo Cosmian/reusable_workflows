@@ -59,12 +59,10 @@ jobs:
       os: ubuntu-20.04
       pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
       artifacts: |
-        target/x86_64-pc-windows-gnu/release/*.dll
-        target/x86_64-pc-windows-gnu/release/*.dll.a
+        target/x86_64-pc-windows-gnu/release/*.dll*
         target/wheels/*win_amd64.whl
       debug_artifacts: |
-        target/x86_64-pc-windows-gnu/debug/*.dll
-        target/x86_64-pc-windows-gnu/debug/*.dll.a
+        target/x86_64-pc-windows-gnu/debug/*.dll*
   darwin:
     uses: ./.github/workflows/cargo.yml
     with:
