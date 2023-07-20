@@ -106,11 +106,15 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+      - name: Creating zip for debug symbols
+        run: |
+          zip -r debug_${{ inputs.target }} ${{ inputs.debug_artifacts }}
+
       - name: Upload cargo debug binaries
         if: inputs.debug_artifacts != ''
         uses: actions/upload-artifact@v3
         with:
           name: debug_${{ inputs.target }}
-          path: ${{ inputs.debug_artifacts }}
+          path: debug_${{ inputs.target }}.zip
           retention-days: 1
           if-no-files-found: error
