@@ -63,9 +63,7 @@ jobs:
         target/x86_64-pc-windows-gnu/release/*.dll*
         target/x86_64-pc-windows-gnu/release/*.dll.a
         target/wheels/*win_amd64.whl
-      debug_artifacts: |
-        target/x86_64-pc-windows-gnu/debug/*.dll
-        target/x86_64-pc-windows-gnu/debug/*.dll.a
+      debug_artifacts: target/x86_64-pc-windows-gnu/debug/*.dll target/x86_64-pc-windows-gnu/debug/*.dll.a
   darwin:
     uses: ./.github/workflows/cargo.yml
     with:
@@ -83,9 +81,7 @@ jobs:
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
         target/wheels/*cp37-abi3*.whl
-      debug_artifacts: |
-        target/x86_64-apple-darwin/debug/*.dylib
-        target/universal/debug/*.a
+      debug_artifacts: target/x86_64-apple-darwin/debug/*.dylib target/universal/debug/*.a
   wasm:
     uses: ./.github/workflows/cargo.yml
     with:
@@ -135,8 +131,7 @@ jobs:
         target/*.h
         target/non_regression_vector.json
         target/sqlite.db
-      debug_artifacts: |
-        target/x86_64-unknown-linux-gnu/debug/*.so
+      debug_artifacts: target/x86_64-unknown-linux-gnu/debug/*.so
   pyo3-linux:
     runs-on: ubuntu-20.04
     container:
