@@ -3,10 +3,6 @@ name: Cargo semver
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   semver:
@@ -32,12 +28,12 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ inputs.toolchain }}
+          toolchain: nightly
           override: true
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo install --locked cargo-semver-checks || true
+        run: cargo +nightly install --locked cargo-semver-checks || true
 
       - name: Verify semver integrity
         uses: actions-rs/cargo@v1

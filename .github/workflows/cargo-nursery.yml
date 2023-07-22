@@ -19,8 +19,6 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish:
     uses: ./.github/workflows/cargo-publish.yml
     with:
