@@ -39,4 +39,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: semver-checks
-          args: check-release --baseline-root=.
+          args: check-release --baseline-root=. --all-features
