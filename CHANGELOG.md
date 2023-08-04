@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6] - 2023-06-05
+
+### Features
+
+- Removed live compact feature for cloudproof_findex
+
 ## [0.5] - 2023-06-05
 
 ### Bug Fixes

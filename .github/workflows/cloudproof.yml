@@ -30,7 +30,7 @@ on:
         type: string
       bench-features:
         required: false
-        default: ''
+        default: ""
         type: string
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi,cloud
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 zip
@@ -69,7 +69,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
-      feature: ffi,cloud,compact_live
+      feature: ffi,cloud
       os: macos-12
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
@@ -108,20 +108,20 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi,cloud
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt update
         sudo apt install -y gnuplot
         cat /proc/cpuinfo
-      artifacts: ''
+      artifacts: ""
 
   linux-centos7:
     uses: ./.github/workflows/cargo_in_docker.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi,cloud
       os: ubuntu-20.04
       pre-requisites: |
         cargo install --locked cbindgen || true
