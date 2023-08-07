@@ -66,14 +66,6 @@ jobs:
           use-cross: true
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
-      - name: Test release with all features
-        if: inputs.target == 'x86_64-unknown-linux-gnu'
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: true
-          args: --release --all-features --target ${{ inputs.target }} --workspace
-
       - name: Build debug with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1

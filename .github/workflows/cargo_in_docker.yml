@@ -31,6 +31,17 @@ jobs:
     name: ${{ inputs.feature }} for docker ${{ inputs.target }}
     runs-on: ${{ inputs.os }}
     container: iyxd/centos7-rust
+    # Redis can be required to run tests
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v3
@@ -69,10 +80,10 @@ jobs:
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --all-features --target ${{ inputs.target }} --workspace
+        run: |
+          cargo test --release --all-features --target ${{ inputs.target }} --workspace
+        env:
+          REDIS_HOST: redis
 
       - name: Build debug with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
