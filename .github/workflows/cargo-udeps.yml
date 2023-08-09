@@ -28,13 +28,13 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly-2023-06-27
           override: true
 
       - name: Install udeps
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +stable --locked install cargo-udeps
+        run: cargo +nightly-2023-06-27 --locked install cargo-udeps --version 0.1.39
 
       - name: Verify useless dependencies
         run: |
-          cargo udeps --workspace --all-targets --all-features
+          cargo +nightly-2023-06-27 udeps --workspace --all-targets --all-features
