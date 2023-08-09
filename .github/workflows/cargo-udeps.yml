@@ -33,7 +33,7 @@ jobs:
 
       - name: Install udeps
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo install cargo-udeps --version 0.1.39
+        run: cargo install cargo-udeps --version 0.1.40
 
       - name: Verify useless dependencies
         run: |
