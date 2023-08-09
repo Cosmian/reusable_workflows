@@ -21,8 +21,8 @@ jobs:
           override: true
 
       - run: |
-          cargo install cargo-audit
-          cargo install cargo-outdated --version 0.11.2
+          cargo +stable --locked install cargo-audit
+          cargo +stable --locked install cargo-outdated --version 0.11.2
 
       - name: Verify outdated dependencies
         uses: actions-rs/cargo@v1
