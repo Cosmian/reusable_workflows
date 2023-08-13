@@ -77,7 +77,7 @@ jobs:
         if: inputs.copy_regression_files != ''
         run: ${{ inputs.copy_regression_files }}
 
-      - run: mvn package -Dtest="\!TestFindexCloud,\!TestRedis,\!Redis,\!TestConditionalUpsert,\!TestDemo,\!TestNativeCoverCrypt,\!TestKmsCoverCrypt"
+      - run: mvn package -Dtest="!TestFindexCloud,!TestRedis,!Redis,!TestConditionalUpsert,!TestDemo,!TestNativeCoverCrypt,!TestKmsCoverCrypt,Test*"
         env:
           LANG: en_US.UTF-8
           LANGUAGE: en_US:en
