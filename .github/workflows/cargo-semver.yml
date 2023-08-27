@@ -36,7 +36,4 @@ jobs:
         run: cargo +nightly install --locked cargo-semver-checks || true
 
       - name: Verify semver integrity
-        uses: actions-rs/cargo@v1
-        with:
-          command: semver-checks
-          args: check-release --baseline-root=. --all-features
+        run: cargo +stable semver-checks check-release --baseline-root=. --all-features
