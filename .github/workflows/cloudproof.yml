@@ -83,6 +83,7 @@ jobs:
         target/universal/release/*.a
         target/wheels/*cp37-abi3*.whl
       debug_artifacts: target/x86_64-apple-darwin/debug/*.dylib target/universal/debug/*.a
+
   wasm:
     uses: ./.github/workflows/cargo.yml
     with:
@@ -98,6 +99,7 @@ jobs:
         ./target/web/ecies
         ./target/web/findex
         ./target/web/fpe
+
   android:
     uses: ./.github/workflows/ndk.yml
     with:
