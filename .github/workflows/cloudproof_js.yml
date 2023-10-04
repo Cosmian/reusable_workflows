@@ -47,8 +47,6 @@ jobs:
 
       findex_cloud:
         image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
-        ports:
-          - 9090:8080
 
       redis:
         image: redis
