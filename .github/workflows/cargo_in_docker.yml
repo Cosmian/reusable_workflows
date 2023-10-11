@@ -77,6 +77,8 @@ jobs:
         with:
           command: test
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        env:
+          REDIS_HOST: redis
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
