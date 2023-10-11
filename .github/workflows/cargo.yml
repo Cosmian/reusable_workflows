@@ -101,8 +101,8 @@ jobs:
           popd
 
           pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm
-          # wasm-pack test --node --features wasm
+          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
+          # wasm-pack test --node --features wasm_bindgen
           popd
 
           pushd crates/ecies
