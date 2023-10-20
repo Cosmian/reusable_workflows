@@ -19,7 +19,7 @@ jobs:
   ### Packages
   ##############################################################################
   packages:
-    name: push to package.cosmian.com
+    name: push ${{ inputs.archive-name }} to package.cosmian.com
     runs-on: [self-hosted, not-sgx]
 
     steps:
