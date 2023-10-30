@@ -130,6 +130,8 @@ jobs:
       - name: Python maturin build
         if: inputs.feature != 'wasm_bindgen'
         run: |
+          rm -f target/wheels/*.whl | true
+
           pushd crates/anonymization
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd

@@ -147,6 +147,8 @@ jobs:
 
       - name: Python maturin build
         run: |
+          rm -f target/wheels/*.whl | true
+
           pushd crates/aesgcm
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
