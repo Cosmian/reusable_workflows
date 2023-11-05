@@ -80,9 +80,15 @@ jobs:
         env:
           REDIS_HOST: redis
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+          cache: pip # caching pip dependencies
+
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
         run: |
+          sed -i 's/"extension-module",//g' Cargo.toml
           cargo test --release --all-features --target ${{ inputs.target }} --workspace
         env:
           REDIS_HOST: redis
