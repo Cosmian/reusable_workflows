@@ -84,7 +84,7 @@ jobs:
           ./configure --enable-shared --enable-optimizations
           make install
           rm /usr/src/Python-3.7.11.tgz
-          python3.7 -V
+          # python3.7 -V
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
