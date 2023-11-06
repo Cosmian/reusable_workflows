@@ -82,8 +82,9 @@ jobs:
           tar xzf Python-3.7.11.tgz
           cd Python-3.7.11
           ./configure --enable-optimizations
-          make altinstall
+          make install
           rm /usr/src/Python-3.7.11.tgz
+          python3.7 -V
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
