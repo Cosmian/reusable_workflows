@@ -83,6 +83,11 @@ jobs:
           command: criterion
           args: --features ${{ inputs.features }} --no-run
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+          cache: pip # caching pip dependencies
+
       - name: Benchmarks
         if: inputs.force && inputs.features != ''
         run: |
