@@ -80,13 +80,21 @@ jobs:
         env:
           REDIS_HOST: redis
 
-      - run: yum -y install python3 python3-pip
+      - name: Install python 3.7
+        run: |
+          set -x
+          # yum -y install python3 python3-pip # only python3.6 by default
+          cd /usr/src
+          wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
+          cd Python-3.7.11
+          ./configure --enable-optimizations
+          make altinstall
+          rm /usr/src/Python-3.7.11.tgz
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
         run: |
           sed -i 's/"extension-module",//g' Cargo.toml
-          sed -i 's/"abi3-py37",//g' Cargo.toml
           cargo test --release --all-features --target ${{ inputs.target }} --workspace
         env:
           REDIS_HOST: redis
