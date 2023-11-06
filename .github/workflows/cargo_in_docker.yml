@@ -81,7 +81,7 @@ jobs:
           wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
           tar xzf Python-3.7.11.tgz
           cd Python-3.7.11
-          ./configure --enable-optimizations
+          ./configure --enable-shared=no --enable-optimizations
           make install
           rm /usr/src/Python-3.7.11.tgz
           python3.7 -V
