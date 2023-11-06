@@ -81,10 +81,18 @@ jobs:
           wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
           tar xzf Python-3.7.11.tgz
           cd Python-3.7.11
-          ./configure --enable-shared=no --enable-optimizations
+          ./configure --enable-shared --enable-optimizations
           make install
           rm /usr/src/Python-3.7.11.tgz
           python3.7 -V
+
+      - name: Test release with all features
+        if: inputs.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          sed -i 's/"extension-module",//g' Cargo.toml
+          cargo test --release --all-features --target ${{ inputs.target }} --workspace
+        env:
+          REDIS_HOST: redis
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
@@ -92,14 +100,6 @@ jobs:
         with:
           command: test
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
-        env:
-          REDIS_HOST: redis
-
-      - name: Test release with all features
-        if: inputs.target == 'x86_64-unknown-linux-gnu'
-        run: |
-          sed -i 's/"extension-module",//g' Cargo.toml
-          cargo test --release --all-features --target ${{ inputs.target }} --workspace
         env:
           REDIS_HOST: redis
 
