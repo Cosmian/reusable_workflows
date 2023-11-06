@@ -84,6 +84,7 @@ jobs:
         run: |
           set -x
           # yum -y install python3 python3-pip # only python3.6 by default
+          yum -y groupinstall "Development Tools"
           yum -y install wget
           cd /usr/src
           wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
