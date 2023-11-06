@@ -71,6 +71,20 @@ jobs:
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
+      - name: Install python 3.7
+        run: |
+          set -x
+          # yum -y install python3 python3-pip # only python3.6 by default
+          yum -y groupinstall "Development Tools"
+          yum -y install wget zlib-devel
+          cd /usr/src
+          wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
+          tar xzf Python-3.7.11.tgz
+          cd Python-3.7.11
+          ./configure --enable-optimizations
+          make altinstall
+          rm /usr/src/Python-3.7.11.tgz
+
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
         uses: actions-rs/cargo@v1
@@ -79,20 +93,6 @@ jobs:
           args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
         env:
           REDIS_HOST: redis
-
-      - name: Install python 3.7
-        run: |
-          set -x
-          # yum -y install python3 python3-pip # only python3.6 by default
-          yum -y groupinstall "Development Tools"
-          yum -y install wget
-          cd /usr/src
-          wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz
-          tar xzf Python-3.7.11.tgz
-          cd Python-3.7.11
-          ./configure --enable-optimizations
-          make altinstall
-          rm /usr/src/Python-3.7.11.tgz
 
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
