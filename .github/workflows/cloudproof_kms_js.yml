@@ -1,0 +1,49 @@
+---
+name: Cloudproof KMS Javascript Library
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      kms-version:
+        required: true
+        type: string
+
+jobs:
+  js-job:
+    name: cloudproof_kms_js on container node:18.0.0
+
+    services:
+      kms:
+        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
+        env:
+          COSMIAN_SERVER_URL: http://localhost:9998
+
+
+    runs-on: ubuntu-20.04
+    container: node:18.0.0
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Cosmian/cloudproof_kms_js
+          ref: ${{ inputs.branch }}
+
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
+
+      - uses: actions/download-artifact@v3
+      - run: find .
+
+      - run: npm install
+      - run: npm test
+        env:
+          KMS_HOST: kms
