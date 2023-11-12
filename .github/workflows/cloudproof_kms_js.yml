@@ -21,7 +21,6 @@ jobs:
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
 
-
     runs-on: ubuntu-20.04
     container: node:18.0.0
 
@@ -47,3 +46,5 @@ jobs:
       - run: npm test
         env:
           KMS_HOST: kms
+          JWK_PRIVATE_KEY: '{"kty": "OKP","d": "MPEVJwdRqGM_qhJOUb5hR0Xr9EvwMLZGnkf-eDj5fU8","use": "enc","crv": "X25519","kid": "DX3GC+Fx3etxfRJValQNbqaB0gs=","x":
+            "gdF-1TtAjsFqNWr9nwhGUlFG38qrDUqYgcILgtYrpTY","alg": "ECDH-ES"}'
