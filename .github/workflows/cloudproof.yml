@@ -22,6 +22,9 @@ on:
       branch-js:
         required: true
         type: string
+      branch-kms-js:
+        required: true
+        type: string
       branch-flutter:
         required: true
         type: string
@@ -414,7 +417,7 @@ jobs:
   kms_js:
     uses: ./.github/workflows/cloudproof_kms_js.yml
     with:
-      branch: ${{ inputs.branch-js }}
+      branch: ${{ inputs.branch-kms-js }}
       kms-version: ${{ inputs.kms-version }}
 
   ##############################################################################
