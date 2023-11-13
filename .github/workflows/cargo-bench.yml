@@ -73,6 +73,7 @@ jobs:
           apt install -y gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
+          apt install -y python3-dev python3-pip
 
       - run: cat /proc/cpuinfo
 
@@ -99,10 +100,9 @@ jobs:
 
       - name: Benchmarks all features build but do not run
         if: inputs.features == ''
-        uses: actions-rs/cargo@v1
-        with:
-          command: criterion
-          args: --all-features --no-run
+        run: |
+          sed -i 's/"extension-module",//g' Cargo.toml
+          cargo criterion --all-features --no-run
 
       - name: Benchmarks all features
         if: inputs.force && inputs.features == ''

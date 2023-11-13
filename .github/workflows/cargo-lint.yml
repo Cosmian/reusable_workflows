@@ -70,10 +70,9 @@ jobs:
           args: --workspace --all-targets --all-features -- -D warnings
 
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace --all-targets --all-features
+        run: |
+          sed -i 's/"extension-module",//g' Cargo.toml
+          cargo test --release --workspace --all-targets --all-features
 
       - name: Run doc tests
         uses: actions-rs/cargo@v1

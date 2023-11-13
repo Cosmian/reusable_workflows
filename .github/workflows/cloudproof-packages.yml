@@ -13,7 +13,7 @@ jobs:
   ### Packages
   ##############################################################################
   packages:
-    name: push to package.cosmian.com
+    name: push all to package.cosmian.com
     uses: ./.github/workflows/package-cosmian-com.yml
     with:
       project-name: ${{ inputs.project-name }}
@@ -21,7 +21,7 @@ jobs:
       artifacts-name: x86* wasm* android
 
   packages-debug:
-    name: push to package.cosmian.com
+    name: push debug to package.cosmian.com
     uses: ./.github/workflows/package-cosmian-com.yml
     with:
       project-name: ${{ inputs.project-name }}

@@ -213,6 +213,7 @@ jobs:
       - windows
       - darwin
       - pyo3-linux
+    name: pyo3-tests ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

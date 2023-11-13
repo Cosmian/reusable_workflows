@@ -64,7 +64,7 @@ jobs:
         with:
           command: test
           use-cross: true
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }} -- --skip redis
 
       - name: Build debug with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
