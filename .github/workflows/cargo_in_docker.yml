@@ -85,7 +85,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+          args: --release --features ${{ inputs.feature }},backend-sqlite --target ${{ inputs.target }}
         env:
           REDIS_HOST: redis
 
