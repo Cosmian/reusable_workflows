@@ -3,6 +3,11 @@ name: Cargo udeps
 
 on:
   workflow_call:
+    inputs:
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   udeps:
@@ -36,4 +41,4 @@ jobs:
 
       - name: Verify useless dependencies
         run: |
-          cargo +nightly-2023-06-27 udeps --workspace --all-targets --all-features
+          cargo +nightly-2023-06-27 udeps --workspace ${{ inputs.exclusions }} --all-targets --all-features

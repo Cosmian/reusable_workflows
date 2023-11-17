@@ -11,6 +11,10 @@ on:
         required: false
         default: ''
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
       force:
         required: false
         default: false
@@ -95,13 +99,12 @@ jobs:
       - name: Benchmarks all features build but do not run
         if: inputs.features == ''
         run: |
-          sed -i 's/"extension-module",//g' Cargo.toml
-          cargo criterion --all-features --no-run
+          cargo criterion --workspace ${{ inputs.exclusions }} --all-features --no-run
 
       - name: Benchmarks all features
         if: inputs.force && inputs.features == ''
         run: |
-          cargo criterion --all-features --message-format=json | criterion-table > BENCHMARKS.md
+          cargo criterion --workspace ${{ inputs.exclusions }} --all-features --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks all features
         if: inputs.force && inputs.features == ''
