@@ -56,7 +56,7 @@ jobs:
 
       - name: Install cross
         if: contains(runner.os, 'macOS')
-        run: cargo install cross --git https://github.com/cross-rs/cross
+        run: cargo install cross --git https://github.com/cross-rs/cross || true
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
