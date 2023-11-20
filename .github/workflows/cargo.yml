@@ -54,9 +54,6 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
 
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross
-
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
