@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Set up cargo cache
         id: github-cache
@@ -26,10 +26,9 @@ jobs:
           key: ${{ runner.os }}-cargo-udeps-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-udeps-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly-2023-06-27
-          override: true
 
       - name: Install udeps
         if: steps.github-cache.outputs.cache-hit != 'true'

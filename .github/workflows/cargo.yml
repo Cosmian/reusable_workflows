@@ -49,38 +49,28 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
-          override: true
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: true
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }} -- --skip redis
+        run: cross test --release --features ${{ inputs.feature }} --target ${{ inputs.target }} -- --skip redis
 
       - name: Build debug with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: true
-          args: --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        run: cross build --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Build release with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: true
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        run: cross build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release
         if: inputs.feature == 'wasm_bindgen'

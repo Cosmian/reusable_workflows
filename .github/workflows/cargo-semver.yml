@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -26,10 +26,7 @@ jobs:
           key: ${{ runner.os }}-cargo-semver-
           restore-keys: ${{ runner.os }}-cargo-semver-
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
+      - uses: dtolnay/rust-toolchain@nightly
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'

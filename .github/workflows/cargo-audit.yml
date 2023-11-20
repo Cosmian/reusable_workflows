@@ -14,23 +14,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
-          override: true
 
       - run: |
           cargo +stable --locked install cargo-audit
           cargo +stable --locked install cargo-outdated --version 0.11.2
 
       - name: Verify outdated dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: outdated
-          args: -wR
+        run: cargo outdated -wR
 
       - name: Verify deprecated dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: audit
+        run: cargo audit

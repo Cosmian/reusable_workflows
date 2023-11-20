@@ -60,12 +60,9 @@ jobs:
           key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
-          override: true
-          default: true
-          profile: minimal
 
       - name: Install tooling for benchmarks
         run: |
@@ -79,10 +76,7 @@ jobs:
 
       - name: Benchmarks build but do not run
         if: inputs.features != ''
-        uses: actions-rs/cargo@v1
-        with:
-          command: criterion
-          args: --features ${{ inputs.features }} --no-run
+        run: cargo criterion --features ${{ inputs.features }} --no-run
 
       - name: Benchmarks
         if: inputs.force && inputs.features != ''

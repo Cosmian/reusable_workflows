@@ -34,11 +34,10 @@ jobs:
           key: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           target: aarch64-linux-android
-          override: true
 
       - name: specific-pre-requisites
         run: |
@@ -63,10 +62,7 @@ jobs:
           cargo ndk -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
 
       # - name: NDK build release with feature ${{ inputs.feature }}
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: ndk
-      #     args: -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
+      #   run: cargo ndk -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
 
       - name: Upload cargo binaries
         uses: actions/upload-artifact@v3
