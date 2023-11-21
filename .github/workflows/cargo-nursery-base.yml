@@ -7,15 +7,22 @@ on:
       toolchain:
         required: true
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   cargo-lint:
     uses: ./.github/workflows/cargo-lint.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+      exclusions: ${{ inputs.exclusions }}
   cargo-audit:
     uses: ./.github/workflows/cargo-audit.yml
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-udeps:
     uses: ./.github/workflows/cargo-udeps.yml
+    with:
+      exclusions: ${{ inputs.exclusions }}

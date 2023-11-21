@@ -35,6 +35,10 @@ on:
         required: false
         default: ''
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   ##############################################################################
@@ -44,11 +48,14 @@ jobs:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+      exclusions: ${{ inputs.exclusions }}
+
   cargo-bench:
     uses: ./.github/workflows/cargo-bench.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       features: ${{ inputs.bench-features }}
+      exclusions: ${{ inputs.exclusions }}
 
   ##############################################################################
   ### Build all interfaces
@@ -58,7 +65,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
-      feature: ffi,cloud
+      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 zip
@@ -73,7 +80,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
-      feature: ffi,cloud
+      feature: ffi
       os: macos-12
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
@@ -114,7 +121,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud
+      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt update
@@ -127,7 +134,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud
+      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         cargo install --locked cbindgen || true

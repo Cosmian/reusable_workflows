@@ -7,6 +7,10 @@ on:
       toolchain:
         required: true
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   lint:
@@ -60,12 +64,11 @@ jobs:
         run: cargo fmt --all -- --check --color always
 
       - name: Static analysis
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings
 
       - name: Run tests
         run: |
-          sed -i 's/"extension-module",//g' Cargo.toml
-          cargo test --release --workspace --all-targets --all-features
+          cargo test --release --workspace ${{ inputs.exclusions }} --all-targets --all-features
 
       - name: Run doc tests
-        run: cargo test --release --workspace --all-features --doc
+        run: cargo test --release --workspace ${{ inputs.exclusions }} --all-features --doc
