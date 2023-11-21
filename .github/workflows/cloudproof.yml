@@ -99,7 +99,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
-      feature: wasm_bindgen
+      feature: wasm
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
@@ -654,37 +654,37 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
 
           pushd crates/aesgcm
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/anonymization
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/cover_crypt
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/ecies
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/findex
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/fpe
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd

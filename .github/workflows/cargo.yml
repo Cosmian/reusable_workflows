@@ -73,36 +73,36 @@ jobs:
         run: cross build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release
-        if: inputs.feature == 'wasm_bindgen'
+        if: inputs.feature == 'wasm'
         run: |
           pushd crates/aesgcm
-          wasm-pack build -d ../../target/web/aesgcm --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/aesgcm --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/anonymization
-          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/cover_crypt
-          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
-          # wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/findex --target web --release --features wasm
+          # wasm-pack test --node --features wasm
           popd
 
           pushd crates/ecies
-          wasm-pack build -d ../../target/web/ecies --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/ecies --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/fpe
-          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
       - uses: actions/setup-python@v4
@@ -118,7 +118,7 @@ jobs:
           pip install -r crates/fpe/python/requirements.txt
 
       - name: Python maturin build
-        if: inputs.feature != 'wasm_bindgen'
+        if: inputs.feature != 'wasm'
         run: |
           rm -f target/wheels/*.whl | true
 
