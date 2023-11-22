@@ -79,6 +79,7 @@ jobs:
 
       - name: Run tests
         run: |
+          pip install requests
           python -m unittest tests/test*.py
           python tests/non_regression_cover_crypt.py --test --write
 
