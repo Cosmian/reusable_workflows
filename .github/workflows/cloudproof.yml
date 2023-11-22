@@ -399,6 +399,7 @@ jobs:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       regression_files: |
         ./tests/data/export/non_regression_vector.json
         ./tests/data/export/sqlite.db
@@ -496,6 +497,7 @@ jobs:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       copy_regression_files: |
         cp ./cloudproof_flutter/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
         cp ./cloudproof_java/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json

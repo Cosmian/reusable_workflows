@@ -21,6 +21,9 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
       copy_fresh_build:
         required: false
         default: true
@@ -37,6 +40,21 @@ jobs:
           COSMIAN_SERVER_URL: http://localhost:9998
         ports:
           - 9998:9998
+
+      findex_cloud:
+        image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
+        ports:
+          - 8080:8080
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     runs-on: ubuntu-20.04
 
@@ -87,6 +105,8 @@ jobs:
         run: |
           pip install -r examples/findex_upsert_search/requirements.txt
           python3 examples/findex_upsert_search/main.py
+          python3 examples/findex_upsert_search/main.py --sqlite
+          python3 examples/findex_upsert_search/main.py --redis
 
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
