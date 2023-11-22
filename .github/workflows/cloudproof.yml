@@ -287,7 +287,8 @@ jobs:
           pushd crates/findex/python
           mypy tests/findex_test.py
           popd
-          python crates/findex/python/tests/findex_test.py
+          ## Following test cannot be run on MacOS/Windows Github CI runners (no docker) but this complete test is directly run by `cloudproof_rust` CI
+          # python crates/findex/python/tests/findex_test.py
 
           pushd crates/fpe/python
           mypy tests/fpe_test.py
