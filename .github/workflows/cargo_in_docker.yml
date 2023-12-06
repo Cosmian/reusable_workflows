@@ -107,7 +107,7 @@ jobs:
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
-        run: cargo test --release --features ${{ inputs.feature }},backend-sqlite --target ${{ inputs.target }}
+        run: cargo test --release --features ${{ inputs.feature }},sqlite-interface --target ${{ inputs.target }}
         env:
           REDIS_HOST: redis
 
