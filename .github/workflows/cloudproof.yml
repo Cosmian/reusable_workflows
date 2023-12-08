@@ -22,6 +22,9 @@ on:
       branch-js:
         required: true
         type: string
+      branch-kms-js:
+        required: true
+        type: string
       branch-flutter:
         required: true
         type: string
@@ -32,6 +35,10 @@ on:
         required: false
         default: ''
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   ##############################################################################
@@ -41,11 +48,14 @@ jobs:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+      exclusions: ${{ inputs.exclusions }}
+
   cargo-bench:
     uses: ./.github/workflows/cargo-bench.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       features: ${{ inputs.bench-features }}
+      exclusions: ${{ inputs.exclusions }}
 
   ##############################################################################
   ### Build all interfaces
@@ -55,56 +65,51 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi
       os: ubuntu-20.04
-      pre-requisites: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+      pre-requisites: |
+        sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 zip
       artifacts: |
-        target/x86_64-pc-windows-gnu/release/*.dll
+        target/x86_64-pc-windows-gnu/release/*.dll*
+        target/x86_64-pc-windows-gnu/release/*.dll.a
         target/wheels/*win_amd64.whl
+      debug_artifacts: target/x86_64-pc-windows-gnu/debug/*.dll target/x86_64-pc-windows-gnu/debug/*.dll.a
+
   darwin:
     uses: ./.github/workflows/cargo.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
-      feature: ffi,cloud,compact_live
+      feature: ffi
       os: macos-12
       pre-requisites: |
         rustup target add aarch64-apple-ios x86_64-apple-ios
         cargo install --locked cargo-lipo || true
+        cargo lipo --all --features ffi
         cargo lipo --all --release --features ffi
         ls -al target/universal/release/
-        # # the dart package must not be greater than 100M
-        # file_path="target/universal/release/libcloudproof.a"
-        # threshold_size=$((80 * 1024 * 1024)) # 80MB to make sure the package is publishable
-
-        # if [ -f "$file_path" ]; then
-        #   file_size=$(stat -f %z "$file_path")
-        #   if [ "$file_size" -gt "$threshold_size" ]; then
-        #     echo "File size exceeds 80M: $file_path ($file_size)"
-        #     exit 1  # Fails the test with a non-zero exit code
-        #   fi
-        # else
-        #   echo "File not found: $file_path"
-        #   exit 1  # Fails the test with a non-zero exit code
-        # fi
-
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
         target/wheels/*cp37-abi3*.whl
+      debug_artifacts: target/x86_64-apple-darwin/debug/*.dylib target/universal/debug/*.a
+
   wasm:
     uses: ./.github/workflows/cargo.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
-      feature: wasm_bindgen
+      feature: wasm
       os: ubuntu-20.04
       pre-requisites: cargo install --locked wasm-pack || true
       artifacts: |
+        ./target/web/aesgcm
         ./target/web/anonymization
         ./target/web/cover_crypt
+        ./target/web/ecies
         ./target/web/findex
         ./target/web/fpe
+
   android:
     uses: ./.github/workflows/ndk.yml
     with:
@@ -116,7 +121,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         sudo apt update
@@ -129,15 +134,18 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi,cloud,compact_live
+      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         cargo install --locked cbindgen || true
+        yum -y install zip
       artifacts: |
         target/x86_64-unknown-linux-gnu/release/*.so
         target/*.h
         target/non_regression_vector.json
         target/sqlite.db
+      debug_artifacts: target/x86_64-unknown-linux-gnu/debug/*.so
+
   pyo3-linux:
     runs-on: ubuntu-20.04
     container:
@@ -149,6 +157,12 @@ jobs:
 
       - name: Python maturin build
         run: |
+          rm -f target/wheels/*.whl | true
+
+          pushd crates/aesgcm
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
           pushd crates/anonymization
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
@@ -158,6 +172,10 @@ jobs:
           popd
 
           pushd crates/findex
+          maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
+          popd
+
+          pushd crates/ecies
           maturin build --compatibility manylinux_2_17 --release --features python --target-dir target_python
           popd
 
@@ -173,6 +191,7 @@ jobs:
             target/wheels/*.whl
           retention-days: 1
           if-no-files-found: error
+
   merge-linux-artifacts:
     needs:
       - linux-centos7
@@ -180,6 +199,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/download-artifact@v3
+      - name: List directory
+        run: find .
+
+      - name: Clean duplicated folder
+        run: rm -rf x86_64-unknown-linux-gnu
+
       - name: Upload python files
         uses: actions/upload-artifact@v3
         with:
@@ -198,6 +223,7 @@ jobs:
       - windows
       - darwin
       - pyo3-linux
+    name: pyo3-tests ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -219,41 +245,55 @@ jobs:
           cache: pip # caching pip dependencies
 
       - name: List directory
-        if: contains(runner.os, 'Linux')
+        if: contains(runner.os, 'Linux') || contains(runner.os, 'macOS')
         run: find .
 
       - name: Install requirements
         run: |
+          pip install -r crates/aesgcm/python/requirements.txt
+          pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
-          pip install -r crates/anonymization/python/requirements.txt
 
       - name: Install .whl
         run: |
+          ls ${{ matrix.source-dir }}/*.whl
           pip install --force-reinstall $(ls ${{ matrix.source-dir }}/*.whl)
 
       - name: Python tests
         run: |
-          pushd crates/cover_crypt/python
-          mypy tests/cover_crypt_test.py
+          pushd crates/aesgcm/python
+          mypy tests/aesgcm_test.py
           popd
-          python crates/cover_crypt/python/tests/cover_crypt_test.py
-
-          pushd crates/findex/python
-          mypy tests/findex_test.py
-          popd
-          python crates/findex/python/tests/findex_test.py
-
-          pushd crates/fpe/python
-          mypy tests/fpe_test.py
-          popd
-          python crates/fpe/python/tests/fpe_test.py
+          python crates/aesgcm/python/tests/aesgcm_test.py
 
           pushd crates/anonymization/python
           mypy tests/anonymization_test.py
           popd
           python crates/anonymization/python/tests/anonymization_test.py
+
+          pushd crates/cover_crypt/python
+          mypy tests/cover_crypt_test.py
+          popd
+          python crates/cover_crypt/python/tests/cover_crypt_test.py
+
+          pushd crates/ecies/python
+          mypy tests/ecies_test.py
+          popd
+          python crates/ecies/python/tests/ecies_test.py
+
+          pushd crates/findex/python
+          mypy tests/findex_test.py
+          popd
+          ## Following test cannot be run on MacOS/Windows Github CI runners (no docker) but this complete test is directly run by `cloudproof_rust` CI
+          # python crates/findex/python/tests/findex_test.py
+
+          pushd crates/fpe/python
+          mypy tests/fpe_test.py
+          popd
+          python crates/fpe/python/tests/fpe_test.py
 
   ##############################################################################
   ### Packages
@@ -359,6 +399,7 @@ jobs:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       regression_files: |
         ./tests/data/export/non_regression_vector.json
         ./tests/data/export/sqlite.db
@@ -374,9 +415,19 @@ jobs:
       branch: ${{ inputs.branch-js }}
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version}}
       regression_files: |
         ./node_modules/non_regression_vector.json
         ./node_modules/sqlite.db
+
+  ##############################################################################
+  ### Cloudproof KMS JS library
+  ##############################################################################
+  kms_js:
+    uses: ./.github/workflows/cloudproof_kms_js.yml
+    with:
+      branch: ${{ inputs.branch-kms-js }}
+      kms-version: ${{ inputs.kms-version }}
 
   ##############################################################################
   ### Cross languages tests
@@ -421,6 +472,7 @@ jobs:
       branch: ${{ inputs.branch-js }}
       target: wasm32-unknown-unknown
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version}}
       copy_regression_files: |
         cp ./cloudproof_flutter/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
         cp ./cloudproof_java/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
@@ -445,6 +497,7 @@ jobs:
       branch: ${{ inputs.branch-python }}
       target: x86_64-unknown-linux-gnu
       kms-version: ${{ inputs.kms-version }}
+      findex-cloud-version: ${{ inputs.findex-cloud-version }}
       copy_regression_files: |
         cp ./cloudproof_flutter/non_regression_vector.json       tests/data/cover_crypt/non_regression/copy_flutter_non_regression_vector.json
         cp ./cloudproof_java/non_regression_vector.json          tests/data/cover_crypt/non_regression/copy_java_non_regression_vector.json
@@ -500,6 +553,7 @@ jobs:
       - cross-js
       - cross-flutter-linux
       - cross-python
+      - kms_js
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -571,9 +625,11 @@ jobs:
       - name: Publish .whl
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_aesgcm*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_anonymization*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_fpe*.whl || true
-          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/covercrypt*.whl || true
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cover_crypt*.whl || true
+          twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/cloudproof_ecies*.whl || true
           twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" ${{ matrix.source-dir }}/findex*.whl || true
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -586,11 +642,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           target: wasm32-unknown-unknown
-          override: true
 
       - name: Install wasm-pack
         run: |
@@ -601,26 +656,38 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" > ~/.npmrc
 
+          pushd crates/aesgcm
+          wasm-pack build --target web --release --features wasm
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
+
           pushd crates/anonymization
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/cover_crypt
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
+          wasm-pack pack
+          wasm-pack publish || true
+          popd
+
+          pushd crates/ecies
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/findex
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
 
           pushd crates/fpe
-          wasm-pack build --target web --release --features wasm_bindgen
+          wasm-pack build --target web --release --features wasm
           wasm-pack pack
           wasm-pack publish || true
           popd
@@ -632,17 +699,23 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "[registry]" > ~/.cargo/credentials
           echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
 
+          pushd crates/aesgcm
+          cargo publish --token $CRATES_IO || true
+          popd
           pushd crates/anonymization
           cargo publish --token $CRATES_IO || true
           popd
           pushd crates/cover_crypt
+          cargo publish --token $CRATES_IO || true
+          popd
+          pushd crates/ecies
           cargo publish --token $CRATES_IO || true
           popd
           pushd crates/findex

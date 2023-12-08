@@ -11,6 +11,10 @@ on:
         required: false
         default: ''
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
       force:
         required: false
         default: false
@@ -46,7 +50,7 @@ jobs:
       #   run: |
       #     chown -R $USER:$USER $GITHUB_WORKSPACE
       #     env
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -57,15 +61,12 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             pkg/
-          key: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-${{ inputs.features }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
-          override: true
-          default: true
-          profile: minimal
 
       - name: Install tooling for benchmarks
         run: |
@@ -73,15 +74,13 @@ jobs:
           apt install -y gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
+          apt install -y python3-dev python3-pip
 
       - run: cat /proc/cpuinfo
 
       - name: Benchmarks build but do not run
         if: inputs.features != ''
-        uses: actions-rs/cargo@v1
-        with:
-          command: criterion
-          args: --features ${{ inputs.features }} --no-run
+        run: cargo criterion --features ${{ inputs.features }} --no-run
 
       - name: Benchmarks
         if: inputs.force && inputs.features != ''
@@ -99,15 +98,13 @@ jobs:
 
       - name: Benchmarks all features build but do not run
         if: inputs.features == ''
-        uses: actions-rs/cargo@v1
-        with:
-          command: criterion
-          args: --all-features --no-run
+        run: |
+          cargo criterion --workspace ${{ inputs.exclusions }} --all-features --no-run
 
       - name: Benchmarks all features
         if: inputs.force && inputs.features == ''
         run: |
-          cargo criterion --all-features --message-format=json | criterion-table > BENCHMARKS.md
+          cargo criterion --workspace ${{ inputs.exclusions }} --all-features --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks all features
         if: inputs.force && inputs.features == ''

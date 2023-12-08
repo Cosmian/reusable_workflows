@@ -7,20 +7,24 @@ on:
       toolchain:
         required: true
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   cargo-nursery-base:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+      exclusions: ${{ inputs.exclusions }}
   cargo-doc:
     uses: ./.github/workflows/cargo-doc.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+      exclusions: ${{ inputs.exclusions }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish:
     uses: ./.github/workflows/cargo-publish.yml
     with:

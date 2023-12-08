@@ -21,11 +21,13 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
       copy_fresh_build:
         required: false
         default: true
         type: boolean
-
 
 jobs:
   python-job:
@@ -33,14 +35,26 @@ jobs:
 
     services:
       kms:
-        image: cosmian/kms:${{ inputs.kms-version }}
+        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
-          KMS_PUBLIC_PATH: /tmp
-          KMS_PRIVATE_PATH: /tmp
-          KMS_SHARED_PATH: /tmp
         ports:
           - 9998:9998
+
+      findex_cloud:
+        image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
+        ports:
+          - 8080:8080
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     runs-on: ubuntu-20.04
 
@@ -53,7 +67,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-          cache: pip   # caching pip dependencies
+          cache: pip # caching pip dependencies
 
       - uses: actions/download-artifact@v3
       - run: find .
@@ -63,13 +77,11 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - name: Build Cloudproof python and install deps
-        env:
-          COVER_CRYPT_TAG: last_build
-          FINDEX_TAG: last_build
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m build
+          pip install mypy types-termcolor>=1.1 types_redis>=4.3 requests>=2.28 types-requests>=2.28
           scripts/ci_install_pyo3_builds.sh
 
       - name: Install fresh build of CoverCrypt and Findex
@@ -81,11 +93,33 @@ jobs:
         run: |
           pip install dist/cloudproof_py*.whl
 
+      - name: Type-check
+        run: |
+          mypy src/cloudproof_py/anonymization/
+          mypy src/cloudproof_py/cover_crypt/
+          mypy src/cloudproof_py/findex/
+          mypy src/cloudproof_py/fpe/
+          mypy tests/
+          mypy examples/cli_demo
+          mypy examples/findex_upsert_search
+          mypy examples/cover_crypt
       - name: Run tests
         run: |
           python -m unittest tests/test*.py
           python tests/non_regression_cover_crypt.py --test --write
-
+      - name: Run Covercrypt implementations
+        run: |
+          pip install -r examples/cover_crypt/requirements.txt
+          python3 examples/cover_crypt/example.py
+      - name: Run Findex implementations
+        run: |
+          pip install -r examples/findex_upsert_search/requirements.txt
+          python3 examples/findex_upsert_search/main.py
+          python3 examples/findex_upsert_search/main.py --sqlite
+          python3 examples/findex_upsert_search/main.py --redis
+          python3 examples/findex_upsert_search/main.py --managed-redis
+          python3 examples/findex_upsert_search/main.py --managed-sqlite
+          python3 examples/findex_upsert_search/main.py --managed-rest-server
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
         uses: actions/upload-artifact@v3

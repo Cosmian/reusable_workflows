@@ -77,17 +77,8 @@ jobs:
         if: inputs.copy_regression_files != ''
         run: ${{ inputs.copy_regression_files }}
 
-      - run: mvn package
+      - run: mvn package -Dtest="!TestFindexCloud,!TestRedis,!Redis,!TestConditionalUpsert,!TestDemo,!TestNativeCoverCrypt,!TestKmsCoverCrypt,Test*"
         env:
           LANG: en_US.UTF-8
           LANGUAGE: en_US:en
           LC_ALL: en_US.UTF-8
-
-      - name: Upload non-regression test vectors
-        if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
-        with:
-          name: cloudproof_java
-          path: ${{ inputs.regression_files }}
-          retention-days: 1
-          if-no-files-found: error

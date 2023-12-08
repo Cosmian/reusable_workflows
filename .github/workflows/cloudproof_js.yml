@@ -13,6 +13,14 @@ on:
       kms-version:
         required: true
         type: string
+      findex-cloud-version:
+        required: true
+        type: string
+      kms-jwe-key:
+        required: false
+        type: string
+        default: '{"kty": "OKP","d": "MPEVJwdRqGM_qhJOUb5hR0Xr9EvwMLZGnkf-eDj5fU8","use": "enc","crv": "X25519","kid": "DX3GC+Fx3etxfRJValQNbqaB0gs=","x":
+          "gdF-1TtAjsFqNWr9nwhGUlFG38qrDUqYgcILgtYrpTY","alg": "ECDH-ES"}'
       copy_regression_files:
         required: false
         default: ''
@@ -28,16 +36,17 @@ on:
 
 jobs:
   js-job:
-    name: cloudproof_js on container node:18
+    name: cloudproof_js on container node:18.0.0
 
     services:
       kms:
-        image: cosmian/kms:${{ inputs.kms-version }}
+        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
-          KMS_PUBLIC_PATH: /tmp
-          KMS_PRIVATE_PATH: /tmp
-          KMS_SHARED_PATH: /tmp
+          JWK_PRIVATE_KEY: ${{ inputs.kms-jwe-key }}
+
+      findex_cloud:
+        image: ghcr.io/cosmian/findex_cloud:${{ inputs.findex-cloud-version }}
 
       redis:
         image: redis
@@ -48,7 +57,7 @@ jobs:
           --health-retries 5
 
     runs-on: ubuntu-20.04
-    container: node:18
+    container: node:18.0.0
 
     steps:
       - uses: actions/checkout@v3
@@ -76,8 +85,10 @@ jobs:
       - name: copy fresh build of crate
         if: inputs.copy_fresh_build
         run: |
+          cp -r ${{ inputs.target }}/aesgcm/* src/pkg/aesgcm/
           cp -r ${{ inputs.target }}/anonymization/* src/pkg/anonymization/
           cp -r ${{ inputs.target }}/cover_crypt/* src/pkg/cover_crypt/
+          cp -r ${{ inputs.target }}/ecies/* src/pkg/ecies/
           cp -r ${{ inputs.target }}/findex/* src/pkg/findex/
           cp -r ${{ inputs.target }}/fpe/* src/pkg/fpe/
 
@@ -90,6 +101,7 @@ jobs:
         env:
           REDIS_HOST: redis
           KMS_HOST: kms
+          FINDEX_CLOUD_HOST: findex_cloud
 
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''

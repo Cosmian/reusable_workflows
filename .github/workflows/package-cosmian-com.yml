@@ -19,8 +19,8 @@ jobs:
   ### Packages
   ##############################################################################
   packages:
-    name: push to package.cosmian.com
-    runs-on: [self-hosted, not-docker]
+    name: push ${{ inputs.archive-name }} to package.cosmian.com
+    runs-on: [self-hosted, not-sgx]
 
     steps:
       - uses: actions/download-artifact@v3
@@ -28,7 +28,9 @@ jobs:
 
       - name: Creating zip to be attached to release
         run: |
+          set -x
           sudo apt-get install -y zip
+          rm -f ${{ inputs.archive-name }}.zip
           zip -r ${{ inputs.archive-name }} ${{ inputs.artifacts-name }}
 
       - name: Push to package.cosmian.com

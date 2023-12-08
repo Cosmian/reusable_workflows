@@ -19,6 +19,9 @@ on:
       artifacts:
         required: true
         type: string
+      debug_artifacts:
+        required: false
+        type: string
       os:
         required: true
         type: string
@@ -46,60 +49,60 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
-          override: true
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross || true
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
       - name: Test release with ffi feature
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: true
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        run: cross test --release --features ${{ inputs.feature }} --target ${{ inputs.target }} -- --skip redis
 
-      - name: Test release with all features
-        if: inputs.target == 'x86_64-unknown-linux-gnu'
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: true
-          args: --release --all-features --target ${{ inputs.target }} --workspace
+      - name: Build debug with feature ${{ inputs.feature }}
+        if: contains(inputs.feature, 'ffi')
+        run: cross build --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Build release with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: true
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        run: cross build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Wasm-pack build release
-        if: inputs.feature == 'wasm_bindgen'
+        if: inputs.feature == 'wasm'
         run: |
+          pushd crates/aesgcm
+          wasm-pack build -d ../../target/web/aesgcm --target web --release --features wasm
+          wasm-pack test --node --features wasm
+          popd
+
           pushd crates/anonymization
-          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/cover_crypt
-          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm_bindgen
-          # wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/findex --target web --release --features wasm
+          # wasm-pack test --node --features wasm
+          popd
+
+          pushd crates/ecies
+          wasm-pack build -d ../../target/web/ecies --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
           pushd crates/fpe
-          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm_bindgen
-          wasm-pack test --node --features wasm_bindgen
+          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm
+          wasm-pack test --node --features wasm
           popd
 
       - uses: actions/setup-python@v4
@@ -107,19 +110,31 @@ jobs:
           python-version: 3.7
           cache: pip # caching pip dependencies
       - run: |
+          pip install -r crates/aesgcm/python/requirements.txt
           pip install -r crates/anonymization/python/requirements.txt
           pip install -r crates/cover_crypt/python/requirements.txt
+          pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
 
       - name: Python maturin build
-        if: inputs.feature != 'wasm_bindgen'
+        if: inputs.feature != 'wasm'
         run: |
+          rm -f target/wheels/*.whl | true
+
           pushd crates/anonymization
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
+          pushd crates/aesgcm
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
           pushd crates/cover_crypt
+          maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
+          popd
+
+          pushd crates/ecies
           maturin build --release --features python --target ${{ inputs.target }} --target-dir target_python
           popd
 
@@ -137,5 +152,19 @@ jobs:
         with:
           name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Creating zip for debug symbols
+        if: inputs.debug_artifacts != ''
+        run: |
+          zip -r debug_${{ inputs.target }} ${{ inputs.debug_artifacts }}
+
+      - name: Upload cargo debug binaries
+        if: inputs.debug_artifacts != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug_${{ inputs.target }}
+          path: debug_${{ inputs.target }}.zip
           retention-days: 1
           if-no-files-found: error

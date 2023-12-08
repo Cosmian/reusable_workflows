@@ -7,16 +7,32 @@ on:
       toolchain:
         required: true
         type: string
+      exclusions:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
+    # Redis can be required to run tests
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - name: Dump Github variables
         uses: crazy-max/ghaction-dump-context@v1
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -31,10 +47,9 @@ jobs:
           key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
-          override: true
           components: rustfmt, clippy
 
       - name: Install tooling for benchmarks
@@ -46,25 +61,14 @@ jobs:
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check --color always
+        run: cargo fmt --all -- --check --color always
 
       - name: Static analysis
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings
 
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace --all-targets --all-features
+        run: |
+          cargo test --release --workspace ${{ inputs.exclusions }} --all-targets --all-features
 
       - name: Run doc tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace --all-features --doc
+        run: cargo test --release --workspace ${{ inputs.exclusions }} --all-features --doc

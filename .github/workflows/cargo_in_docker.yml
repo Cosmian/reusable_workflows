@@ -19,6 +19,9 @@ on:
       artifacts:
         required: true
         type: string
+      debug_artifacts:
+        required: false
+        type: string
       os:
         required: true
         type: string
@@ -28,6 +31,17 @@ jobs:
     name: ${{ inputs.feature }} for docker ${{ inputs.target }}
     runs-on: ${{ inputs.os }}
     container: iyxd/centos7-rust
+    # Redis can be required to run tests
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v3
@@ -48,35 +62,62 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-docker-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name
             }}
 
-      - uses: actions-rs/toolchain@v1
+      # `curl` in Centos 7 is too old (1.29) regarding
+      # what `dtolnay/rust-toolchain` needs  because it is
+      # using `--retry-connrefused` option (curl 1.52).
+      # Drop this when moving to Centos 8
+      - name: Update curl for Centos 7
+        run: |
+          set -e
+          curl --version
+          # Tested on CentOS 7 and CentOS 8
+          # Check the latest version at https://curl.se/download/
+          VERSION=8.4.0
+
+          yum update -y
+          yum install wget gcc openssl-devel make -y
+          wget https://curl.haxx.se/download/curl-${VERSION}.tar.gz
+          tar -xzvf curl-${VERSION}.tar.gz
+          rm -f curl-${VERSION}.tar.gz
+          pushd curl-${VERSION}
+          ./configure --prefix=/usr/local --with-ssl
+          make
+          make install
+          ldconfig
+          popd
+          rm -rf curl-${VERSION}
+          curl --version
+
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
-          override: true
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
-      - name: Test release with ffi feature
-        if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
-
       - name: Test release with all features
         if: inputs.target == 'x86_64-unknown-linux-gnu'
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --all-features --target ${{ inputs.target }} --workspace
+        run: |
+          # from findex v6, linking simultaneously for redis, sqlite and pyo3 backends is not supported by `cargo test`.
+          # see https://pyo3.rs/v0.13.2/faq#i-cant-run-cargo-test-im-having-linker-issues-like-symbol-not-found-or-undefined-reference-to-_pyexc_systemerror
+          cargo test --release --all-features --target ${{ inputs.target }} --workspace --exclude cloudproof_findex
+        env:
+          REDIS_HOST: redis
+
+      - name: Test release with ffi feature
+        if: contains(inputs.feature, 'ffi')
+        run: cargo test --release --features ${{ inputs.feature }},sqlite-interface --target ${{ inputs.target }}
+        env:
+          REDIS_HOST: redis
+
+      - name: Build debug with feature ${{ inputs.feature }}
+        if: contains(inputs.feature, 'ffi')
+        run: cargo build --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: Build release with feature ${{ inputs.feature }}
         if: contains(inputs.feature, 'ffi')
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+        run: cargo build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
 
       - name: cbindgen header generation
         if: contains(inputs.feature, 'ffi')
@@ -84,7 +125,7 @@ jobs:
           mkdir -p target
 
           pushd crates/cloudproof
-          cbindgen . -c cbindgen.toml | grep -v \#include | uniq >../../target/cloudproof.h
+          cbindgen . -c cbindgen.toml | uniq >../../target/cloudproof.h
           popd
 
       - name: Upload cargo binaries
@@ -93,5 +134,19 @@ jobs:
         with:
           name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Creating zip for debug symbols
+        if: inputs.debug_artifacts != ''
+        run: |
+          zip -r debug_${{ inputs.target }} ${{ inputs.debug_artifacts }}
+
+      - name: Upload cargo debug binaries
+        if: inputs.debug_artifacts != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug_${{ inputs.target }}
+          path: debug_${{ inputs.target }}.zip
           retention-days: 1
           if-no-files-found: error

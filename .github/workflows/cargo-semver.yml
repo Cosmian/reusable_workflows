@@ -3,10 +3,6 @@ name: Cargo semver
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   semver:
@@ -14,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -30,17 +26,11 @@ jobs:
           key: ${{ runner.os }}-cargo-semver-
           restore-keys: ${{ runner.os }}-cargo-semver-
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          override: true
+      - uses: dtolnay/rust-toolchain@nightly
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo install --locked cargo-semver-checks --version 0.19.0 || true
+        run: cargo +nightly install --locked cargo-semver-checks || true
 
       - name: Verify semver integrity
-        uses: actions-rs/cargo@v1
-        with:
-          command: semver-checks
-          args: check-release
+        run: cargo +stable semver-checks check-release --baseline-root=. --all-features
