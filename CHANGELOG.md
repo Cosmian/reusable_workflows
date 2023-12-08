@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.6] - 2023-06-05
+## [0.6] - 2023-12-08
 
 ### Features
 
-- Removed live compact feature for cloudproof_findex
+- Support of Findex 6.0.0 -> cloudproof_rust 2.4.0
 
 ## [0.5] - 2023-06-05
 
