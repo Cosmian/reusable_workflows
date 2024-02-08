@@ -22,7 +22,3 @@ jobs:
     uses: ./.github/workflows/cargo-audit.yml
     with:
       toolchain: ${{ inputs.toolchain }}
-  cargo-udeps:
-    uses: ./.github/workflows/cargo-udeps.yml
-    with:
-      exclusions: ${{ inputs.exclusions }}
