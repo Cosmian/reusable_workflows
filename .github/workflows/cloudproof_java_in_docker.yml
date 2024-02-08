@@ -43,7 +43,7 @@ jobs:
     name: cloudproof_java for docker on ${{ inputs.os }}
     services:
       kms:
-        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
+        image: ${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
         ports:

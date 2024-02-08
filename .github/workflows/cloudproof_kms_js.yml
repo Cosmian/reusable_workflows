@@ -17,7 +17,7 @@ jobs:
 
     services:
       kms:
-        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
+        image: ${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
           JWK_PRIVATE_KEY: '{"kty": "OKP","d": "MPEVJwdRqGM_qhJOUb5hR0Xr9EvwMLZGnkf-eDj5fU8","use": "enc","crv": "X25519","kid": "DX3GC+Fx3etxfRJValQNbqaB0gs=","x":
