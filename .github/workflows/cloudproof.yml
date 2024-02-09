@@ -93,6 +93,7 @@ jobs:
         cargo test --release --features ffi --target x86_64-apple-darwin -- --skip redis
         cargo build --features ffi --target x86_64-apple-darwin
         cargo build --release --features ffi --target x86_64-apple-darwin
+
       artifacts: |
         target/x86_64-apple-darwin/release/*.dylib
         target/universal/release/*.a
@@ -145,19 +146,6 @@ jobs:
         ./target/web/findex
         ./target/web/fpe
 
-  # linux-ubuntu:
-  #   uses: ./.github/workflows/cargo.yml
-  #   with:
-  #     toolchain: ${{ inputs.toolchain }}
-  #     target: x86_64-unknown-linux-gnu
-  #     feature: ffi
-  #     os: ubuntu-20.04
-  #     pre-requisites: |
-  #       sudo apt update
-  #       sudo apt install -y gnuplot
-  #       cat /proc/cpuinfo
-  #     artifacts: ''
-
   android:
     uses: ./.github/workflows/ndk.yml
     with:
@@ -169,7 +157,6 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
-      feature: ffi
       os: ubuntu-20.04
       pre-requisites: |
         cargo install --locked cbindgen || true
@@ -583,7 +570,6 @@ jobs:
       - java-darwin
       - java-windows
       - flutter-darwin
-      # - linux-ubuntu
       - cross-java-linux
       - cross-js
       - cross-flutter-linux
