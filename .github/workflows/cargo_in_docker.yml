@@ -7,9 +7,6 @@ on:
       toolchain:
         required: true
         type: string
-      feature:
-        required: true
-        type: string
       target:
         required: true
         type: string
@@ -28,7 +25,7 @@ on:
 
 jobs:
   cargo-job:
-    name: ${{ inputs.feature }} for docker ${{ inputs.target }}
+    name: docker ${{ inputs.target }}
     runs-on: ${{ inputs.os }}
     container: iyxd/centos7-rust
     # Redis can be required to run tests
@@ -106,21 +103,17 @@ jobs:
           REDIS_HOST: redis
 
       - name: Test release with ffi feature
-        if: contains(inputs.feature, 'ffi')
-        run: cargo test --release --features ${{ inputs.feature }},sqlite-interface --target ${{ inputs.target }}
+        run: cargo test --release --features ffi,sqlite-interface --target ${{ inputs.target }}
         env:
           REDIS_HOST: redis
 
-      - name: Build debug with feature ${{ inputs.feature }}
-        if: contains(inputs.feature, 'ffi')
-        run: cargo build --features ${{ inputs.feature }} --target ${{ inputs.target }}
+      - name: Build debug with feature ffi
+        run: cargo build --features ffi --target ${{ inputs.target }}
 
-      - name: Build release with feature ${{ inputs.feature }}
-        if: contains(inputs.feature, 'ffi')
-        run: cargo build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
+      - name: Build release with feature ffi
+        run: cargo build --release --features ffi --target ${{ inputs.target }}
 
       - name: cbindgen header generation
-        if: contains(inputs.feature, 'ffi')
         run: |
           mkdir -p target
 

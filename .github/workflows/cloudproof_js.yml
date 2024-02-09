@@ -97,7 +97,7 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - run: npm install
-      - run: npm test
+      - run: npm test -- --no-threads
         env:
           REDIS_HOST: redis
           KMS_HOST: kms
