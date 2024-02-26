@@ -55,10 +55,11 @@ jobs:
         run: ${{ inputs.pre-requisites }}
 
       - uses: actions/setup-python@v4
-        if: inputs.target == 'x86_64-apple-darwin'
+        if: inputs.target != 'x86_64-unknown-linux-gnu'
         with:
           python-version: 3.7
           cache: pip # caching pip dependencies
+
       - run: |
           pip install -r crates/aesgcm/python/requirements.txt
           pip install -r crates/anonymization/python/requirements.txt
@@ -66,9 +67,10 @@ jobs:
           pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
+        if: inputs.target != 'x86_64-unknown-linux-gnu'
 
       - name: Python maturin build
-        if: inputs.target == 'x86_64-apple-darwin'
+        if: inputs.target != 'x86_64-unknown-linux-gnu'
         run: |
           rm -f target/wheels/*.whl | true
 
