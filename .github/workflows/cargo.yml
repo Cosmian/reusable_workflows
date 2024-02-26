@@ -70,7 +70,7 @@ jobs:
         if: inputs.target != 'x86_64-unknown-linux-gnu'
 
       - name: Python maturin build
-        if: inputs.target != 'x86_64-unknown-linux-gnu'
+        if: inputs.target == 'x86_64-pc-windows-gnu' || inputs.target == 'x86_64-apple-darwin'
         run: |
           rm -f target/wheels/*.whl | true
 
