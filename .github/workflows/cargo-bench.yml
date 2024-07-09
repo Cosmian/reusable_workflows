@@ -22,27 +22,22 @@ on:
 
 jobs:
   bench_cleanup:
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-sgx]
+    container:
+      image: rust:latest
 
     steps:
       - name: Chown user
         run: |
           echo "USER: $USER"
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+          chown -R $USER:$USER $GITHUB_WORKSPACE
 
   benchmark:
     needs: bench_cleanup
-    runs-on: self-hosted
-    # permissions:
-    #   packages: write
-    #   contents: read
+    runs-on: [self-hosted, not-sgx]
     container:
       image: rust:latest
-      # image: iyxd/centos7-rust
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - /tmp:/tmp
     steps:
       # # Solve perm denied issue on GA
       # # see: https://github.com/actions/checkout/issues/211
