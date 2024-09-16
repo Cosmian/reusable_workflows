@@ -10,6 +10,9 @@ on:
       kms-version:
         required: true
         type: string
+      fips:
+        required: true
+        type: string
 
 jobs:
   js-job:
@@ -45,6 +48,13 @@ jobs:
       - run: find .
 
       - run: npm install
-      - run: npm test
+
+      - name: FIPS tests
+        if: inputs.fips == 'FIPS'
+        run: npm run -- fips
+
+      - name: FIPS tests
+        if: inputs.fips != 'FIPS'
+        run: npm test
         env:
           KMS_HOST: kms
