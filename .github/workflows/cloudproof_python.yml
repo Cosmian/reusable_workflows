@@ -28,6 +28,9 @@ on:
         required: false
         default: true
         type: boolean
+      fips:
+        required: true
+        type: boolean
 
 jobs:
   python-job:
@@ -108,6 +111,7 @@ jobs:
           python -m unittest tests/test*.py
           python tests/non_regression_cover_crypt.py --test --write
       - name: Run Covercrypt implementations
+        if: inputs.fips != true
         run: |
           pip install -r examples/cover_crypt/requirements.txt
           python3 examples/cover_crypt/example.py
