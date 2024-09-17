@@ -51,7 +51,7 @@ jobs:
 
       - name: FIPS tests
         if: inputs.fips
-        run: npm test fips
+        run: npm test -- fips
 
       - name: Generic tests
         if: inputs.fips != true
