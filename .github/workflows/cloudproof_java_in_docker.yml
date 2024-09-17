@@ -37,6 +37,9 @@ on:
         required: false
         default: true
         type: boolean
+      fips:
+        required: true
+        type: boolean
 
 jobs:
   java-job:
@@ -99,6 +102,18 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - run: mvn package
+        if: inputs.fips != true
+        env:
+          COSMIAN_SERVER_URL: http://kms:9998
+          COSMIAN_FINDEX_CLOUD_BASE_URL: http://findex_cloud:8080
+          REDIS_HOSTNAME: redis
+          REDIS_PORT: 6379
+          LANG: en_US.UTF-8
+          LANGUAGE: en_US:en
+          LC_ALL: en_US.UTF-8
+
+      - run: mvn package -Dtest="!TestDemo,!TestKmsCoverCrypt"
+        if: inputs.fips
         env:
           COSMIAN_SERVER_URL: http://kms:9998
           COSMIAN_FINDEX_CLOUD_BASE_URL: http://findex_cloud:8080

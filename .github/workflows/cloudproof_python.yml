@@ -28,6 +28,9 @@ on:
         required: false
         default: true
         type: boolean
+      fips:
+        required: true
+        type: boolean
 
 jobs:
   python-job:
@@ -103,11 +106,18 @@ jobs:
           mypy examples/cli_demo
           mypy examples/findex_upsert_search
           mypy examples/cover_crypt
-      - name: Run tests
+      - name: Run FIPS tests
+        if: inputs.fips
+        run: |
+          python -m unittest tests/test_anonymization.py tests/test_findex.py tests/test_findex_rest.py tests/test_fpe.py
+          python tests/non_regression_cover_crypt.py --test --write
+      - name: Run all tests
+        if: inputs.fips != true
         run: |
           python -m unittest tests/test*.py
           python tests/non_regression_cover_crypt.py --test --write
       - name: Run Covercrypt implementations
+        if: inputs.fips != true
         run: |
           pip install -r examples/cover_crypt/requirements.txt
           python3 examples/cover_crypt/example.py
