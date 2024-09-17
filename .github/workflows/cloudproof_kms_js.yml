@@ -52,6 +52,8 @@ jobs:
       - name: FIPS tests
         if: inputs.fips
         run: npm test -- fips
+        env:
+          KMS_HOST: kms
 
       - name: Generic tests
         if: inputs.fips != true
