@@ -49,7 +49,7 @@ jobs:
   ### Check if release can be done
   ##############################################################################
   pre-build:
-    uses: ./.github/workflows/cargo-nursery-base.yml
+    uses: ./.github/workflows/cargo-lint.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       exclusions: ${{ inputs.exclusions }}
