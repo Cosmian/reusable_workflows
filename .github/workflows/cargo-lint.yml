@@ -47,7 +47,7 @@ jobs:
           key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
@@ -61,7 +61,7 @@ jobs:
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
+        run: cargo fmt --all -- --check --color always
 
       - name: Static analysis
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings
