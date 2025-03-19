@@ -72,7 +72,7 @@ jobs:
           python-version: 3.8
           cache: pip # caching pip dependencies
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: find .
 
       - name: copy non-regression test vectors
@@ -132,7 +132,7 @@ jobs:
           python3 examples/findex_upsert_search/main.py --managed-rest-server
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudproof_python
           path: ${{ inputs.regression_files }}

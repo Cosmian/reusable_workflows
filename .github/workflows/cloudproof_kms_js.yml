@@ -44,7 +44,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: find .
 
       - run: npm install

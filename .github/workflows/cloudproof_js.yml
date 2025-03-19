@@ -74,7 +74,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('package.json') }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: find .
 
       - uses: actions/setup-python@v4
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudproof_js
           path: ${{ inputs.regression_files }}

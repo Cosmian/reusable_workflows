@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload cargo debug binaries
         if: inputs.debug_artifacts != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: debug_${{ inputs.target }}
           path: debug_${{ inputs.target }}.zip

@@ -67,7 +67,7 @@ jobs:
           python-version: 3.7
       - run: python scripts/get_native_libraries.py
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
 
       - name: copy fresh build of crate
         if: inputs.copy_fresh_build

@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload benchmarks
         if: inputs.force && inputs.features != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmarks_${{ inputs.features }}
           path: BENCHMARKS.md
@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload benchmarks all features
         if: inputs.force && inputs.features == ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmarks
           path: BENCHMARKS.md
