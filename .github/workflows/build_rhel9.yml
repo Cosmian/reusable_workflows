@@ -19,9 +19,6 @@ on:
       debug_or_release:
         required: true
         type: string
-      database:
-        required: false
-        type: string
       features:
         required: false
         type: string
@@ -167,12 +164,11 @@ jobs:
         ports:
           - 6379:6379
 
-    name: ${{ inputs.archive-name }}-${{ inputs.database }}
-    if: github.repository == 'Cosmian/kms' && inputs.debug_or_release == 'release' || inputs.database == 'redis-findex'
+    name: ${{ inputs.archive-name }}
+    if: github.repository == 'Cosmian/kms' && inputs.debug_or_release == 'release'
     runs-on: ubuntu-22.04
     container:
       image: redhat/ubi9
-
     steps:
       - name: Display cpuinfo
         run: cat /proc/cpuinfo
@@ -233,7 +229,6 @@ jobs:
 
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          KMS_TEST_DB: ${{ inputs.database }}
           FEATURES: ${{ inputs.features }}
           SKIP_SERVICES_TESTS: --skip hsm
         run: |
@@ -244,7 +239,6 @@ jobs:
           find target/ -type f -size ++100M -delete
 
       - name: Upload KMS for RHEL 9
-        if: inputs.database == 'redis-findex'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
@@ -257,7 +251,7 @@ jobs:
           if-no-files-found: error
 
   kms-test:
-    if: github.repository == 'Cosmian/cli' && inputs.database == 'redis-findex'
+    if: github.repository == 'Cosmian/kms'
     needs: rhel9-kms
     name: Clean env test ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04

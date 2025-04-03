@@ -14,7 +14,7 @@ on:
 
 jobs:
   rhel9:
-    name: RHEL9
+    name: RHEL9 
     uses: ./.github/workflows/build_rhel9.yml
     secrets: inherit
     with:
@@ -22,32 +22,10 @@ jobs:
       archive-name: rhel9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-
-  rhel9-kms:
-    if: github.repository == 'Cosmian/kms'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - database: redis-findex
-          - database: sqlite
-          - database: sqlite-enc
-          # - database: postgresql # for now, deadlock trouble in tests
-          # - database: mysql # for now, deadlock trouble in tests
-    name: RHEL9 - ${{ matrix.database }}
-    uses: ./.github/workflows/build_rhel9.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      archive-name: rhel9
-      target: x86_64-unknown-linux-gnu
-      debug_or_release: ${{ inputs.debug_or_release }}
-      database: ${{ matrix.database }}
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
 
-  generic-kms:
-    if: github.repository == 'Cosmian/kms'
+  generic:
     strategy:
       fail-fast: false
       matrix:
@@ -60,8 +38,11 @@ jobs:
               /usr/local/openssl/ssl/openssl.cnf
               /usr/local/openssl/ssl/fipsmodule.cnf
             features: fips
-
             docker_compose: true
+            prerequisites_cli: |
+              sudo apt-get update
+              sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev pkg-config jq
+            skip_services_tests_findex_server : --skip hsm
 
           - distribution: ubuntu-24.04
             archive-name: ubuntu_24_04
@@ -69,14 +50,26 @@ jobs:
             artifacts: |
               /usr/local/openssl/lib64/ossl-modules/legacy.so
             docker_compose: true
+            prerequisites_cli: |
+              sudo apt-get update
+              sudo apt-get install -qq libgtk-3-dev libglib2.0-dev pkg-config jq
+            skip_services_tests_findex_server : --skip hsm
+
+          - distribution: macos-13
+            archive-name: macos_intel
+            target: x86_64-apple-darwin
+            docker_compose: false
+            skip_services_tests_cli: --skip findex_server --skip hsm
 
           - distribution: macos-14
             archive-name: macos_arm
             target: aarch64-apple-darwin
             artifacts: |
               /usr/local/openssl/lib/ossl-modules/legacy.dylib
-            skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse --skip hsm --skip findex_server
             docker_compose: false
+            skip_services_tests_kms: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse --skip hsm --skip findex_server
+            skip_services_tests_cli: --skip findex_server --skip hsm
+            skip_services_tests_findex_server : --skip findex_server --skip hsm --skip memory_adt --skip test_encrypt --skip redis
 
     name: ${{ matrix.distribution }}
     uses: ./.github/workflows/build_generic.yml
@@ -87,93 +80,13 @@ jobs:
       archive-name: ${{ matrix.archive-name }}
       target: ${{ matrix.target }}
       debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: ${{ matrix.skip_services_tests }}
+      skip_services_tests_kms: ${{ matrix.skip_services_tests_kms }}
+      skip_services_tests_cli: ${{ matrix.skip_services_tests_cli }}
+      skip_services_tests_findex_server: ${{ matrix.skip_services_tests_findex_server }}
       artifacts: ${{ matrix.artifacts }}
       features: ${{ matrix.features }}
       docker_compose: ${{ matrix.docker_compose }}
-
-  generic-cli:
-    if: github.repository == 'Cosmian/cli'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - distribution: ubuntu-22.04
-            archive-name: ubuntu_22_04
-            target: x86_64-unknown-linux-gnu
-            prerequisites: |
-              sudo apt-get update
-              sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev pkg-config jq
-            docker_compose: true
-
-          - distribution: ubuntu-24.04
-            archive-name: ubuntu_24_04
-            target: x86_64-unknown-linux-gnu
-            prerequisites: |
-              sudo apt-get update
-              sudo apt-get install -qq libgtk-3-dev libglib2.0-dev pkg-config jq
-            docker_compose: true
-
-          - distribution: macos-13
-            archive-name: macos_intel
-            target: x86_64-apple-darwin
-            skip_services_tests: --skip findex_server --skip hsm
-            docker_compose: false
-
-          - distribution: macos-14
-            archive-name: macos_arm
-            target: aarch64-apple-darwin
-            skip_services_tests: --skip findex_server --skip hsm
-            docker_compose: false
-
-    name: ${{ matrix.distribution }}
-    uses: ./.github/workflows/build_generic.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      distribution: ${{ matrix.distribution }}
-      archive-name: ${{ matrix.archive-name }}
-      target: ${{ matrix.target }}
-      debug_or_release: ${{ inputs.debug_or_release }}
-      prerequisites: ${{ matrix.prerequisites }}
-      skip_services_tests: ${{ matrix.skip_services_tests }}
-      docker_compose: ${{ matrix.docker_compose }}
-
-  generic-findex-server:
-    if: github.repository == 'Cosmian/findex-server'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - distribution: ubuntu-22.04
-            archive-name: ubuntu_22_04
-            target: x86_64-unknown-linux-gnu
-            skip_services_tests : --skip hsm
-            docker_compose: true
-
-          - distribution: ubuntu-24.04
-            archive-name: ubuntu_24_04
-            target: x86_64-unknown-linux-gnu
-            skip_services_tests : --skip hsm
-            docker_compose: true
-
-          - distribution: macos-14
-            archive-name: macos_arm
-            target: aarch64-apple-darwin
-            skip_services_tests : --skip findex_server --skip hsm --skip memory_adt --skip test_encrypt --skip redis
-            docker_compose: false
-
-    name: ${{ matrix.distribution }}
-    uses: ./.github/workflows/build_generic.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      distribution: ${{ matrix.distribution }}
-      archive-name: ${{ matrix.archive-name }}
-      target: ${{ matrix.target }}
-      debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: ${{ matrix.skip_services_tests }}
-      docker_compose: ${{ matrix.docker_compose }}
+      prerequisites_cli: ${{ matrix.prerequisites_cli }}
 
   windows-2022:
     if: inputs.debug_or_release == 'release'
@@ -186,10 +99,7 @@ jobs:
   cleanup:
     needs:
       - rhel9
-      - rhel9-kms
-      - generic-kms
-      - generic-cli
-      - generic-findex-server
+      - generic
       - windows-2022
     uses: ./.github/workflows/cleanup_cache.yml
     secrets: inherit

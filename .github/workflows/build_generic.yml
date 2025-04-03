@@ -25,10 +25,16 @@ on:
       features:
         required: false
         type: string
-      skip_services_tests:
+      skip_services_tests_cli:
         required: false
         type: string
-      prerequisites:
+      skip_services_tests_findex_server:
+        required: false
+        type: string
+      skip_services_tests_kms:
+        required: false
+        type: string
+      prerequisites_cli:
         required: false
         type: string
       docker_compose:
@@ -36,24 +42,26 @@ on:
         type: boolean
         default: false
 
+env:
+  OPENSSL_DIR: OPENSSL_DIR
+
 jobs:
-  build-cli:
-    if: github.repository == 'Cosmian/cli'
-    name: build-cli-${{ inputs.archive-name }}
+  build:
+    name: build-${{ inputs.archive-name }}
     runs-on: ${{ inputs.distribution }}
-    env:
-      OPENSSL_DIR: /usr/local/openssl
     steps:
       - name: Display cpuinfo
         if: contains(runner.os, 'Linux')
         run: cat /proc/cpuinfo
 
-      - run: |
+      - uses: actions/checkout@v4
+
+      - name: Openssl
+        if: github.repository == 'Cosmian/cli' || github.repository == 'Cosmian/kms'
+        run: |
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
-
-      - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -66,13 +74,14 @@ jobs:
           docker compose -h
           docker compose up -d
 
-      - name: Prerequisites
-        if: ${{ inputs.prerequisites }}
+      - name: Prerequisites cli
+        if: github.repository == 'Cosmian/cli' && ${{ inputs.prerequisites_cli }}
         run: |
           set -ex
-          ${{ inputs.prerequisites }}
+          ${{ inputs.prerequisites_cli }}
 
-      - name: Local OpenSSL FIPS Install
+      - name: Local OpenSSL FIPS Install cli
+        if: github.repository == 'Cosmian/cli'
         run: |
           sudo mkdir -p ${{ env.OPENSSL_DIR }}
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
@@ -80,7 +89,15 @@ jobs:
         env:
           OS_NAME: ${{ inputs.archive-name }}
 
-      - name: Build and tests
+      - name: Local OpenSSL FIPS Install kms
+        if: github.repository == 'Cosmian/kms'
+        run: |
+          bash .github/scripts/get_openssl_binaries.sh
+        env:
+          OS_NAME: ${{ inputs.archive-name }}
+
+      - name: Build and tests cli
+        if: github.repository == 'Cosmian/cli'
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
@@ -88,68 +105,12 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_cli }}
         run: |
           bash .github/scripts/cargo_build.sh
 
-      - name: Cosmian tests
-        if: contains(runner.os, 'Linux')
-        run: |
-          set -ex
-          bash .github/scripts/cosmian_tests.sh
-
-      - name: Remove large files before saving cache
-        run: |
-          find target/ -type f -size +100M -delete
-
-      - name: Upload CLI for ${{ inputs.distribution }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-          path: |
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/libcosmian_pkcs11.*
-            target/${{ inputs.target }}/debian/*.deb
-          retention-days: 1
-          if-no-files-found: error
-
-  build-kms:
-    if: github.repository == 'Cosmian/kms'
-    name: build-kms-${{ inputs.archive-name }}
-    runs-on: ${{ inputs.distribution }}
-    env:
-      OPENSSL_DIR: /usr/local/openssl
-    steps:
-      - name: Display cpuinfo
-        if: contains(runner.os, 'Linux')
-        run: cat /proc/cpuinfo
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - run: |
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
-          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
-
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
-
-      - name: Run docker containers
-        if: ${{ inputs.docker_compose }}
-        run: |
-          docker compose -h
-          docker compose up -d
-
-      - run: |
-          bash .github/scripts/get_openssl_binaries.sh
-        env:
-          OS_NAME: ${{ inputs.archive-name }}
-      - name: Build and tests
+      - name: Build and tests kms
+        if: github.repository == 'Cosmian/kms'
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
@@ -174,15 +135,51 @@ jobs:
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_kms }}
         run: |
           bash .github/scripts/cargo_build.sh
+
+      - name: Build and tests findex server
+        if: github.repository == 'Cosmian/findex-server'
+        env:
+          REDIS_URL: redis://localhost:6379
+
+          # Google variables
+          TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
+          TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
+          TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
+
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_findex_server }}
+        run: |
+          bash .github/scripts/cargo_build.sh
+
+      - name: Cosmian cli tests
+        if:  github.repository == 'Cosmian/cli' && contains(runner.os, 'Linux')
+        run: |
+          set -ex
+          bash .github/scripts/cosmian_tests.sh
 
       - name: Remove large files before saving cache
         run: |
           find target/ -type f -size +100M -delete
 
+      - name: Upload CLI for ${{ inputs.distribution }}
+        if : github.repository == 'Cosmian/cli'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
+          path: |
+            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
+            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
+            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/libcosmian_pkcs11.*
+            target/${{ inputs.target }}/debian/*.deb
+          retention-days: 1
+          if-no-files-found: error
+
       - name: Upload KMS for ${{ inputs.distribution }}
+        if : github.repository == 'Cosmian/kms'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
@@ -194,42 +191,8 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  build-findex-server:
-    if: github.repository == 'Cosmian/findex-server'
-    name: build-findex-server-${{ inputs.archive-name }}
-    runs-on: ${{ inputs.distribution }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
-
-      - name: Run Redis container
-        if: ${{ inputs.docker_compose }}
-        run: |
-          docker compose -h
-          docker compose up -d
-
-      - name: Build and tests
-        env:
-          REDIS_URL: redis://localhost:6379
-
-          # Google variables
-          TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
-          TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
-          TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
-
-          TARGET: ${{ inputs.target }}
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
-        run: |
-          bash .github/scripts/cargo_build.sh
-
       - name: Upload findex-server for ${{ inputs.distribution }}
+        if : github.repository == 'Cosmian/findex-server'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
@@ -240,10 +203,9 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  test-cli:
-    if: github.repository == 'Cosmian/cli'
+  test:
     name: Clean env. ${{ inputs.archive-name }}
-    needs: build-cli
+    needs: build
     runs-on: ${{ inputs.distribution }}
     steps:
       - uses: actions/download-artifact@v4
@@ -254,7 +216,7 @@ jobs:
         if: contains(runner.os, 'linux')
 
       - name: Linux launch cosmian and cosmian_gui
-        if: contains(runner.os, 'Linux')
+        if: github.repository == 'Cosmian/cli' && contains(runner.os, 'Linux')
         run: |
           set -ex
           # The current path should be /home/runner/work/cli/cli
@@ -267,7 +229,7 @@ jobs:
           ./${{ inputs.debug_or_release }}/cosmian_gui -V
 
       - name: MacOS launch cosmian and cosmian_gui
-        if: contains(runner.os, 'macos')
+        if:  github.repository == 'Cosmian/cli' && contains(runner.os, 'macos')
         run: |
           set -ex
           # The current path should be /Users/runner/work/cli/cli
@@ -280,21 +242,8 @@ jobs:
           ./${{ inputs.debug_or_release }}/cosmian -V
           ./${{ inputs.debug_or_release }}/cosmian_gui -V
 
-  test-kms:
-    if: github.repository == 'Cosmian/kms'
-    name: Clean env. ${{ inputs.archive-name }}
-    needs: build-kms
-    runs-on: ${{ inputs.distribution }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-
-      - run: find .
-        if: contains(runner.os, 'linux')
-
       - name: Linux launch cosmian and cosmian_kms
-        if: contains(runner.os, 'Linux')
+        if:  github.repository == 'Cosmian/kms' && contains(runner.os, 'Linux')
         run: |
           set -ex
           # The current path should be /home/runner/work/kms/kms
@@ -318,7 +267,7 @@ jobs:
           ./$KMS_PATH/cosmian_kms --info
 
       - name: MacOS launch cosmian and cosmian_kms
-        if: contains(runner.os, 'macos')
+        if:  github.repository == 'Cosmian/kms' && contains(runner.os, 'macos')
         run: |
           set -ex
           # The current path should be /Users/runner/work/kms/kms
@@ -342,21 +291,8 @@ jobs:
           chmod u+x /usr/local/openssl/lib/ossl-modules/*.dylib
           ./$KMS_PATH/cosmian_kms --info
 
-  test-findex-server:
-    if: github.repository == 'Cosmian/findex-server'
-    name: Clean env. ${{ inputs.archive-name }}
-    needs: build-findex-server
-    runs-on: ${{ inputs.distribution }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-
-      - run: find .
-        if: contains(runner.os, 'linux')
-
       - name: Linux launch cli and server
-        if: contains(runner.os, 'Linux')
+        if:  github.repository == 'Cosmian/findex-server' && contains(runner.os, 'Linux')
         run: |
           set -ex
           pwd
@@ -368,7 +304,7 @@ jobs:
           ./${{ inputs.debug_or_release }}/cosmian_findex_server -V
 
       - name: MacOS launch cli and server
-        if: contains(runner.os, 'macos')
+        if: github.repository == 'Cosmian/findex-server' && contains(runner.os, 'macos')
         run: |
           set -ex
           chmod u+x ./${{ inputs.debug_or_release }}/cosmian
