@@ -64,7 +64,9 @@ jobs:
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
           TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
+
       - name: Build FIPS OpenSSL
+        if: github.repository == 'Cosmian/kms'
         shell: pwsh
         run: |
           Copy-Item -Path "vcpkg_fips.json" -Destination "vcpkg.json"

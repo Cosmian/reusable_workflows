@@ -25,25 +25,19 @@ on:
       features:
         required: false
         type: string
-      skip_services_tests_cli:
+      skip_services_tests:
         required: false
         type: string
-      skip_services_tests_findex_server:
-        required: false
-        type: string
-      skip_services_tests_kms:
-        required: false
-        type: string
-      prerequisites_cli:
+      prerequisites:
         required: false
         type: string
       docker_compose:
         required: false
         type: boolean
         default: false
-
-env:
-  OPENSSL_DIR: OPENSSL_DIR
+      openssl-dir:
+        required: false
+        type: string
 
 jobs:
   build:
@@ -55,13 +49,15 @@ jobs:
         run: cat /proc/cpuinfo
 
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Openssl
         if: github.repository == 'Cosmian/cli' || github.repository == 'Cosmian/kms'
         run: |
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
-          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          sudo mkdir -p ${{ inputs.openssl-dir }}/ssl
+          sudo mkdir -p ${{ inputs.openssl-dir }}/lib64/ossl-modules
+          sudo chown -R $USER ${{ inputs.openssl-dir }}
 
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -75,16 +71,16 @@ jobs:
           docker compose up -d
 
       - name: Prerequisites cli
-        if: github.repository == 'Cosmian/cli' && ${{ inputs.prerequisites_cli }}
+        if: github.repository == 'Cosmian/cli'
         run: |
           set -ex
-          ${{ inputs.prerequisites_cli }}
+          ${{ inputs.prerequisites }}
 
       - name: Local OpenSSL FIPS Install cli
         if: github.repository == 'Cosmian/cli'
         run: |
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}
-          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          sudo mkdir -p ${{ inputs.openssl-dir }}
+          sudo chown -R $USER ${{ inputs.openssl-dir }}
           bash .github/scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ${{ inputs.archive-name }}
@@ -99,20 +95,20 @@ jobs:
       - name: Build and tests cli
         if: github.repository == 'Cosmian/cli'
         env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          OPENSSL_DIR: ${{ inputs.openssl-dir }}
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
           TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_cli }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
           bash .github/scripts/cargo_build.sh
 
       - name: Build and tests kms
         if: github.repository == 'Cosmian/kms'
         env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          OPENSSL_DIR: ${{ inputs.openssl-dir }}
 
           POSTGRES_USER: kms
           PGUSER: kms
@@ -135,7 +131,7 @@ jobs:
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_kms }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
           bash .github/scripts/cargo_build.sh
 
@@ -151,7 +147,7 @@ jobs:
 
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests_findex_server }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
           bash .github/scripts/cargo_build.sh
 

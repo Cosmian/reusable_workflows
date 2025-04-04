@@ -12,7 +12,6 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     env:
-      OPENSSL_DIR: /usr/local/openssl
       PKG_CONFIG_PATH:
     steps:
       - uses: actions/checkout@v4
@@ -55,8 +54,6 @@ jobs:
       - name: Static analysis
         if: github.repository == 'Cosmian/cli'
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
       - name: Static analysis
         if: github.repository == 'Cosmian/findex-server'
@@ -65,11 +62,7 @@ jobs:
       - name: Static analysis
         if: github.repository == 'Cosmian/kms'
         run: cargo clippy --workspace --all-targets -- -D warnings
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
       - name: Static analysis all features
         if: github.repository == 'Cosmian/kms'
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}

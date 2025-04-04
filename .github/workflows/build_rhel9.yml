@@ -165,7 +165,7 @@ jobs:
           - 6379:6379
 
     name: ${{ inputs.archive-name }}
-    if: github.repository == 'Cosmian/kms' && inputs.debug_or_release == 'release'
+    if: github.repository == 'Cosmian/kms' 
     runs-on: ubuntu-22.04
     container:
       image: redhat/ubi9
