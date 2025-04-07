@@ -36,9 +36,6 @@ jobs:
   benchmark:
     needs: bench_cleanup
     runs-on: [self-hosted, not-sgx]
-    # permissions:
-    #   packages: write
-    #   contents: read
     container:
       image: rust:latest
     services:
