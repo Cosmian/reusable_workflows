@@ -9,12 +9,12 @@ on:
         type: string
       features:
         required: false
-        default: ''
+        default: ""
         type: string
       exclusions:
         required: false
         type: string
-        default: ''
+        default: ""
       force:
         required: false
         default: false
@@ -22,7 +22,7 @@ on:
 
 jobs:
   bench_cleanup:
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-sgx]
 
     steps:
       - name: Chown user
@@ -33,7 +33,7 @@ jobs:
 
   benchmark:
     needs: bench_cleanup
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-sgx]
     # permissions:
     #   packages: write
     #   contents: read
