@@ -16,7 +16,7 @@ jobs:
   lint:
     runs-on: ubuntu-22.04
 
-    # Redis can be required to run tests
+    # Redis or Postgresql can be required to run tests
     services:
       postgres:
         image: postgres:14
