@@ -38,6 +38,31 @@ jobs:
     runs-on: [self-hosted, not-sgx]
     container:
       image: rust:latest
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: cosmian
+          POSTGRES_PASSWORD: cosmian
+          POSTGRES_DB: cosmian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       # # Solve perm denied issue on GA
       # # see: https://github.com/actions/checkout/issues/211
