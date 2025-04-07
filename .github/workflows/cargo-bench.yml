@@ -9,12 +9,12 @@ on:
         type: string
       features:
         required: false
-        default: ""
+        default: ''
         type: string
       exclusions:
         required: false
         type: string
-        default: ""
+        default: ''
       force:
         required: false
         default: false
