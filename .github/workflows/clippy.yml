@@ -8,11 +8,13 @@ on:
         required: true
         type: string
 
+env:
+  OPENSSL_DIR: /usr/local/openssl
+
 jobs:
   lint:
-    runs-on: ubuntu-24.04
-    env:
-      PKG_CONFIG_PATH:
+    runs-on: ubuntu-22.04
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,44 +27,32 @@ jobs:
           key: ${{ runner.os }}
 
       - name: Local OpenSSL FIPS Install
-        if: github.repository == 'Cosmian/cli'|| github.repository == 'Cosmian/kms'
         run: |
           sudo chown -R $USER:$USER /usr/local
           bash .github/scripts/get_openssl_binaries.sh
         env:
-          OS_NAME: ubuntu_24_04
+          OS_NAME: ubuntu_22_04
 
       - name: Install Klask prerequisites
-        if: github.repository == 'Cosmian/cli'
         run: |
           sudo apt-get update
-          sudo apt-get install -qq libgtk-3-dev glib-2.0 libssl-dev pkg-config
+          sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
 
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      - name: Check formatting
-        if: github.repository == 'Cosmian/cli'|| github.repository == 'Cosmian/findex-server'
-        run: cargo fmt --all -- --check --color always
-
+      # # Ensure all code has been formatted with rustfmt
       # - name: Check formatting
-      #   if: github.repository == 'Cosmian/kms'
       #   run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
 
       - name: Static analysis
-        if: github.repository == 'Cosmian/cli'
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-
-      - name: Static analysis
-        if: github.repository == 'Cosmian/findex-server'
-        run: cargo clippy --workspace --all-targets --all-features --tests -- -D warnings
-
-      - name: Static analysis
-        if: github.repository == 'Cosmian/kms'
         run: cargo clippy --workspace --all-targets -- -D warnings
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
       - name: Static analysis all features
-        if: github.repository == 'Cosmian/kms'
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}

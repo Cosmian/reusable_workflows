@@ -1,5 +1,5 @@
 ---
-name: KMS cargo build - windows
+name: Windows
 
 on:
   workflow_call:
@@ -66,52 +66,31 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
 
       - name: Build FIPS OpenSSL
-        if: github.repository == 'Cosmian/kms'
         shell: pwsh
         run: |
-          Copy-Item -Path "vcpkg_fips.json" -Destination "vcpkg.json"
-          vcpkg install
-          vcpkg integrate install
+          if (Test-Path "vcpkg_fips.json") {
+            Copy-Item -Path "vcpkg_fips.json" -Destination "vcpkg.json"
+            vcpkg install
+            vcpkg integrate install
 
-          Get-ChildItem -Recurse "$env:VCPKG_INSTALLATION_ROOT\packages"
+            Get-ChildItem -Recurse "$env:VCPKG_INSTALLATION_ROOT\packages"
 
-          # Copy fips.dll to the specified directory
-          Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\legacy.dll" -Destination "D:\a\kms\kms"
-          Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\fips.dll" -Destination "D:\a\kms\kms"
+            # Copy fips.dll to the specified directory
+            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\legacy.dll" -Destination "D:\a\kms\kms"
+            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\fips.dll" -Destination "D:\a\kms\kms"
+          }
 
-      - name: Upload CLI for windows-2022
-        if: github.repository == 'Cosmian/cli'
+      - name: Upload for windows-2022
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
           path: |
             target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe
             target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_gui.exe
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_pkcs11.dll
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Upload KMS for windows-2022
-        if: github.repository == 'Cosmian/kms'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-          path: |
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe
             target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_kms.exe
+            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_findex_server.exe
             fips.dll
             legacy.dll
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Upload Findex server for windows-2022
-        if: github.repository == 'Cosmian/findex-server'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-          path: |
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_findex_server.exe
           retention-days: 1
           if-no-files-found: error
 
@@ -128,15 +107,7 @@ jobs:
         shell: pwsh
         run: Get-ChildItem -Recurse
 
-      - name: Launch cosmian and cosmian_gui
-        if: github.repository == 'Cosmian/cli'
-        run: |
-          pwd
-          ./cosmian.exe -V
-          ./cosmian_gui.exe -V
-
       - name: Copy legacy.dll
-        if: github.repository == 'Cosmian/kms'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path C:/Windows/System32/OpenSSL/lib/ossl-modules
@@ -144,16 +115,7 @@ jobs:
           Get-ChildItem -Recurse C:/Windows/System32/OpenSSL
 
       - name: Launch cosmian and cosmian_kms
-        if: github.repository == 'Cosmian/kms'
         run: |
           pwd
           ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe -V
           ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_kms.exe --info
-
-
-      - name: Launch cosmian and cosmian_findex_server
-        if: github.repository == 'Cosmian/findex-server'
-        run: |
-          pwd
-          ./cosmian.exe -V
-          ./cosmian_findex_server.exe -V
