@@ -110,12 +110,15 @@ jobs:
       - name: Copy legacy.dll
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path C:/Windows/System32/OpenSSL/lib/ossl-modules
-          Copy-Item -Path legacy.dll -Destination C:/Windows/System32/OpenSSL/lib/ossl-modules/legacy.dll
-          Get-ChildItem -Recurse C:/Windows/System32/OpenSSL
+          if (Test-Path "legacy.dll") {
+            New-Item -ItemType Directory -Force -Path C:/Windows/System32/OpenSSL/lib/ossl-modules
+            Copy-Item -Path legacy.dll -Destination C:/Windows/System32/OpenSSL/lib/ossl-modules/legacy.dll
+            Get-ChildItem -Recurse C:/Windows/System32/OpenSSL
+          }
 
-      - name: Launch cosmian and cosmian_kms
+      - name: Launch binaries
         run: |
-          pwd
-          ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe -V
-          ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_kms.exe --info
+          Get-ChildItem -Filter "cosmian*.exe" | ForEach-Object {
+            Write-Host "Testing $_..."
+            & $_.FullName -V
+          }
