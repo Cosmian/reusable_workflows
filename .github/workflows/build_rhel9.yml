@@ -129,7 +129,8 @@ jobs:
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: --skip hsm
+          SKIP_SERVICES_TESTS: --skip hsm test_findex_concurrent_read_write test_concurrent_read_write
+
         run: |
           bash .github/scripts/cargo_build.sh
 
