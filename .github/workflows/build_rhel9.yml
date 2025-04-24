@@ -103,6 +103,7 @@ jobs:
 
       - name: Build and tests
         env:
+          RUST_MIN_STACK: 16777216
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
           POSTGRES_USER: kms
