@@ -7,6 +7,9 @@ on:
       project-name:
         required: true
         type: string
+      destination:
+        required: true
+        type: string
       debug_or_release:
         required: true
         type: string
@@ -59,7 +62,7 @@ jobs:
           else
             BRANCH="last_build/${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
           fi
-          DESTINATION_DIR=/mnt/package/${{ inputs.project-name }}/$BRANCH
+          DESTINATION_DIR=/mnt/package/${{ inputs.destination }}/$BRANCH
           ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa *.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
 
