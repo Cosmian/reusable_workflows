@@ -13,15 +13,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  rhel9:
-    name: RHEL9
-    uses: ./.github/workflows/build_rhel9.yml
+  rockylinux9:
+    name: rocky linux 9.3
+    uses: ./.github/workflows/build_rocky.yml
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
-      archive-name: rhel9
+      archive-name: rockylinux9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
+      docker_image: rockylinux:9.3
+      artifacts: |
+        /usr/local/openssl/lib64/ossl-modules/legacy.so
+
+  rockylinux8:
+    # if: inputs.debug_or_release == 'release'
+    name: rocky linux 8.9
+    uses: ./.github/workflows/build_rocky.yml
+    secrets: inherit
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      archive-name: rockylinux8
+      target: x86_64-unknown-linux-gnu
+      debug_or_release: ${{ inputs.debug_or_release }}
+      docker_image: rockylinux:8.9
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
 
@@ -124,7 +139,8 @@ jobs:
 
   cleanup:
     needs:
-      - rhel9
+      - rockylinux8
+      - rockylinux9
       - linux-mac
       - linux-mac-release
       - windows-2022
