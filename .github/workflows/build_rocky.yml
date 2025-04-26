@@ -1,5 +1,5 @@
 ---
-name: RHEL
+name: Rocky linux
 
 on:
   workflow_call:
@@ -19,6 +19,9 @@ on:
       debug_or_release:
         required: true
         type: string
+      docker_image:
+        required: true
+        type: string
       features:
         required: false
         type: string
@@ -27,7 +30,7 @@ env:
   OPENSSL_DIR: /usr/local/openssl
 
 jobs:
-  rhel9-tests:
+  rockylinux-tests:
     services:
       # Label used to access the service container
       postgres:
@@ -63,22 +66,22 @@ jobs:
           - 6379:6379
 
     name: ${{ inputs.archive-name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container:
-      image: rockylinux:9.3
+      image: ${{ inputs.docker_image }}
 
     steps:
       - name: Display cpuinfo
         run: cat /proc/cpuinfo
 
-      - name: RHEL 9 prerequisites
+      - name: ${{ inputs.docker_image }} prerequisites
         run: |
           set -x
 
           yum -y install glib2-devel gtk3-devel atk-devel
-          yum -y install python-devel
-          yum -y install wget xz
-          yum -y install perl-IPC-Cmd perl-Digest-SHA1 perl-CPAN perl-devel
+          yum -y install platform-python-devel
+          yum -y install findutils
+          yum -y install wget xz make gcc
           yum -y install git
 
       - uses: actions/checkout@v4
@@ -94,7 +97,7 @@ jobs:
         run: |
           bash .github/scripts/get_openssl_binaries.sh
         env:
-          OS_NAME: ubuntu_22_04
+          OS_NAME: ubuntu_20_04
 
       - name: Pre-cleanup
         run: |
@@ -137,7 +140,7 @@ jobs:
         run: |
           find target/ -type f -size ++100M -delete
 
-      - name: Upload for RHEL 9
+      - name: Upload for ${{ inputs.docker_image }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
@@ -152,7 +155,7 @@ jobs:
           if-no-files-found: error
 
   clean-test:
-    needs: rhel9-tests
+    needs: rockylinux-tests
     name: Clean env test ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04
     steps:
