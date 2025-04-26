@@ -27,7 +27,7 @@ jobs:
         /usr/local/openssl/lib64/ossl-modules/legacy.so
 
   rockylinux8:
-    # if: inputs.debug_or_release == 'release'
+    if: inputs.debug_or_release == 'release'
     name: rocky linux 8.9
     uses: ./.github/workflows/build_rocky.yml
     secrets: inherit
