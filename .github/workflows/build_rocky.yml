@@ -79,7 +79,7 @@ jobs:
           set -x
 
           yum -y install glib2-devel gtk3-devel atk-devel
-          yum -y install python-devel
+          yum -y install platform-python-devel
           yum -y install wget xz
           yum -y install perl-IPC-Cmd perl-Digest-SHA1 perl-CPAN perl-devel
           yum -y install git
