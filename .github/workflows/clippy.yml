@@ -43,9 +43,9 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      # # Ensure all code has been formatted with rustfmt
-      # - name: Check formatting
-      #   run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
+      # Ensure all code has been formatted with rustfmt
+      - name: Check formatting
+        run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
 
       - name: Static analysis
         run: cargo clippy --workspace --all-targets -- -D warnings
