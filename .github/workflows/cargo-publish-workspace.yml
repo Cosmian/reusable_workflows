@@ -1,0 +1,40 @@
+---
+name: Release and cargo publish
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      publish:
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump context for debug
+        uses: crazy-max/ghaction-dump-context@v1
+
+      - uses: actions/checkout@v3
+
+      - name: Publishing - dry run
+        if: inputs.publish == false
+        run: |
+          cargo +nightly publish --dry-run --workspace -Z package-workspace
+
+      - name: Publishing
+        if: inputs.publish == true
+        run: |
+          echo "[registry]" > ~/.cargo/credentials
+          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
+          cargo +nightly publish --workspace -Z package-workspace --token $CRATES_IO
+        env:
+          CRATES_IO: ${{ secrets.CRATES_IO }}
+
+      - name: Release
+        if: inputs.publish == true
+        uses: softprops/action-gh-release@v1
