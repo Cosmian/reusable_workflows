@@ -7,10 +7,6 @@ on:
       toolchain:
         required: true
         type: string
-      publish:
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   publish:
@@ -22,12 +18,11 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Publishing - dry run
-        if: inputs.publish == false
         run: |
           cargo +nightly publish --dry-run --workspace -Z package-workspace
 
       - name: Publishing
-        if: inputs.publish == true
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           echo "[registry]" > ~/.cargo/credentials
           echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
@@ -36,5 +31,5 @@ jobs:
           CRATES_IO: ${{ secrets.CRATES_IO }}
 
       - name: Release
-        if: inputs.publish == true
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
