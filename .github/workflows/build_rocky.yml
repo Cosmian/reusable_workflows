@@ -78,7 +78,7 @@ jobs:
         run: |
           set -xe
 
-          yum -y install glibc glibc-devel
+          yum -y install glibc-devel --nobest || yum install -y glibc-devel --skip-broken
           dnf groupinstall -y "Development Tools"
           yum -y install glib2-devel gtk3-devel atk-devel \
             platform-python-devel \
