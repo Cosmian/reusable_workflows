@@ -76,18 +76,14 @@ jobs:
 
       - name: ${{ inputs.docker_image }} prerequisites
         run: |
-          set -x
-
-          yum clean all
-          yum -y update
-
-          yum -y install epel-release
+          set -xe
 
           yum -y install glib2-devel gtk3-devel atk-devel \
             platform-python-devel \
             findutils \
             wget xz make \
-            git glibc
+            git
+          yum -y glibc glibc-devel
           dnf groupinstall -y "Development Tools"
 
       - uses: actions/checkout@v4
