@@ -87,7 +87,7 @@ jobs:
             platform-python-devel \
             findutils \
             wget xz make \
-            git
+            git glibc
           dnf groupinstall -y "Development Tools"
 
       - uses: actions/checkout@v4
