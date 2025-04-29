@@ -83,6 +83,7 @@ jobs:
             findutils \
             wget xz make \
             git
+          yum -y install gcc
 
       - uses: actions/checkout@v4
         with:
