@@ -78,10 +78,13 @@ jobs:
         run: |
           set -x
 
+          yum -y install epel-release
+
           yum -y install glib2-devel gtk3-devel atk-devel
           yum -y install platform-python-devel
           yum -y install findutils
-          yum -y install wget xz make gcc
+          yum -y install wget xz make
+          yum -y install gcc --nobest
           yum -y install git
 
       - uses: actions/checkout@v4
