@@ -78,13 +78,13 @@ jobs:
         run: |
           set -xe
 
+          yum -y install glibc glibc-devel
+          dnf groupinstall -y "Development Tools"
           yum -y install glib2-devel gtk3-devel atk-devel \
             platform-python-devel \
             findutils \
             wget xz make \
             git
-          yum -y glibc glibc-devel
-          dnf groupinstall -y "Development Tools"
 
       - uses: actions/checkout@v4
         with:
