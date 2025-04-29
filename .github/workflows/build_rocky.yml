@@ -76,11 +76,8 @@ jobs:
 
       - name: ${{ inputs.docker_image }} prerequisites
         run: |
-          set -xe
+          set -x
 
-          yum clean all
-          yum makecache
-          yum -y install clang
           yum -y install glib2-devel gtk3-devel atk-devel \
             platform-python-devel \
             findutils \
