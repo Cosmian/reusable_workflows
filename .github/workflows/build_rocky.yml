@@ -74,17 +74,6 @@ jobs:
       - name: Display cpuinfo
         run: cat /proc/cpuinfo
 
-      - name: ${{ inputs.docker_image }} prerequisites
-        run: |
-          set -x
-
-          yum -y install glib2-devel gtk3-devel atk-devel \
-            platform-python-devel \
-            findutils \
-            wget xz make \
-            git
-          yum -y install gcc
-
       - uses: actions/checkout@v4
         with:
           submodules: recursive

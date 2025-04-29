@@ -22,7 +22,7 @@ jobs:
       archive-name: rockylinux9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: rockylinux:9.3
+      docker_image: cosmian/rockylinux9
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
 
@@ -36,7 +36,7 @@ jobs:
       archive-name: rockylinux8
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: rockylinux:8.9
+      docker_image: cosmian/rockylinux8
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
 
