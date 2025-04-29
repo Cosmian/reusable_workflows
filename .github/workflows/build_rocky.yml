@@ -87,8 +87,8 @@ jobs:
             platform-python-devel \
             findutils \
             wget xz make \
-            gcc \
             git
+          yum -y install gcc --skip-broken
 
       - uses: actions/checkout@v4
         with:
