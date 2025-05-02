@@ -19,7 +19,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
+      - name: Checkout reusable_scripts repo
+        uses: actions/checkout@v4
+        with:
+          repository: Cosmian/reusable_scripts
+          path: reusable_scripts
       - name: Cache dependencies
         id: cargo_cache
         uses: Swatinem/rust-cache@v2
