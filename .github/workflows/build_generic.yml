@@ -56,7 +56,7 @@ jobs:
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
-          bash .github/scripts/get_openssl_binaries.sh
+          bash .github/scripts/get_openssl_binaries.sh ${{ github.repository }}
         env:
           OS_NAME: ${{ inputs.archive-name }}
 
@@ -104,7 +104,7 @@ jobs:
           FEATURES: ${{ inputs.features }}
           SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
-          bash .github/scripts/cargo_build.sh
+          bash .github/scripts/cargo_build.sh ${{ github.repository }}
 
       - name: Remove large files before saving cache
         run: |
