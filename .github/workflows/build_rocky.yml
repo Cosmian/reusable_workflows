@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Cosmian/reusable_scripts
-          path: reusable_scripts
+          path: Cosmian/reusable_scripts
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
