@@ -57,7 +57,7 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          . .\.github\scripts\cargo_build.ps1 ${{ github.repository }}
+          . .\.github\scripts\cargo_build.ps1
           BuildProject -BuildType ${{ inputs.debug_or_release }}
         env:
           # Google variables

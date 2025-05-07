@@ -129,7 +129,7 @@ jobs:
           FEATURES: ${{ inputs.features }}
           SKIP_SERVICES_TESTS: --skip hsm
         run: |
-          bash .github/scripts/cargo_build.sh ${{ github.repository }}
+          bash .github/scripts/cargo_build.sh
 
       - name: Remove large files before saving cache
         run: |
