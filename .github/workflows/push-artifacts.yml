@@ -28,7 +28,7 @@ jobs:
 
     env:
       ARCHIVE_NAMES: rockylinux9-${{ inputs.debug_or_release }} fips_ubuntu_22_04-${{ inputs.debug_or_release }} ubuntu_24_04-${{ inputs.debug_or_release
-        }} macos_arm-${{ inputs.debug_or_release }}
+        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }}
 
     steps:
       - run: rm -rf ${{ inputs.project-name }}_* fips_* windows* ubuntu* macos* rockylinux* centos*
@@ -49,8 +49,6 @@ jobs:
           # Warning, no all binaries in debug, only in release
           if [ "${{ inputs.debug_or_release }}" = "release" ]; then
             zip -r ubuntu_22_04-release.zip ubuntu_22_04-release
-            zip -r windows-release.zip windows-release
-            zip -r macos_intel-release.zip macos_intel-release
             zip -r rockylinux8-release.zip rockylinux8-release
           fi
 

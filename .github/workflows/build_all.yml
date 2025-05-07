@@ -106,14 +106,6 @@ jobs:
               sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev pkg-config jq
             docker_compose: true
 
-          - distribution: macos-13
-            archive-name: macos_intel
-            target: x86_64-apple-darwin
-            skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse --skip hsm --skip findex_server --skip redis
-            artifacts: |
-              /usr/local/openssl/lib/ossl-modules/legacy.dylib
-            docker_compose: false
-
     name: ${{ matrix.distribution }}
     if: inputs.debug_or_release == 'release'
     uses: ./.github/workflows/build_generic.yml
@@ -124,13 +116,11 @@ jobs:
       archive-name: ${{ matrix.archive-name }}
       target: ${{ matrix.target }}
       debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: ${{ matrix.skip_services_tests }}
       artifacts: ${{ matrix.artifacts }}
       prerequisites: ${{ matrix.prerequisites }}
       docker_compose: ${{ matrix.docker_compose }}
 
   windows-2022:
-    if: inputs.debug_or_release == 'release'
     uses: ./.github/workflows/build_windows.yml
     with:
       toolchain: ${{ inputs.toolchain }}
