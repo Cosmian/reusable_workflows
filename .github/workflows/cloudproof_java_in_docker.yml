@@ -37,13 +37,16 @@ on:
         required: false
         default: true
         type: boolean
+      fips:
+        required: true
+        type: boolean
 
 jobs:
   java-job:
     name: cloudproof_java for docker on ${{ inputs.os }}
     services:
       kms:
-        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
+        image: ${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
         ports:
@@ -65,7 +68,7 @@ jobs:
           - 6379:6379
 
     runs-on: ${{ inputs.os }}
-    container: centos:centos7.4.1708
+    container: redhat/ubi8:8.5
 
     steps:
       - uses: actions/checkout@v3
@@ -87,7 +90,7 @@ jobs:
       - run: yum -y install java-1.8.0-openjdk maven python3 python3-pip
       - run: python3 scripts/get_native_libraries.py
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: find .
 
       - name: copy fresh build of crate
@@ -99,6 +102,18 @@ jobs:
         run: ${{ inputs.copy_regression_files }}
 
       - run: mvn package
+        if: inputs.fips != true
+        env:
+          COSMIAN_SERVER_URL: http://kms:9998
+          COSMIAN_FINDEX_CLOUD_BASE_URL: http://findex_cloud:8080
+          REDIS_HOSTNAME: redis
+          REDIS_PORT: 6379
+          LANG: en_US.UTF-8
+          LANGUAGE: en_US:en
+          LC_ALL: en_US.UTF-8
+
+      - run: mvn package -Dtest="!TestDemo,!TestKmsCoverCrypt"
+        if: inputs.fips
         env:
           COSMIAN_SERVER_URL: http://kms:9998
           COSMIAN_FINDEX_CLOUD_BASE_URL: http://findex_cloud:8080
@@ -110,7 +125,7 @@ jobs:
 
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudproof_java
           path: ${{ inputs.regression_files }}

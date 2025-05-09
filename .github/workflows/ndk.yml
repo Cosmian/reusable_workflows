@@ -65,7 +65,7 @@ jobs:
       #   run: cargo ndk -t x86 -t x86_64 -t armeabi-v7a -t arm64-v8a -o jniLibs build --release --features ${{ inputs.feature }} --lib
 
       - name: Upload cargo binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android
           path: jniLibs

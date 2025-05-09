@@ -16,8 +16,21 @@ jobs:
   lint:
     runs-on: ubuntu-22.04
 
-    # Redis can be required to run tests
+    # Redis or Postgresql can be required to run tests
     services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: cosmian
+          POSTGRES_PASSWORD: cosmian
+          POSTGRES_DB: cosmian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: redis
         options: >-
@@ -47,7 +60,7 @@ jobs:
           key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy

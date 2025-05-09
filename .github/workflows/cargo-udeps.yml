@@ -31,14 +31,12 @@ jobs:
           key: ${{ runner.os }}-cargo-udeps-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-udeps-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: nightly-2023-06-27
 
-      - name: Install udeps
-        if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +nightly-2023-06-27 --locked install cargo-udeps --version 0.1.39
-
-      - name: Verify useless dependencies
-        run: |
-          cargo +nightly-2023-06-27 udeps --workspace ${{ inputs.exclusions }} --all-targets --all-features
+      - name: Run cargo-udeps
+        uses: aig787/cargo-udeps-action@v1
+        with:
+          version: v0.1.39
+          args: --workspace ${{ inputs.exclusions }} --all-targets --all-features

@@ -28,14 +28,17 @@ on:
         required: false
         default: true
         type: boolean
+      fips:
+        required: true
+        type: boolean
 
 jobs:
   python-job:
-    name: cloudproof_python on ubuntu-20.04
+    name: cloudproof_python on ubuntu-22.04
 
     services:
       kms:
-        image: ghcr.io/cosmian/kms:${{ inputs.kms-version }}
+        image: ${{ inputs.kms-version }}
         env:
           COSMIAN_SERVER_URL: http://localhost:9998
         ports:
@@ -56,7 +59,7 @@ jobs:
         ports:
           - 6379:6379
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -69,7 +72,7 @@ jobs:
           python-version: 3.8
           cache: pip # caching pip dependencies
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - run: find .
 
       - name: copy non-regression test vectors
@@ -78,7 +81,7 @@ jobs:
 
       - name: Build Cloudproof python and install deps
         run: |
-          python -m pip install --upgrade pip
+          pip install pip==24.0
           pip install -r requirements.txt
           python -m build
           pip install mypy types-termcolor>=1.1 types_redis>=4.3 requests>=2.28 types-requests>=2.28
@@ -103,11 +106,18 @@ jobs:
           mypy examples/cli_demo
           mypy examples/findex_upsert_search
           mypy examples/cover_crypt
-      - name: Run tests
+      - name: Run FIPS tests
+        if: inputs.fips
+        run: |
+          python -m unittest tests/test_anonymization.py tests/test_findex.py tests/test_findex_rest.py tests/test_fpe.py
+          python tests/non_regression_cover_crypt.py --test --write
+      - name: Run all tests
+        if: inputs.fips != true
         run: |
           python -m unittest tests/test*.py
           python tests/non_regression_cover_crypt.py --test --write
       - name: Run Covercrypt implementations
+        if: inputs.fips != true
         run: |
           pip install -r examples/cover_crypt/requirements.txt
           python3 examples/cover_crypt/example.py
@@ -122,7 +132,7 @@ jobs:
           python3 examples/findex_upsert_search/main.py --managed-rest-server
       - name: Upload non-regression test vectors
         if: inputs.regression_files != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudproof_python
           path: ${{ inputs.regression_files }}

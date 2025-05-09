@@ -15,16 +15,4 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-
-      - run: |
-          cargo +stable --locked install cargo-audit
-          cargo +stable --locked install cargo-outdated --version 0.11.2
-
-      - name: Verify outdated dependencies
-        run: cargo outdated -wR
-
-      - name: Verify deprecated dependencies
-        run: cargo audit
+      - uses: EmbarkStudios/cargo-deny-action@v1

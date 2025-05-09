@@ -22,27 +22,47 @@ on:
 
 jobs:
   bench_cleanup:
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-sgx]
+    container:
+      image: rust:latest
 
     steps:
       - name: Chown user
         run: |
           echo "USER: $USER"
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+          chown -R $USER:$USER $GITHUB_WORKSPACE
 
   benchmark:
     needs: bench_cleanup
-    runs-on: self-hosted
-    # permissions:
-    #   packages: write
-    #   contents: read
+    runs-on: [self-hosted, not-sgx]
     container:
       image: rust:latest
-      # image: iyxd/centos7-rust
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - /tmp:/tmp
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: cosmian
+          POSTGRES_PASSWORD: cosmian
+          POSTGRES_DB: cosmian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       # # Solve perm denied issue on GA
       # # see: https://github.com/actions/checkout/issues/211
@@ -89,7 +109,7 @@ jobs:
 
       - name: Upload benchmarks
         if: inputs.force && inputs.features != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmarks_${{ inputs.features }}
           path: BENCHMARKS.md
@@ -108,7 +128,7 @@ jobs:
 
       - name: Upload benchmarks all features
         if: inputs.force && inputs.features == ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmarks
           path: BENCHMARKS.md

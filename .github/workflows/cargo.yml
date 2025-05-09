@@ -7,9 +7,6 @@ on:
       toolchain:
         required: true
         type: string
-      feature:
-        required: true
-        type: string
       target:
         required: true
         type: string
@@ -28,7 +25,7 @@ on:
 
 jobs:
   cargo-job:
-    name: ${{ inputs.feature }} for ${{ inputs.target }}
+    name: ${{ inputs.target }}
     runs-on: ${{ inputs.os }}
 
     steps:
@@ -54,61 +51,15 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           target: ${{ inputs.target }}
 
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross || true
-
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}
 
-      - name: Test release with ffi feature
-        if: contains(inputs.feature, 'ffi')
-        run: cross test --release --features ${{ inputs.feature }} --target ${{ inputs.target }} -- --skip redis
-
-      - name: Build debug with feature ${{ inputs.feature }}
-        if: contains(inputs.feature, 'ffi')
-        run: cross build --features ${{ inputs.feature }} --target ${{ inputs.target }}
-
-      - name: Build release with feature ${{ inputs.feature }}
-        if: contains(inputs.feature, 'ffi')
-        run: cross build --release --features ${{ inputs.feature }} --target ${{ inputs.target }}
-
-      - name: Wasm-pack build release
-        if: inputs.feature == 'wasm'
-        run: |
-          pushd crates/aesgcm
-          wasm-pack build -d ../../target/web/aesgcm --target web --release --features wasm
-          wasm-pack test --node --features wasm
-          popd
-
-          pushd crates/anonymization
-          wasm-pack build -d ../../target/web/anonymization --target web --release --features wasm
-          wasm-pack test --node --features wasm
-          popd
-
-          pushd crates/cover_crypt
-          wasm-pack build -d ../../target/web/cover_crypt --target web --release --features wasm
-          wasm-pack test --node --features wasm
-          popd
-
-          pushd crates/findex
-          wasm-pack build -d ../../target/web/findex --target web --release --features wasm
-          # wasm-pack test --node --features wasm
-          popd
-
-          pushd crates/ecies
-          wasm-pack build -d ../../target/web/ecies --target web --release --features wasm
-          wasm-pack test --node --features wasm
-          popd
-
-          pushd crates/fpe
-          wasm-pack build -d ../../target/web/fpe --target web --release --features wasm
-          wasm-pack test --node --features wasm
-          popd
-
       - uses: actions/setup-python@v4
+        if: contains(inputs.target, 'windows') || contains(inputs.target, 'darwin')
         with:
           python-version: 3.7
           cache: pip # caching pip dependencies
+
       - run: |
           pip install -r crates/aesgcm/python/requirements.txt
           pip install -r crates/anonymization/python/requirements.txt
@@ -116,9 +67,10 @@ jobs:
           pip install -r crates/ecies/python/requirements.txt
           pip install -r crates/findex/python/requirements.txt
           pip install -r crates/fpe/python/requirements.txt
+        if: contains(inputs.target, 'windows') || contains(inputs.target, 'darwin')
 
       - name: Python maturin build
-        if: inputs.feature != 'wasm'
+        if: contains(inputs.target, 'windows') || contains(inputs.target, 'darwin')
         run: |
           rm -f target/wheels/*.whl | true
 
@@ -148,7 +100,7 @@ jobs:
 
       - name: Upload cargo binaries
         if: inputs.artifacts != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.target }}
           path: ${{ inputs.artifacts }}
@@ -162,7 +114,7 @@ jobs:
 
       - name: Upload cargo debug binaries
         if: inputs.debug_artifacts != ''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: debug_${{ inputs.target }}
           path: debug_${{ inputs.target }}.zip
