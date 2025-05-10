@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- KMS 5.0 - CLI 0.4.0 - Findex server 0.3.0
 - Split FIPS tests (#29)
 - Add workflows (#34)
 - Add workflow to push on package.cosmian.com
