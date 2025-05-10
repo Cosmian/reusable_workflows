@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7] - 2025-05-10
+
+### 🚀 Features
+
+- KMS 5.0 - CLI 0.4.0 - Findex server 0.3.0
+- Split FIPS tests (#29)
+- Add workflows (#34)
+- Add workflow to push on package.cosmian.com
+- Add workflow to push on package.cosmian.com - add destination argument
+- Rockylinux (#35)
+- Add cargo workspace publish
+- Reuse Cosmian rocky linux images
+
+### 🐛 Bug Fixes
+
+- Remove hardcoded registry image name
+- Update cargo version for udeps
+- Remove udeps, too unstable and too slow
+- Darwin build (#23)
+- Publish to PyPI with token instead of passwords (#25)
+- *(pip)* Freeze pip version to 24.0
+- Replace cargo-audit with cargo-deny
+- Add toolchain in cargo fmt
+- Use stable version of rust-toolchain
+- Simplify workspace publish
+- *(rockylinux)* Reinstall gcc
+- Remove support of MacOS Intel. Build windows on debug too
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge tag 'v0.6' into develop
+- Fix(pyo3): build of windows/macos - bad triggering condition (#24)
+- Upgrade centos 7 for rhel 8.5
+- Bump ubuntu 20.04 to 22.04 for cloudproof_python tests
+- Fix permissions on checkout
+- Bump artifact@v3 to v4
+- Add postgres container on lint.yml
+- Add redis & postgres containers for benches (#30)
+- Upgrade macos GH runner from 14 to 15
+- Reenable cargo fmt check
+
 ## [0.6] - 2023-12-08
 
 ### Features
