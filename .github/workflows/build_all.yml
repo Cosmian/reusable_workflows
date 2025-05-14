@@ -45,8 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distribution: ubuntu-22.04
-            archive-name: fips_ubuntu_22_04
+          - distribution: ubuntu-24.04
+            archive-name: fips_ubuntu_24_04
             target: x86_64-unknown-linux-gnu
             artifacts: |
               /usr/local/openssl/lib64/ossl-modules/fips.so
@@ -56,7 +56,7 @@ jobs:
             docker_compose: true
             prerequisites: |
               sudo apt-get update
-              sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev pkg-config jq
+              sudo apt-get install -qq libgtk-3-dev libglib2.0-dev pkg-config jq
 
           - distribution: ubuntu-24.04
             archive-name: ubuntu_24_04
