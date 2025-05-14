@@ -57,12 +57,13 @@ jobs:
         with:
           repository: Cosmian/reusable_scripts
           path: Cosmian/reusable_scripts
+          ref: develop
 
       - run: |
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
-          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh ${{ github.repository }}
+          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ${{ inputs.archive-name }}
 
