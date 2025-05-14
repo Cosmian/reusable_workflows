@@ -24,6 +24,8 @@ jobs:
         with:
           repository: Cosmian/reusable_scripts
           path: Cosmian/reusable_scripts
+          ref: develop
+
       - name: Cache dependencies
         id: cargo_cache
         uses: Swatinem/rust-cache@v2
@@ -33,7 +35,7 @@ jobs:
       - name: Local OpenSSL FIPS Install
         run: |
           sudo chown -R $USER:$USER /usr/local
-          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh ${{ github.repository }}
+          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ubuntu_22_04
 

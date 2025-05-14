@@ -83,6 +83,8 @@ jobs:
         with:
           repository: Cosmian/reusable_scripts
           path: Cosmian/reusable_scripts
+          ref: develop
+
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
@@ -90,7 +92,7 @@ jobs:
 
       - name: Local OpenSSL FIPS Install
         run: |
-          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh ${{ github.repository }}
+          bash Cosmian/reusable_scripts/.github/scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ubuntu_20_04
 
