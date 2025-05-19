@@ -19,6 +19,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Checkout reusable_scripts repo
+        uses: actions/checkout@v4
+        with:
+          repository: Cosmian/reusable_scripts
+          path: Cosmian/reusable_scripts
+          ref: develop
 
       - name: Cache dependencies
         id: cargo_cache
@@ -29,7 +35,7 @@ jobs:
       - name: Local OpenSSL FIPS Install
         run: |
           sudo chown -R $USER:$USER /usr/local
-          bash .github/scripts/get_openssl_binaries.sh
+          bash Cosmian/reusable_scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ubuntu_22_04
 
