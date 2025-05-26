@@ -52,13 +52,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout reusable_scripts repo
-        uses: actions/checkout@v4
-        with:
-          repository: Cosmian/reusable_scripts
-          path: Cosmian/reusable_scripts
-          ref: develop
-
       - run: |
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules

@@ -78,13 +78,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout reusable_scripts repo
-        uses: actions/checkout@v4
-        with:
-          repository: Cosmian/reusable_scripts
-          path: Cosmian/reusable_scripts
-          ref: develop
-
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
