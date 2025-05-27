@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8] - 2025-05-27
+
+### 📚 Documentation
+
+- KMS 5.1.1 - CLI 0.4.1 - Findex server 0.3.0
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge branch 'release/0.7' into develop
+- Use FIPS mode on ubuntu 24.04. Push .deb from FIPS build
+
 ## [0.7] - 2025-05-10
 
 ### 🚀 Features
