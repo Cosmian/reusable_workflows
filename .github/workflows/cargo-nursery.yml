@@ -10,7 +10,11 @@ on:
       exclusions:
         required: false
         type: string
-        default: ''
+        default: ""
+      workspace:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   cargo-nursery-base:
@@ -25,8 +29,14 @@ jobs:
       exclusions: ${{ inputs.exclusions }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
-  cargo-dry-publish:
+  cargo-dry-publish-standard:
+    if: ${{ inputs.workspace == '' || inputs.workspace == null }}
     uses: ./.github/workflows/cargo-publish.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       publish: false
+  cargo-dry-publish-workspace:
+    if: ${{ inputs.workspace != '' && inputs.workspace != null }}
+    uses: ./.github/workflows/cargo-publish-workspace.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
