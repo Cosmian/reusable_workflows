@@ -49,8 +49,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      mariadb:
-        image: mariadb
+      mysql:
+        image: mysql
         env:
           MYSQL_DATABASE: kms
           MYSQL_ROOT_PASSWORD: kms
@@ -106,7 +106,7 @@ jobs:
 
           MYSQL_DATABASE: kms
           MYSQL_ROOT_PASSWORD: kms
-          KMS_MYSQL_URL: mysql://root:kms@mariadb/kms
+          KMS_MYSQL_URL: mysql://root:kms@mysql/kms
 
           KMS_SQLITE_PATH: data/shared
 
