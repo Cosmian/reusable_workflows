@@ -76,8 +76,8 @@ jobs:
             Get-ChildItem -Recurse "$env:VCPKG_INSTALLATION_ROOT\packages"
 
             # Copy fips.dll to the specified directory
-            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\legacy.dll" -Destination "D:\a\kms\kms"
-            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\fips.dll" -Destination "D:\a\kms\kms"
+            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\legacy.dll" -Destination "C:\a\kms\kms"
+            Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\fips.dll" -Destination "C:\a\kms\kms"
           }
 
       - name: Upload for windows-2022
