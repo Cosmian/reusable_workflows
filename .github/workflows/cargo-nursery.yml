@@ -30,13 +30,13 @@ jobs:
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
   cargo-dry-publish-standard:
-    if: ${{ inputs.workspace == '' || inputs.workspace == null }}
+    if: inputs.workspace == ''
     uses: ./.github/workflows/cargo-publish.yml
     with:
       toolchain: ${{ inputs.toolchain }}
       publish: false
   cargo-dry-publish-workspace:
-    if: ${{ inputs.workspace != '' && inputs.workspace != null }}
+    if: inputs.workspace != ''
     uses: ./.github/workflows/cargo-publish-workspace.yml
     with:
       toolchain: ${{ inputs.toolchain }}
