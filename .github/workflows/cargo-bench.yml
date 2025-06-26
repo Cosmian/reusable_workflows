@@ -100,12 +100,12 @@ jobs:
 
       - name: Benchmarks build but do not run
         if: inputs.features != ''
-        run: cargo criterion --features ${{ inputs.features }} --no-run
+        run: cargo criterion --no-default-features --features ${{ inputs.features }} --no-run
 
       - name: Benchmarks
         if: inputs.force && inputs.features != ''
         run: |
-          cargo criterion --features ${{ inputs.features }} --message-format=json | criterion-table > BENCHMARKS.md
+          cargo criterion --no-default-features --features ${{ inputs.features }} --message-format=json | criterion-table > BENCHMARKS.md
 
       - name: Upload benchmarks
         if: inputs.force && inputs.features != ''
