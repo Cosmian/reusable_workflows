@@ -19,6 +19,18 @@ on:
         required: false
         default: false
         type: boolean
+      working-directory:
+        required: false
+        type: string
+        default: ''
+      redis-host:
+        required: false
+        type: string
+        default: 'redis'
+      postgres-host:
+        required: false
+        type: string
+        default: 'postgres'
 
 jobs:
   bench_cleanup:
