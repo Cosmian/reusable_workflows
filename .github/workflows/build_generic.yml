@@ -123,7 +123,6 @@ jobs:
             ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
-
   test:
     needs: build
     name: Clean env. ${{ inputs.archive-name }}

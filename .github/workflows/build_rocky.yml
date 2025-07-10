@@ -143,7 +143,6 @@ jobs:
             ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
-
   clean-test:
     needs: rockylinux-tests
     name: Clean env test ${{ inputs.archive-name }}

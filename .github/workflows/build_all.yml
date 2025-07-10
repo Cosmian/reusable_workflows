@@ -127,6 +127,14 @@ jobs:
       archive-name: windows
       debug_or_release: ${{ inputs.debug_or_release }}
 
+  ui:
+    uses: ./.github/workflows/build-and-push-ui-artifact.yml
+    secrets: inherit
+    with:
+      toolchain: ${{ inputs.toolchain }}
+      archive-name: ui
+      destination: kms
+
   cleanup:
     needs:
       - rockylinux8
