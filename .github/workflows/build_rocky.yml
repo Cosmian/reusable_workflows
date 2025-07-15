@@ -126,6 +126,15 @@ jobs:
         run: |
           bash .github/scripts/cargo_build.sh
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11.9
+
+      - run: |
+          COSMIAN_KMS_CONF=./scripts/kms.toml cargo run --bin cosmian_kms --features non-fips &
+          sleep 5
+          python3 ./scripts/test_pykmip.sh all
+
       - name: Remove large files before saving cache
         run: |
           find target/ -type f -size ++100M -delete
