@@ -94,21 +94,22 @@ jobs:
           set -x
           rm -rf /tmp/sqlite-data /tmp/tmp.toml
 
+      # - name: Prepare PyKMIP
+      #   env:
+      #     OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+      #   run: |
+      #     cargo build --bin cosmian_kms --features non-fips
+      #     cargo run --bin cosmian_kms --features non-fips &
+
       - uses: actions/setup-python@v4
         with:
           python-version: 3.11
-
-      - name: Prepare PyKMIP
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-        run: |
-          cargo build --bin cosmian_kms --features non-fips
-          cargo run --bin cosmian_kms --features non-fips &
 
       - name: Test PyKMIP
         env:
           COSMIAN_KMS_CONF: ./scripts/kms.toml
         run: |
+          pip install --no-deps --no-compile PyKMIP==0.10.0
           python ./scripts/test_pykmip.sh all
 
       - name: Build and tests
