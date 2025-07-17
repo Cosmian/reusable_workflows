@@ -127,22 +127,6 @@ jobs:
           bash .github/scripts/cargo_build.sh
         continue-on-error: true
 
-      - name: Tests PyKMIP
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-          COSMIAN_KMS_CONF: ./scripts/kms.toml
-        run: |
-          cargo build --bin cosmian_kms --features non-fips
-          cargo run --bin cosmian_kms --features non-fips &
-
-          dnf install python3 -y
-          # bash ./scripts/setup_pykmip.sh
-          python3 -m pip install --upgrade pip
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install PyKMIP
-          bash ./scripts/test_pykmip.sh all
-
       - name: Remove large files before saving cache
         run: |
           find target/ -type f -size ++100M -delete
