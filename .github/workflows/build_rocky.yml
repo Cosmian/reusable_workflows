@@ -125,7 +125,6 @@ jobs:
           SKIP_SERVICES_TESTS: --skip hsm
         run: |
           bash .github/scripts/cargo_build.sh
-        continue-on-error: true
 
       - name: Remove large files before saving cache
         run: |
