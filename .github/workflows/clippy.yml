@@ -7,6 +7,9 @@ on:
       toolchain:
         required: true
         type: string
+      prerequisites:
+        required: false
+        type: string
       targets:
         required: false
         type: string
@@ -42,6 +45,12 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
           targets: ${{ inputs.targets || 'x86_64-unknown-linux-gnu' }}
+
+      - name: Prerequisites
+        if: ${{ inputs.prerequisites }}
+        run: |
+          set -ex
+          ${{ inputs.prerequisites }}
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
