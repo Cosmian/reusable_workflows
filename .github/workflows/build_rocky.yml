@@ -94,24 +94,6 @@ jobs:
           set -x
           rm -rf /tmp/sqlite-data /tmp/tmp.toml
 
-      # - name: Prepare PyKMIP
-      #   env:
-      #     OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-      #   run: |
-      #     cargo build --bin cosmian_kms --features non-fips
-      #     cargo run --bin cosmian_kms --features non-fips &
-
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: 3.x
-
-      - name: Test PyKMIP
-        env:
-          COSMIAN_KMS_CONF: ./scripts/kms.toml
-        run: |
-          dnf install python3 -y
-          python3 -m pip install PyKMIP
-          python3 ./scripts/test_pykmip.sh all
 
       - name: Build and tests
         env:
@@ -144,6 +126,17 @@ jobs:
           SKIP_SERVICES_TESTS: --skip hsm
         run: |
           bash .github/scripts/cargo_build.sh
+
+      - name: Tests PyKMIP
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          COSMIAN_KMS_CONF: ./scripts/kms.toml
+        run: |
+          cargo build --bin cosmian_kms --features non-fips
+          cargo run --bin cosmian_kms --features non-fips &
+          dnf install python3 -y
+          python3 -m pip install PyKMIP
+          bash ./scripts/test_pykmip.sh all
 
       - name: Remove large files before saving cache
         run: |
