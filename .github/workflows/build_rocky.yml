@@ -109,7 +109,7 @@ jobs:
         env:
           COSMIAN_KMS_CONF: ./scripts/kms.toml
         run: |
-          python -m pip install --no-deps --no-compile PyKMIP==0.10.0
+          python ./scripts/setup_pykmip.sh
           python ./scripts/test_pykmip.sh all
 
       - name: Build and tests
