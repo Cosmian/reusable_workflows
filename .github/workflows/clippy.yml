@@ -7,6 +7,13 @@ on:
       toolchain:
         required: true
         type: string
+      prerequisites:
+        required: false
+        type: string
+      targets:
+        required: false
+        type: string
+        default: x86_64-unknown-linux-gnu
 
 env:
   OPENSSL_DIR: /usr/local/openssl
@@ -33,15 +40,17 @@ jobs:
         env:
           OS_NAME: ubuntu_22_04
 
-      - name: Install Klask prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
-
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
+          targets: ${{ inputs.targets || 'x86_64-unknown-linux-gnu' }}
+
+      - name: Prerequisites
+        if: ${{ inputs.prerequisites }}
+        run: |
+          set -ex
+          ${{ inputs.prerequisites }}
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
