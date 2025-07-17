@@ -136,10 +136,11 @@ jobs:
           cargo run --bin cosmian_kms --features non-fips &
 
           dnf install python3 -y
-          python3 -m pip install --upgrade pip
-          python3 -m venv .env
-          source .env/bin/activate
-          pip install PyKMIP
+          bash ./scripts/setup_pykmip.sh
+          # python3 -m pip install --upgrade pip
+          # python3 -m venv .env
+          # source .env/bin/activate
+          # pip install PyKMIP
           bash ./scripts/test_pykmip.sh all
 
       - name: Remove large files before saving cache
