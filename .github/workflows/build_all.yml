@@ -132,6 +132,9 @@ jobs:
       archive-name: windows
       debug_or_release: ${{ inputs.debug_or_release }}
 
+  docker-tests:
+    uses: ./.github/workflows/docker_test.yml
+
   cleanup:
     needs:
       - rockylinux8

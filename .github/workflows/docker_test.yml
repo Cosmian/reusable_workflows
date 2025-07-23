@@ -1,0 +1,84 @@
+---
+name: Docker test
+
+on:
+  workflow_call:
+
+jobs:
+  docker-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name : install cli
+        run : |
+          sudo apt update && sudo apt install -y wget
+          wget https://package.cosmian.com/cli/1.0.0/ubuntu-24.04/cosmian-cli_1.0.0-1_amd64.deb
+          sudo apt install ./cosmian-cli_1.0.0-1_amd64.deb
+          cosmian --version
+
+      - name: update cli conf
+        run : |
+          sudo mkdir ~/.cosmian
+          sudo touch ~/.cosmian/cosmian.toml ~/.cosmian/cosmian-tls.toml
+          sudo chmod 666 ~/.cosmian/cosmian.toml ~/.cosmian/cosmian-tls.toml
+          sudo chown root:docker ~/.cosmian/cosmian.toml ~/.cosmian/cosmian-tls.toml
+
+          sudo echo '
+          [kms_config]
+          print_json = false
+
+          [kms_config.http_config]
+          server_url = "http://0.0.0.0:9998"
+          ' > ~/.cosmian/cosmian.toml
+
+          sudo echo '
+          [kms_config]
+          print_json = false
+
+          [kms_config.http_config]
+          server_url = "https://0.0.0.0:9999"
+          accept_invalid_certs = true
+          ssl_client_pkcs12_path = "./test_data/client_server/owner/owner.client.acme.com.p12"
+          ssl_client_pkcs12_password = "password"
+          ' > ~/.cosmian/cosmian-tls.toml
+
+      - name: Run docker containers
+        run: |
+          docker compose -h
+          docker compose -f docker-compose-authentication-tests.yml up -d
+
+      - name : create symmetric key
+        run : |
+          cosmian -c ~/.cosmian/cosmian.toml --kms-url "http://0.0.0.0:9998" kms sym keys create
+          cosmian -c ~/.cosmian/cosmian-tls.toml --kms-url "https://0.0.0.0:9999" --kms-accept-invalid-certs kms sym keys create
+
+      - name : Test UI
+        run: |
+          curl -I http://127.0.0.1:9998/ui/index.html
+          curl --insecure -I https://127.0.0.1:9999/ui/index.html
+
+      - name: Test TLS HTTPS server
+        run: |
+          openssl s_client -showcerts -debug -tls1_2  -connect 127.0.0.1:9999 \
+          -CAfile test_data/client_server/ca/ca.crt \
+          -cert test_data/client_server/owner/owner.client.acme.com.crt \
+          -key test_data/client_server/owner/owner.client.acme.com.key
+
+          openssl s_client -showcerts -debug -tls1_3 -connect 127.0.0.1:9999 \
+          -CAfile test_data/client_server/ca/ca.crt \
+          -cert test_data/client_server/owner/owner.client.acme.com.crt \
+          -key test_data/client_server/owner/owner.client.acme.com.key
+
+      - name: Test TLS socket server
+        run: |
+          openssl s_client -showcerts -debug -tls1_2  -connect 127.0.0.1:5696 \
+          -CAfile test_data/client_server/ca/ca.crt \
+          -cert test_data/client_server/owner/owner.client.acme.com.crt \
+          -key test_data/client_server/owner/owner.client.acme.com.key
+
+          openssl s_client -showcerts -debug -tls1_3 -connect 127.0.0.1:5696 \
+          -CAfile test_data/client_server/ca/ca.crt \
+          -cert test_data/client_server/owner/owner.client.acme.com.crt \
+          -key test_data/client_server/owner/owner.client.acme.com.key
