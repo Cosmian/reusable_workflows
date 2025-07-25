@@ -54,6 +54,7 @@ jobs:
               /usr/local/openssl/lib64/ossl-modules/fips.so
               /usr/local/openssl/ssl/openssl.cnf
               /usr/local/openssl/ssl/fipsmodule.cnf
+              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             docker_compose: true
             prerequisites: |
               sudo apt-get update
@@ -64,6 +65,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifacts: |
               /usr/local/openssl/lib64/ossl-modules/legacy.so
+              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             docker_compose: true
             prerequisites: |
               sudo apt-get update
@@ -75,6 +77,7 @@ jobs:
             target: aarch64-apple-darwin
             artifacts: |
               /usr/local/openssl/lib/ossl-modules/legacy.dylib
+              target/aarch64-apple-darwin/${{ inputs.debug_or_release }}/libcosmian_pkcs11.dylib
             skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse --skip hsm --skip findex_server --skip redis
             docker_compose: false
             features: non-fips
@@ -104,6 +107,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifacts: |
               /usr/local/openssl/lib64/ossl-modules/legacy.so
+              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             prerequisites: |
               sudo apt-get update
               sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev pkg-config jq
