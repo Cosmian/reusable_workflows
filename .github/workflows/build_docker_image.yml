@@ -80,8 +80,11 @@ jobs:
     outputs:
       image-tag: ${{ inputs.registry-image }}:${{ steps.meta.outputs.version }}
 
-  docker-tests:
+  test-image:
     runs-on: ubuntu-24.04
+    env:
+      KMS_IMAGE_NAME: "${{ needs.build-and-push-image.outputs.image-tag }}"
+
     steps:
       - uses: actions/checkout@v4
         with:
