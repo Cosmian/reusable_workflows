@@ -28,10 +28,10 @@ jobs:
 
     env:
       ARCHIVE_NAMES: rockylinux9-${{ inputs.debug_or_release }} fips_ubuntu_24_04-${{ inputs.debug_or_release }} ubuntu_24_04-${{ inputs.debug_or_release
-        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }}
+        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }} ui
 
     steps:
-      - run: rm -rf ${{ inputs.project-name }}_* fips_* windows* ubuntu* macos* rockylinux* centos*
+      - run: rm -rf ${{ inputs.project-name }}_* fips_* windows* ubuntu* macos* rockylinux* centos* ui*
       - uses: actions/download-artifact@v4
 
       - run: find .
