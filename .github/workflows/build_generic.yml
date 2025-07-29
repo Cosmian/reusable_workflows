@@ -56,6 +56,7 @@ jobs:
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          bash .github/reusable_scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ${{ inputs.archive-name }}
 
@@ -105,17 +106,12 @@ jobs:
         run: |
           bash .github/scripts/cargo_build.sh
 
-      - name: Remove large files before saving cache
-        run: |
-          find target/ -type f -size +100M -delete
-
       - name: Upload for ${{ inputs.distribution }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
           path: |
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_kms
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_findex_server
             target/${{ inputs.target }}/debian/*.deb

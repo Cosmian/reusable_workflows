@@ -33,10 +33,12 @@ jobs:
         with:
           key: ${{ runner.os }}
 
-      - name: Install Klask prerequisites
+      - name: Local OpenSSL FIPS Install
         run: |
-          sudo apt-get update
-          sudo apt-get install -qq librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
+          sudo chown -R $USER:$USER /usr/local
+          bash .github/reusable_scripts/get_openssl_binaries.sh
+        env:
+          OS_NAME: ubuntu_22_04
 
       - uses: dtolnay/rust-toolchain@master
         with:
