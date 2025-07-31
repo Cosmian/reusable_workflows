@@ -79,3 +79,17 @@ jobs:
 
     outputs:
       image-tag: ${{ inputs.registry-image }}:${{ steps.meta.outputs.version }}
+
+  test-image:
+    needs: build-and-push-image
+    runs-on: ubuntu-24.04
+    env:
+      KMS_IMAGE_NAME: "${{ needs.build-and-push-image.outputs.image-tag }}"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name : test image
+        run: |
+          bash .github/scripts/test_docker_image.sh
