@@ -115,10 +115,10 @@ jobs:
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_kms
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_findex_server
             target/${{ inputs.target }}/debian/*.deb
+            crate/server/ui
             ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
-
   test:
     needs: build
     name: Clean env. ${{ inputs.archive-name }}
