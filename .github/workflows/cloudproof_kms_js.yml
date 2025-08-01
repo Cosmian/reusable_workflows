@@ -30,7 +30,7 @@ jobs:
     container: node:18.0.0
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: Cosmian/cloudproof_kms_js
           ref: ${{ inputs.branch }}

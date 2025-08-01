@@ -174,7 +174,7 @@ jobs:
       image: ghcr.io/pyo3/maturin:v0.14.1
       options: --entrypoint ''
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: rustup default ${{ inputs.toolchain }}
 
       - name: Python maturin build
@@ -259,7 +259,7 @@ jobs:
             source-dir: x86_64-pc-windows-gnu/wheels
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
       - uses: actions/setup-python@v4
         with:
@@ -628,7 +628,7 @@ jobs:
           - source-dir: x86_64-pc-windows-gnu/wheels
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
 
       - name: List directory
@@ -650,7 +650,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -709,7 +709,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
