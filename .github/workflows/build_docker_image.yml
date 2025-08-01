@@ -81,6 +81,7 @@ jobs:
       image-tag: ${{ inputs.registry-image }}:${{ steps.meta.outputs.version }}
 
   test-image:
+    if: ${{ github.repository }} == 'kms'
     needs: build-and-push-image
     runs-on: ubuntu-24.04
     env:
