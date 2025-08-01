@@ -45,7 +45,7 @@ jobs:
       - name: Dump Github variables
         uses: crazy-max/ghaction-dump-context@v1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up cargo cache
         uses: actions/cache@v3
