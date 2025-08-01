@@ -44,7 +44,10 @@ jobs:
           apt-get install -y zip
 
           # Clean UI build
-          mv ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/kms/kms/crate/server/ui/dist ui-${{ inputs.debug_or_release }}
+          UI_DIST_FOLDER=ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/kms/kms/crate/server/ui/dist
+          if [ -d $UI_DIST_FOLDER ]; then
+            mv $UI_DIST_FOLDER ui-${{ inputs.debug_or_release }}
+          fi
 
           for archive_name in $ARCHIVE_NAMES; do
             zip -r "$archive_name".zip "$archive_name"
