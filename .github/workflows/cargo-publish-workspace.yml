@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "[registry]" > ~/.cargo/credentials
           echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
+          cat ~/.cargo/credentials
           cargo +nightly publish --workspace -Z package-workspace --token $CRATES_IO
         env:
           CRATES_IO: ${{ secrets.CRATES_IO }}
