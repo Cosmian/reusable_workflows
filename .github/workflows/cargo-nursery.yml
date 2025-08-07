@@ -10,11 +10,14 @@ on:
       exclusions:
         required: false
         type: string
-        default: ""
+        default: ''
       workspace:
         required: false
         type: string
-        default: ""
+        default: ''
+    secrets:
+      token:
+        required: true
 
 jobs:
   cargo-nursery-base:
@@ -35,8 +38,12 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       publish: false
+    secrets:
+      token: ${{ secrets.token }}
   cargo-dry-publish-workspace:
     if: inputs.workspace != ''
     uses: ./.github/workflows/cargo-publish-workspace.yml
     with:
       toolchain: ${{ inputs.toolchain }}
+    secrets:
+      token: ${{ secrets.token }}
