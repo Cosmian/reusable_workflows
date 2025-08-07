@@ -1,5 +1,5 @@
 ---
-name: Cargo audit
+name: Cargo deny
 
 on:
   workflow_call:

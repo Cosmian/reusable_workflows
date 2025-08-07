@@ -11,6 +11,9 @@ on:
         required: false
         default: true
         type: boolean
+    secrets:
+      token:
+        required: true
 
 jobs:
   publish:
@@ -29,11 +32,7 @@ jobs:
       - name: Publishing
         if: inputs.publish == true
         run: |
-          echo "[registry]" > ~/.cargo/credentials
-          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
-          cargo publish --token $CRATES_IO
-        env:
-          CRATES_IO: ${{ secrets.CRATES_IO }}
+          cargo publish --token ${{ secrets.token }}
 
       - name: Release
         if: inputs.publish == true
