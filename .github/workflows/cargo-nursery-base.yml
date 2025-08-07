@@ -23,15 +23,6 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
   cargo-machete:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ inputs.toolchain }}
-      - name: Install cargo-machete
-        run: cargo install cargo-machete
-      - name: Check unused dependencies in all crates
-        run: cargo machete --with-metadata
+    uses: ./.github/workflows/cargo-machete.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
