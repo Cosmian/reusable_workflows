@@ -33,11 +33,5 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
       - name: Install cargo-machete
         run: cargo install cargo-machete
-      - name: Check unused dependencies in findex crate
-        run: |
-          cd crate/findex
-          cargo machete --with-metadata
-      - name: Check unused dependencies in memories crate
-        run: |
-          cd crate/memories
-          cargo machete --with-metadata
+      - name: Check unused dependencies in all crates
+        run: cargo machete --with-metadata
