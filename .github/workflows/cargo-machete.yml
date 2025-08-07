@@ -1,5 +1,5 @@
 ---
-name: Cargo lint
+name: Cargo machete
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  lint:
+  machete:
     runs-on: ubuntu-22.04
 
     steps:
