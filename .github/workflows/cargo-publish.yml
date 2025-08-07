@@ -23,6 +23,8 @@ jobs:
         uses: crazy-max/ghaction-dump-context@v1
 
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Publishing - dry run
         if: inputs.publish == false
