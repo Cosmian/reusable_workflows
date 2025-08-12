@@ -29,12 +29,12 @@ jobs:
       - name: Publishing - dry run
         if: inputs.publish == false
         run: |
-          cargo publish --dry-run
+          cargo +{{ inputs.toolchain }} publish --dry-run
 
       - name: Publishing
         if: inputs.publish == true
         run: |
-          cargo publish --token ${{ secrets.token }}
+          cargo +{{ inputs.toolchain }} publish --token ${{ secrets.token }}
 
       - name: Release
         if: inputs.publish == true
