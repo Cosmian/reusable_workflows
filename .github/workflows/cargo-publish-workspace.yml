@@ -24,12 +24,12 @@ jobs:
 
       - name: Publishing - dry run
         run: |
-          cargo +${{ inputs.toolchain }} publish --dry-run --workspace -Z package-workspace
+          cargo +nightly publish --dry-run --workspace -Z package-workspace
 
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cargo +${{ inputs.toolchain }} publish --workspace -Z package-workspace --token ${{ secrets.token }}
+          cargo +nightly publish --workspace --token ${{ secrets.token }} -Z package-workspace
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')

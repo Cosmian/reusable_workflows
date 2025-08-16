@@ -22,6 +22,6 @@ jobs:
         with:
           toolchain: ${{ inputs.toolchain }}
       - name: Install cargo-machete
-        run: cargo install cargo-machete
+        run: cargo +nightly install cargo-machete
       - name: Check unused dependencies in all crates
-        run: cargo machete --with-metadata
+        run: cargo +nightly machete --with-metadata
