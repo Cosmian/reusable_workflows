@@ -65,7 +65,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+          components: clippy
+
+      # Our formatting rules use the nightly toolchain features, no matter the toolchain used for the build
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt
 
       - name: Install tooling for benchmarks
         run: |
@@ -74,8 +80,6 @@ jobs:
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
 
-      # Ensure all code has been formatted with rustfmt
-      # Our formatting rules use the nightly toolchain, no matter the toolchain used for the build
       - name: Check formatting
         run: cargo +nightly fmt --all -- --check --color always
 
