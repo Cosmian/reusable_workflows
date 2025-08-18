@@ -37,4 +37,4 @@ jobs:
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        run: cargo fmt --all -- --check --color always
+        run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
