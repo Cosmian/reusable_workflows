@@ -10,7 +10,7 @@ on:
       exclusions:
         required: false
         type: string
-        default: ''
+        default: ""
 
 jobs:
   lint:
@@ -75,8 +75,9 @@ jobs:
           cargo install --locked cargo-criterion || true
 
       # Ensure all code has been formatted with rustfmt
+      # Our formatting rules use the nightly toolchain, no matter the toolchain used for the build
       - name: Check formatting
-        run: cargo fmt --all -- --check --color always
+        run: cargo +nightly fmt --all -- --check --color always
 
       - name: Static analysis
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings
