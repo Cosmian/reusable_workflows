@@ -1,5 +1,5 @@
 ---
-name: Cargo lints & tests
+name: Cargo format
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  lint:
+  format:
     runs-on: ubuntu-22.04
 
     steps:
