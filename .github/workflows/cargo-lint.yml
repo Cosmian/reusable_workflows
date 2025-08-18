@@ -77,7 +77,8 @@ jobs:
       # Our formatting rules use the nightly toolchain features, no matter the toolchain used for the build
       - name: Check formatting
         run: |
-          rustup component add --toolchain nightly-${{ runner.os }} rustfmt
+          HOST_TRIPLE=$(rustup show | grep "Default host:" | cut -d' ' -f3)
+          rustup component add --toolchain nightly-$HOST_TRIPLE rustfmt
           cargo +nightly fmt --all -- --check --color always
 
       - name: Static analysis
