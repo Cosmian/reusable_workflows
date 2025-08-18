@@ -32,6 +32,8 @@ jobs:
       exclusions: ${{ inputs.exclusions }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish-standard:
     if: inputs.workspace == ''
     uses: ./.github/workflows/cargo-publish.yml
