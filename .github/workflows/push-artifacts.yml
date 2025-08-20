@@ -79,7 +79,7 @@ jobs:
 
             # Debian packages
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa debian10-${{ inputs.debug_or_release }}/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
+              -i /root/.ssh/id_rsa debian10-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
               cosmian@package.cosmian.com:$DESTINATION_DIR/debian10
 
             # rockylinux packages
