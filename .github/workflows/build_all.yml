@@ -14,15 +14,26 @@ on:
 
 jobs:
   rockylinux9:
-    name: rocky linux 9.3
-    uses: ./.github/workflows/build_rocky.yml
+    strategy:
+      matrix:
+        include:
+          - name: rocky linux 9.3
+            archive-name: rockylinux9
+            docker_image: cosmian/rockylinux9
+
+          - name: debian 10
+            archive-name: debian 10
+            docker_image: rust:1.79.0-buster
+
+    name: ${{ matrix.name }}
+    uses: ./.github/workflows/build_in_container.yml
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
-      archive-name: rockylinux9
+      archive-name: ${{ matrix.archive-name }}
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: cosmian/rockylinux9
+      docker_image: ${{ matrix.docker_image }}
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
       features: non-fips
@@ -30,7 +41,7 @@ jobs:
   rockylinux8:
     if: inputs.debug_or_release == 'release'
     name: rocky linux 8.9
-    uses: ./.github/workflows/build_rocky.yml
+    uses: ./.github/workflows/build_in_container.yml
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
