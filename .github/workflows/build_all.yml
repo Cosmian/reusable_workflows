@@ -13,17 +13,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  rockylinux9:
+  build_in_containers:
     strategy:
       matrix:
         include:
           - name: rocky linux 9.3
             archive-name: rockylinux9
             docker_image: cosmian/rockylinux9
-
-          - name: debian 10
-            archive-name: debian 10
-            docker_image: rust:1.79.0-buster
 
     name: ${{ matrix.name }}
     uses: ./.github/workflows/build_in_container.yml
@@ -40,15 +36,26 @@ jobs:
 
   rockylinux8:
     if: inputs.debug_or_release == 'release'
-    name: rocky linux 8.9
+    strategy:
+      matrix:
+        include:
+          - name: rocky linux 8.9
+            archive-name: rockylinux8
+            docker_image: cosmian/rockylinux8
+
+          - name: debian 10
+            archive-name: debian10
+            docker_image: rust:1.79.0-buster
+
+    name: ${{ matrix.name }}
     uses: ./.github/workflows/build_in_container.yml
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
-      archive-name: rockylinux8
+      archive-name: ${{ matrix.archive-name }}
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: cosmian/rockylinux8
+      docker_image: ${{ matrix.docker_image }}
       artifacts: |
         /usr/local/openssl/lib64/ossl-modules/legacy.so
       features: non-fips
@@ -151,7 +158,7 @@ jobs:
   cleanup:
     needs:
       - rockylinux8
-      - rockylinux9
+      - build_in_containers
       - linux-mac
       - linux-release
       - windows-2022
