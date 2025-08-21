@@ -1,5 +1,5 @@
 ---
-name: Rocky linux
+name: Build in container
 
 on:
   workflow_call:
@@ -30,7 +30,7 @@ env:
   OPENSSL_DIR: /usr/local/openssl
 
 jobs:
-  rockylinux-tests:
+  container-linux-tests:
     services:
       # Label used to access the service container
       postgres:
@@ -135,12 +135,13 @@ jobs:
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_kms
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_findex_server
+            target/${{ inputs.target }}/debian/*.deb
             target/${{ inputs.target }}/generate-rpm/*.rpm
             ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
   clean-test:
-    needs: rockylinux-tests
+    needs: container-linux-tests
     name: Clean env test ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04
     steps:

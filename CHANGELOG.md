@@ -2,6 +2,68 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9] - 2025-08-21
+
+### 🚀 Features
+
+- KMS 5.7.0
+- Move ci scripts (#36)
+- Fix prod workflow
+- Add cargo machete standalone workflow
+- Always pull submodules while checkout
+- Use audit-check combined to cargo-deny
+- Add single cargo-fmt GH workflow
+- Add support of debian buster (#55)
+
+### 🐛 Bug Fixes
+
+- *(windows)* Path of artifacts have changed from D: to C:
+- Review fixes
+- *(windows)* Use GITHUB_WORKSPACE env. variable
+- Invert fips feature
+- Add prerequisites arg to clippy workflow
+- Missing cosmian_pkcs11 dll/so in artifact
+- Do not filter anymore the large build files - improve artifacts selection otherwise
+- Add hosts arguments (#40)
+- *(windows)* Path of artifacts have changed from D: to C:
+- Review fixes
+- *(windows)* Use GITHUB_WORKSPACE env. variable
+- Invert fips feature
+- Add prerequisites arg to clippy workflow
+- Sanitize ui.zip
+- Reuse ubuntu 24.04 build
+- *(publish)* Extract UI only on KMS repo
+- *(publish)* For other repos
+- Give a name for docker-test-job
+- Publish crates and add cargo machete (#51)
+- Publishing crate on nightly toolchain only. Use nightly version of machete
+- Reuse toolchain arg in cargo publish - for workspace only
+- Reuse toolchain arg in cargo deny
+- *(workspace publishing)* On stable toolchain, use the hardcoded nightly-2025-03-31 where cargo publish works on workspace
+- Add cargo semver toolchain arg
+- *(fmt)* Make sure correct version of toolchain is called
+- Cargo fmt GH workflow name
+- Do not miss DEB package
+- Path of debian artefact
+
+### 🚜 Refactor
+
+- Replace mariadb with mysql
+
+### 🧪 Testing
+
+- *(docker)* Enable docker tests after docker container creation
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge branch 'release/v0.8' into develop
+- Display cargo creds for debug
+- Fix cargo machete
+- Rename workflow for clarity
+- Rename KMS_IMAGE_NAME
+- Docker login while testing image
+- Reuse toolchain in cargo-publish
+
 ## [0.8] - 2025-05-27
 
 ### 📚 Documentation

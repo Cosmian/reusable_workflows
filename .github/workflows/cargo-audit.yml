@@ -1,5 +1,5 @@
 ---
-name: Cargo audit
+name: Cargo deny
 
 on:
   workflow_call:
@@ -14,5 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: EmbarkStudios/cargo-deny-action@v1
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # The interest of audit-check is to create automatically a GitHub issue in case of audit failures
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          rust-version: ${{ inputs.toolchain }}

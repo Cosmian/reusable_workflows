@@ -11,6 +11,9 @@ on:
         required: false
         default: true
         type: boolean
+    secrets:
+      token:
+        required: true
 
 jobs:
   publish:
@@ -19,21 +22,19 @@ jobs:
       - name: Dump context for debug
         uses: crazy-max/ghaction-dump-context@v1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Publishing - dry run
         if: inputs.publish == false
         run: |
-          cargo publish --dry-run
+          cargo +{{ inputs.toolchain }} publish --dry-run
 
       - name: Publishing
         if: inputs.publish == true
         run: |
-          echo "[registry]" > ~/.cargo/credentials
-          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
-          cargo publish --token $CRATES_IO
-        env:
-          CRATES_IO: ${{ secrets.CRATES_IO }}
+          cargo +{{ inputs.toolchain }} publish --token ${{ secrets.token }}
 
       - name: Release
         if: inputs.publish == true

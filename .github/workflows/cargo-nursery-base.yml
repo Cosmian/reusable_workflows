@@ -18,7 +18,15 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       exclusions: ${{ inputs.exclusions }}
+  cargo-fmt:
+    uses: ./.github/workflows/cargo-fmt.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
   cargo-audit:
     uses: ./.github/workflows/cargo-audit.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
+  cargo-machete:
+    uses: ./.github/workflows/cargo-machete.yml
     with:
       toolchain: ${{ inputs.toolchain }}

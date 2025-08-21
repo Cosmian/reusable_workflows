@@ -7,6 +7,9 @@ on:
       toolchain:
         required: true
         type: string
+    secrets:
+      token:
+        required: true
 
 jobs:
   publish:
@@ -15,20 +18,30 @@ jobs:
       - name: Dump context for debug
         uses: crazy-max/ghaction-dump-context@v1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Publishing - dry run
+        shell: bash
         run: |
-          cargo +nightly publish --dry-run --workspace -Z package-workspace
+          if [[ "${{ inputs.toolchain }}" == *nightly* ]]; then
+            TOOLCHAIN="${{ inputs.toolchain }}"
+          else
+            TOOLCHAIN="nightly-2025-03-31"
+          fi
+          cargo +$TOOLCHAIN publish --dry-run --workspace -Z package-workspace
 
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
         run: |
-          echo "[registry]" > ~/.cargo/credentials
-          echo "token = \"$CRATES_IO\"" >> ~/.cargo/credentials
-          cargo +nightly publish --workspace -Z package-workspace --token $CRATES_IO
-        env:
-          CRATES_IO: ${{ secrets.CRATES_IO }}
+          if [[ "${{ inputs.toolchain }}" == *nightly* ]]; then
+            TOOLCHAIN="${{ inputs.toolchain }}"
+          else
+            TOOLCHAIN="nightly-2025-03-31"
+          fi
+          cargo +$TOOLCHAIN publish --workspace --token ${{ secrets.token }} -Z package-workspace
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')

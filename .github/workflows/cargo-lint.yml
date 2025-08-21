@@ -45,7 +45,9 @@ jobs:
       - name: Dump Github variables
         uses: crazy-max/ghaction-dump-context@v1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -71,10 +73,6 @@ jobs:
           sudo apt install -y gnuplot
           cargo install --locked criterion-table || true
           cargo install --locked cargo-criterion || true
-
-      # Ensure all code has been formatted with rustfmt
-      - name: Check formatting
-        run: cargo fmt --all -- --check --color always
 
       - name: Static analysis
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings

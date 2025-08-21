@@ -1,0 +1,27 @@
+---
+name: Cargo machete
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+jobs:
+  machete:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ inputs.toolchain }}
+      - name: Install cargo-machete
+        run: cargo +nightly install cargo-machete
+      - name: Check unused dependencies in all crates
+        run: cargo +nightly machete --with-metadata

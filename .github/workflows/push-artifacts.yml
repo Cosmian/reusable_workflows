@@ -28,7 +28,7 @@ jobs:
 
     env:
       ARCHIVE_NAMES: rockylinux9-${{ inputs.debug_or_release }} fips_ubuntu_24_04-${{ inputs.debug_or_release }} ubuntu_24_04-${{ inputs.debug_or_release
-        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }} ui
+        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }}
 
     steps:
       - run: rm -rf ${{ inputs.project-name }}_* fips_* windows* ubuntu* macos* rockylinux* centos* ui*
@@ -42,14 +42,23 @@ jobs:
           set -xe
           apt update -y
           apt-get install -y zip
+
+          # Clean UI build
+          UI_DIST_FOLDER=ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/kms/kms/crate/server/ui/dist
+          if [ -d $UI_DIST_FOLDER ]; then
+            mv $UI_DIST_FOLDER ui-${{ inputs.debug_or_release }}
+            zip -r "ui-${{ inputs.debug_or_release }}.zip" "ui-${{ inputs.debug_or_release }}"
+          fi
+
           for archive_name in $ARCHIVE_NAMES; do
-            zip -r "$archive_name".zip "$archive_name"
+            zip -r "$archive_name.zip" "$archive_name"
           done
 
           # Warning, no all binaries in debug, only in release
           if [ "${{ inputs.debug_or_release }}" = "release" ]; then
             zip -r ubuntu_22_04-release.zip ubuntu_22_04-release
             zip -r rockylinux8-release.zip rockylinux8-release
+            zip -r debian10-release.zip debian10-release
           fi
 
       - name: Push to package.cosmian.com
@@ -66,7 +75,12 @@ jobs:
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa *.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
 
           if [ "${{ inputs.debug_or_release }}" = "release" ]; then
-            ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR/{rockylinux8,rockylinux9,ubuntu-22.04,ubuntu-24.04}
+            ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR/{debian10,rockylinux8,rockylinux9,ubuntu-22.04,ubuntu-24.04}
+
+            # Debian packages
+            scp -o 'StrictHostKeyChecking no' \
+              -i /root/.ssh/id_rsa debian10-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
+              cosmian@package.cosmian.com:$DESTINATION_DIR/debian10
 
             # rockylinux packages
             scp -o 'StrictHostKeyChecking no' \
@@ -91,5 +105,6 @@ jobs:
         with:
           files: |
             *.zip
+            debian10-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb
             rockylinux9-release/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/generate-rpm/*.rpm
             ubuntu_24_04-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb

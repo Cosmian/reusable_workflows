@@ -81,15 +81,24 @@ jobs:
       image-tag: ${{ inputs.registry-image }}:${{ steps.meta.outputs.version }}
 
   test-image:
+    name: ${{ inputs.prefix }} Test Image
     needs: build-and-push-image
     runs-on: ubuntu-24.04
     env:
-      KMS_IMAGE_NAME: "${{ needs.build-and-push-image.outputs.image-tag }}"
+      DOCKER_IMAGE_NAME: ${{ needs.build-and-push-image.outputs.image-tag }}
 
     steps:
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name : test image
+
+      - name: test image
         run: |
           bash .github/scripts/test_docker_image.sh

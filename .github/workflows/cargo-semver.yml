@@ -3,6 +3,10 @@ name: Cargo semver
 
 on:
   workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
 
 jobs:
   semver:
@@ -10,7 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -30,7 +36,7 @@ jobs:
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +nightly install --locked cargo-semver-checks || true
+        run: cargo +${{ inputs.toolchain }} install --locked cargo-semver-checks || true
 
       - name: Verify semver integrity
-        run: cargo +stable semver-checks check-release --baseline-root=. --all-features
+        run: cargo +${{ inputs.toolchain }} semver-checks check-release --baseline-root=. --all-features
