@@ -97,6 +97,7 @@ jobs:
               /usr/local/openssl/lib/ossl-modules/legacy.dylib
               target/aarch64-apple-darwin/${{ inputs.debug_or_release }}/libcosmian_pkcs11.dylib
             skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse --skip hsm --skip findex_server --skip redis
+              --skip forward_proxy
             docker_compose: false
             features: non-fips
 

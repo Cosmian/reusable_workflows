@@ -122,7 +122,7 @@ jobs:
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: --skip hsm
+          SKIP_SERVICES_TESTS: --skip hsm --skip forward_proxy
         run: |
           bash .github/scripts/cargo_build.sh
 
