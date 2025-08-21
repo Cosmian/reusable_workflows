@@ -75,11 +75,15 @@ jobs:
           cargo install --locked cargo-criterion || true
 
       - name: Static analysis
+        run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets -- -D warnings
+
+      - name: Static analysis all features
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets --all-features -- -D warnings
 
       - name: Run tests
         run: |
-          cargo test --release --workspace ${{ inputs.exclusions }} --all-targets --all-features
+          cargo test --release --workspace ${{ inputs.exclusions }} --all-targets
 
-      - name: Run doc tests
-        run: cargo test --release --workspace ${{ inputs.exclusions }} --all-features --doc
+      - name: Run tests all features
+        run: |
+          cargo test --release --workspace ${{ inputs.exclusions }} --all-targets --all-features

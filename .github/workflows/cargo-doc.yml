@@ -26,3 +26,6 @@ jobs:
 
       - name: Check doc
         run: cargo doc --all-features --workspace ${{ inputs.exclusions }}
+
+      - name: Run doc tests
+        run: cargo test --release --workspace ${{ inputs.exclusions }} --all-features --doc
