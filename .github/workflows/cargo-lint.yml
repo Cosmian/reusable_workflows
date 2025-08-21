@@ -67,13 +67,6 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      - name: Install tooling for benchmarks
-        run: |
-          sudo apt update
-          sudo apt install -y gnuplot
-          cargo install --locked criterion-table || true
-          cargo install --locked cargo-criterion || true
-
       - name: Static analysis
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets -- -D warnings
 

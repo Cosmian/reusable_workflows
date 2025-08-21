@@ -32,7 +32,9 @@ jobs:
           key: ${{ runner.os }}-cargo-semver-
           restore-keys: ${{ runner.os }}-cargo-semver-
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
