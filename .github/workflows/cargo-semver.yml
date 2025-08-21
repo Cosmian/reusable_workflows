@@ -10,7 +10,7 @@ on:
 
 jobs:
   semver:
-    name: Check semver
+    name: check semver
     runs-on: ubuntu-latest
 
     steps:
