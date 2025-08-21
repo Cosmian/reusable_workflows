@@ -1,5 +1,5 @@
 ---
-name: Cargo lints & tests
+name: Cargo nursery base
 
 on:
   workflow_call:
