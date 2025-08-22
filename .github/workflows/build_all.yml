@@ -76,7 +76,7 @@ jobs:
             docker_compose: true
             prerequisites: |
               sudo apt-get update
-              sudo apt-get install -qq pkg-config jq squid
+              sudo apt-get install -qq pkg-config jq
 
           - distribution: ubuntu-24.04
             archive-name: ubuntu_24_04
@@ -87,7 +87,7 @@ jobs:
             docker_compose: true
             prerequisites: |
               sudo apt-get update
-              sudo apt-get install -qq pkg-config jq squid
+              sudo apt-get install -qq pkg-config jq
             features: non-fips
 
           - distribution: macos-15
@@ -129,7 +129,7 @@ jobs:
               target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             prerequisites: |
               sudo apt-get update
-              sudo apt-get install -qq pkg-config jq squid
+              sudo apt-get install -qq pkg-config jq
             docker_compose: true
             features: non-fips
 
@@ -154,7 +154,6 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
       archive-name: windows
       debug_or_release: ${{ inputs.debug_or_release }}
-
 
   cleanup:
     needs:
