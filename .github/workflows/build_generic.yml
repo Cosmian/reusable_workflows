@@ -104,9 +104,6 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
           SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
-
-          # KMS URL when using forward_proxy
-          KMS_URL: http://host.docker.internal:9998
         run: |
           bash .github/scripts/cargo_build.sh
 
