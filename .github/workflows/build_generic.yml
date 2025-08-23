@@ -52,7 +52,19 @@ jobs:
         with:
           submodules: recursive
 
-      - run: |
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt, clippy
+
+      - name: Run docker containers
+        if: ${{ inputs.docker_compose }}
+        run: |
+          docker compose -h
+          docker compose up -d
+
+      - name: Local OpenSSL Install
+        run: |
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
           sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
           sudo chown -R $USER ${{ env.OPENSSL_DIR }}
@@ -65,17 +77,6 @@ jobs:
         run: |
           set -ex
           ${{ inputs.prerequisites }}
-
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
-
-      - name: Run docker containers
-        if: ${{ inputs.docker_compose }}
-        run: |
-          docker compose -h
-          docker compose up -d
 
       - name: Build and tests
         env:

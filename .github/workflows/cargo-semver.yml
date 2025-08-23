@@ -10,7 +10,7 @@ on:
 
 jobs:
   semver:
-    name: Check semver
+    name: check semver
     runs-on: ubuntu-latest
 
     steps:
@@ -32,11 +32,13 @@ jobs:
           key: ${{ runner.os }}-cargo-semver-
           restore-keys: ${{ runner.os }}-cargo-semver-
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +${{ inputs.toolchain }} install --locked cargo-semver-checks || true
+        run: cargo +${{ inputs.toolchain }} install --locked cargo-semver-checks
 
       - name: Verify semver integrity
         run: cargo +${{ inputs.toolchain }} semver-checks check-release --baseline-root=. --all-features

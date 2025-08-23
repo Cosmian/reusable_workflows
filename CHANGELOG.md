@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10] - 2025-08-23
+
+### 🐛 Bug Fixes
+
+- Reorder lint and doc wf
+- Semver toolchain
+- Skip forward proxy where there is no docker engine
+- Some cleanup, add symmetric between workflows (#56)
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge branch 'release/v0.9' into develop
+- Rename ambiguous wf
+- Rename wf name
+
 ## [0.9] - 2025-08-21
 
 ### 🚀 Features

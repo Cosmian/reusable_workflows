@@ -83,16 +83,11 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      - name: Local OpenSSL FIPS Install
+      - name: Local OpenSSL Install
         run: |
           bash .github/reusable_scripts/get_openssl_binaries.sh
         env:
           OS_NAME: ubuntu_20_04
-
-      - name: Pre-cleanup
-        run: |
-          set -x
-          rm -rf /tmp/sqlite-data /tmp/tmp.toml
 
       - name: Build and tests
         env:
@@ -122,7 +117,7 @@ jobs:
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: --skip hsm
+          SKIP_SERVICES_TESTS: --skip hsm --skip forward_proxy
         run: |
           bash .github/scripts/cargo_build.sh
 

@@ -10,7 +10,7 @@ on:
 
 jobs:
   audit:
-    name: Audit
+    name: audit
     runs-on: ubuntu-latest
 
     steps:
