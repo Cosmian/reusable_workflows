@@ -73,6 +73,7 @@ jobs:
               /usr/local/openssl/ssl/openssl.cnf
               /usr/local/openssl/ssl/fipsmodule.cnf
               target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
+              crate/server/ui
             docker_compose: true
             prerequisites: |
               sudo apt-get update
@@ -84,6 +85,7 @@ jobs:
             artifacts: |
               /usr/local/openssl/lib64/ossl-modules/legacy.so
               target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
+              crate/server/ui_non_fips
             docker_compose: true
             prerequisites: |
               sudo apt-get update

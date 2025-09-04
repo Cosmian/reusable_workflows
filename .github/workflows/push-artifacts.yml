@@ -50,6 +50,12 @@ jobs:
             zip -r "ui-${{ inputs.debug_or_release }}.zip" "ui-${{ inputs.debug_or_release }}"
           fi
 
+          UI_DIST_FOLDER=ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/kms/kms/crate/server/ui_non_fips/dist
+          if [ -d $UI_DIST_FOLDER ]; then
+            mv $UI_DIST_FOLDER ui_non_fips-${{ inputs.debug_or_release }}
+            zip -r "ui_non_fips-${{ inputs.debug_or_release }}.zip" "ui_non_fips-${{ inputs.debug_or_release }}"
+          fi
+
           for archive_name in $ARCHIVE_NAMES; do
             zip -r "$archive_name.zip" "$archive_name"
           done
