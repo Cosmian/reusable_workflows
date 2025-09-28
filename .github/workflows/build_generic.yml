@@ -25,9 +25,6 @@ on:
       features:
         required: false
         type: string
-      skip_services_tests:
-        required: false
-        type: string
       prerequisites:
         required: false
         type: string
@@ -78,9 +75,21 @@ jobs:
           set -ex
           ${{ inputs.prerequisites }}
 
-      - name: Build and tests
+      - name: Build
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+        run: |
+          bash .github/scripts/cargo_build.sh
+
+      - name: Tests
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
 
           POSTGRES_USER: kms
           PGUSER: kms
@@ -100,12 +109,17 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
 
+        run: |
+          bash .github/scripts/cargo_test.sh
+
+      - name: Packages
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
-          bash .github/scripts/cargo_build.sh
+          bash .github/scripts/build_packages.sh
 
       - name: Upload for ${{ inputs.distribution }}
         uses: actions/upload-artifact@v4
