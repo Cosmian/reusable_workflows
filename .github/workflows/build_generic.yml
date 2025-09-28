@@ -84,6 +84,15 @@ jobs:
         run: |
           bash .github/scripts/cargo_build.sh
 
+      - name: Build packages
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+        run: |
+          bash .github/scripts/build_packages.sh
+
       - name: Tests
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
@@ -119,15 +128,6 @@ jobs:
 
         run: |
           bash .github/scripts/cargo_test.sh
-
-      - name: Packages
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-          TARGET: ${{ inputs.target }}
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
-        run: |
-          bash .github/scripts/build_packages.sh
 
       - name: Upload for ${{ inputs.distribution }}
         uses: actions/upload-artifact@v4
