@@ -25,9 +25,6 @@ on:
       features:
         required: false
         type: string
-      skip_services_tests:
-        required: false
-        type: string
       prerequisites:
         required: false
         type: string
@@ -78,21 +75,50 @@ jobs:
           set -ex
           ${{ inputs.prerequisites }}
 
-      - name: Build and tests
+      - name: Build
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+        run: |
+          bash .github/scripts/cargo_build.sh
+
+      - name: Build packages
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+        run: |
+          bash .github/scripts/build_packages.sh
+
+      - name: Tests
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
 
           POSTGRES_USER: kms
           PGUSER: kms
           POSTGRES_PASSWORD: kms
           POSTGRES_DB: kms
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
           KMS_POSTGRES_URL: postgresql://kms:kms@127.0.0.1:5432/kms
 
           MYSQL_DATABASE: kms
           MYSQL_ROOT_PASSWORD: kms
-          KMS_MYSQL_URL: mysql://kms:kms@localhost:3306/kms
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          KMS_MYSQL_URL: mysql://root:kms@localhost:3306/kms
 
           KMS_SQLITE_PATH: data/shared
+
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          KMS_REDIS_URL: redis://localhost:6379
 
           # Google variables
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
@@ -100,12 +126,8 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
 
-          TARGET: ${{ inputs.target }}
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
-          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
-          bash .github/scripts/cargo_build.sh
+          bash .github/scripts/cargo_test.sh
 
       - name: Upload for ${{ inputs.distribution }}
         uses: actions/upload-artifact@v4
