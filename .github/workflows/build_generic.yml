@@ -112,7 +112,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: kms
           MYSQL_HOST: localhost
           MYSQL_PORT: 3306
-          KMS_MYSQL_URL: mysql://kms:kms@localhost:3306/kms
+          KMS_MYSQL_URL: mysql://root:kms@localhost:3306/kms
 
           KMS_SQLITE_PATH: data/shared
 
