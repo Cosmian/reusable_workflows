@@ -83,6 +83,9 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
+      - name: Prerequisites
+        run: dnf install -y nmap-ncat
+
       - name: Local OpenSSL Install
         run: |
           bash .github/reusable_scripts/get_openssl_binaries.sh
