@@ -91,11 +91,8 @@ jobs:
           elif command -v apt-get >/dev/null; then (grep -qi buster /etc/os-release && sed -i 's|deb.debian.org/debian|archive.debian.org/debian|g; s|deb.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list && sed -i '/buster-updates/d' /etc/apt/sources.list && printf 'Acquire::Check-Valid-Until "false";\nAcquire::AllowInsecureRepositories "true";\n' > /etc/apt/apt.conf.d/99no-check-valid || true); apt-get -o Acquire::Check-Valid-Until=false -o Acquire::AllowInsecureRepositories=true update -y || true; apt-get install -y nmap netcat-openbsd || apt-get install -y nmap netcat || apt-get install -y netcat || true; \
           else echo "No supported package manager"; fi
 
-      - name: Local OpenSSL Install
-        run: |
-          bash .github/reusable_scripts/get_openssl_binaries.sh
-        env:
-          OS_NAME: ubuntu_20_04
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
 
       - name: Build
         env:

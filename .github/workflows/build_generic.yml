@@ -45,6 +45,9 @@ jobs:
         if: contains(runner.os, 'Linux')
         run: cat /proc/cpuinfo
 
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -59,15 +62,6 @@ jobs:
         run: |
           docker compose -h
           docker compose up -d
-
-      - name: Local OpenSSL Install
-        run: |
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
-          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
-          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
-          bash .github/reusable_scripts/get_openssl_binaries.sh
-        env:
-          OS_NAME: ${{ inputs.archive-name }}
 
       - name: Prerequisites
         if: ${{ inputs.prerequisites }}
