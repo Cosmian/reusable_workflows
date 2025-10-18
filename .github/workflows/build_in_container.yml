@@ -27,7 +27,7 @@ on:
         type: string
 
 env:
-  OPENSSL_DIR: /usr/local/openssl
+  EXTERNAL_OPENSSL_DIR: /usr/local/openssl
 
 jobs:
   container-linux-tests:
