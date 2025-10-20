@@ -15,9 +15,6 @@ on:
         type: string
         default: x86_64-unknown-linux-gnu
 
-env:
-  EXTERNAL_OPENSSL_DIR: /usr/local/openssl
-
 jobs:
   clippy:
     runs-on: ubuntu-22.04
@@ -51,10 +48,6 @@ jobs:
 
       - name: Static analysis
         run: cargo clippy --workspace --all-targets -- -D warnings
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
 
       - name: Static analysis all features
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-        env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}

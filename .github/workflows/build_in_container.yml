@@ -26,9 +26,6 @@ on:
         required: false
         type: string
 
-env:
-  EXTERNAL_OPENSSL_DIR: /usr/local/openssl
-
 jobs:
   container-linux-tests:
     services:
@@ -96,7 +93,6 @@ jobs:
 
       - name: Build
         env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
@@ -105,7 +101,6 @@ jobs:
 
       - name: Build packages
         env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
@@ -114,7 +109,6 @@ jobs:
 
       - name: Tests
         env:
-          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
