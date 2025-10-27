@@ -138,6 +138,7 @@ jobs:
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_kms
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_findex_server
             target/${{ inputs.target }}/debian/*.deb
+            target/${{ inputs.debug_or_release }}/*.dmg
             ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
