@@ -85,10 +85,8 @@ jobs:
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
           path: |
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe
+            target/${{ inputs.debug_or_release }}/*.exe
             target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/*cosmian_pkcs11.dll
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_kms.exe
-            target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_findex_server.exe
             fips.dll
             legacy.dll
           retention-days: 1

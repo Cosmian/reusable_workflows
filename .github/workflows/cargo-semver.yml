@@ -38,7 +38,7 @@ jobs:
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +${{ inputs.toolchain }} install --locked cargo-semver-checks
+        run: cargo +${{ inputs.toolchain }} install --version 0.44.0 --locked cargo-semver-checks
 
       - name: Verify semver integrity
         run: cargo +${{ inputs.toolchain }} semver-checks check-release --baseline-root=. --all-features

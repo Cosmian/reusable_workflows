@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11] - 2025-10-28
+
+### 🚀 Features
+
+- DMG/NSIS Installers (#59)
+
+### 🐛 Bug Fixes
+
+- Retrieve UI non-fips build in artifacts
+- Make cargo test working by default (#58)
+- *(rockylinux)* Missing nc by default
+- *(rockylinux_debian)* Missing nc by default
+- Freeze cargo-semver-checks to 0.44.0
+- On tags, do not dry publish
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge branch 'release/0.10' into develop
+- Add GitHub Copilot workspace instructions for reusable workflows (#57)
+- Clean existing debian10 artifacts
+
 ## [0.10] - 2025-08-23
 
 ### 🐛 Bug Fixes

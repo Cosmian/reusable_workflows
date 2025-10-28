@@ -23,6 +23,7 @@ jobs:
           submodules: recursive
 
       - name: Publishing - dry run
+        if: startsWith(github.ref, 'refs/tags/') != true
         shell: bash
         run: |
           if [[ "${{ inputs.toolchain }}" == *nightly* ]]; then
