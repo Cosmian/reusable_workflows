@@ -97,7 +97,7 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
         run: |
-          bash .github/scripts/nix_build.sh
+          bash .github/scripts/nix.sh build
 
       - name: Build packages
         env:
@@ -105,7 +105,7 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
         run: |
-          bash .github/scripts/build_packages.sh
+          bash .github/scripts/nix.sh packages
 
       - name: Tests
         env:
@@ -139,7 +139,7 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
         run: |
-          bash .github/scripts/cargo_test.sh
+          bash .github/scripts/nix.sh test
 
       - name: Upload for ${{ inputs.docker_image }}
         uses: actions/upload-artifact@v4
