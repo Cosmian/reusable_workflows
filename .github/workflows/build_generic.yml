@@ -72,7 +72,7 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
         run: |
-          bash .github/scripts/cargo_build.sh
+          bash .github/scripts/nix_build.sh
 
       - name: Build packages
         env:

@@ -89,7 +89,7 @@ jobs:
           else echo "No supported package manager"; fi
 
       - name: Nix installation
-        uses: cachix/install-nix-action@v31
+        uses: DeterminateSystems/nix-installer-action@v16
 
       - name: Build
         env:
@@ -97,7 +97,7 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
         run: |
-          bash .github/scripts/cargo_build.sh
+          bash .github/scripts/nix_build.sh
 
       - name: Build packages
         env:
