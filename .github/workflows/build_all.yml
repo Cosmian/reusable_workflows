@@ -101,6 +101,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Run docker containers
+        run: |
+          docker compose -h
+          docker compose up -d
+
       - name: Test
         env:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
