@@ -39,7 +39,6 @@ jobs:
       - name: Build packages
         env:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
         run: |
           bash .github/scripts/nix.sh packages
 

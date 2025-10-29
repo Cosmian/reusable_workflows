@@ -13,35 +13,100 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux-mac:
+  packages:
+    name: Build packages ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - distribution: ubuntu-24.04
-            archive-name: fips_ubuntu_24_04
-            docker_compose: true
-
-          - distribution: ubuntu-24.04
-            archive-name: ubuntu_24_04
-            docker_compose: true
+          - os: macos-15
+            package-type: dmg
+            artifact-name: macos_arm
+            artifact-path: target/${{ inputs.debug_or_release }}/*.dmg
             features: non-fips
 
-          - distribution: macos-15
-            archive-name: macos_arm
-            docker_compose: false
+          - os: ubuntu-22.04
+            package-type: deb
+            artifact-name: fips_ubuntu_22_04
+            artifact-path: target/debian/*.deb
+
+          - os: ubuntu-22.04
+            package-type: deb
+            artifact-name: ubuntu_22_04
+            artifact-path: target/debian/*.deb
             features: non-fips
 
-    name: ${{ matrix.distribution }}
-    uses: ./.github/workflows/build_generic.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      distribution: ${{ matrix.distribution }}
-      archive-name: ${{ matrix.archive-name }}
-      debug_or_release: ${{ inputs.debug_or_release }}
-      features: ${{ matrix.features }}
-      docker_compose: ${{ matrix.docker_compose }}
+          - os: ubuntu-22.04
+            package-type: rpm
+            artifact-name: ubuntu_22_04_rpm
+            artifact-path: target/generate-rpm/*.rpm
+            features: non-fips
+
+    steps:
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build packages
+        env:
+          FEATURES: ${{ matrix.features }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+        run: |
+          bash .github/scripts/nix.sh package ${{ matrix.package-type }}
+
+      - name: Upload for ${{ matrix.os }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-${{ inputs.debug_or_release }}
+          path: |
+            ${{ matrix.artifact-path }}
+          retention-days: 1
+          if-no-files-found: error
+
+  test:
+    name: Test ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - type: sqlite
+          - type: mysql
+          - type: psql
+          - type: redis
+          - type: google_cse
+          - type: hsm
+          - type: sqlite
+            features: non-fips
+          - type: mysql
+            features: non-fips
+          - type: psql
+            features: non-fips
+          - type: redis
+            features: non-fips
+          - type: google_cse
+            features: non-fips
+          - type: hsm
+            features: non-fips
+
+    steps:
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test
+        env:
+          FEATURES: ${{ matrix.features }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+        run: |
+          bash .github/scripts/nix.sh test ${{ matrix.type }}
 
   windows-2022:
     uses: ./.github/workflows/build_windows.yml
@@ -52,7 +117,8 @@ jobs:
 
   cleanup:
     needs:
-      - linux-mac
+      - packages
+      - test
       - windows-2022
     uses: ./.github/workflows/cleanup_cache.yml
     secrets: inherit

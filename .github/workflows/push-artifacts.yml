@@ -27,8 +27,8 @@ jobs:
         - /home/cosmian/.ssh/id_rsa:/root/.ssh/id_rsa
 
     env:
-      ARCHIVE_NAMES: rockylinux9-${{ inputs.debug_or_release }} fips_ubuntu_24_04-${{ inputs.debug_or_release }} ubuntu_24_04-${{ inputs.debug_or_release
-        }} macos_arm-${{ inputs.debug_or_release }} windows-${{ inputs.debug_or_release }}
+      ARCHIVE_NAMES: fips_ubuntu_22_04-${{ inputs.debug_or_release }} ubuntu_24_04-${{ inputs.debug_or_release }} macos_arm-${{ inputs.debug_or_release
+        }} windows-${{ inputs.debug_or_release }}
 
     steps:
       - run: rm -rf ${{ inputs.project-name }}_* fips_* windows* ubuntu* macos* rockylinux* centos* debian*
@@ -47,13 +47,6 @@ jobs:
             zip -r "$archive_name.zip" "$archive_name"
           done
 
-          # Warning, no all binaries in debug, only in release
-          if [ "${{ inputs.debug_or_release }}" = "release" ]; then
-            zip -r ubuntu_22_04-release.zip ubuntu_22_04-release
-            zip -r rockylinux8-release.zip rockylinux8-release
-            zip -r debian10-release.zip debian10-release
-          fi
-
       - name: Push to package.cosmian.com
         shell: bash
         run: |
@@ -68,27 +61,25 @@ jobs:
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa *.zip cosmian@package.cosmian.com:$DESTINATION_DIR/
 
           if [ "${{ inputs.debug_or_release }}" = "release" ]; then
-            ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p $DESTINATION_DIR/{debian10,rockylinux8,rockylinux9,ubuntu-22.04,ubuntu-24.04}
-
             # Debian packages
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa debian10-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
+              -i /root/.ssh/id_rsa debian10-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/debian/*.deb \
               cosmian@package.cosmian.com:$DESTINATION_DIR/debian10
 
             # rockylinux packages
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa rockylinux8-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/generate-rpm/*.rpm \
+              -i /root/.ssh/id_rsa rockylinux8-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/generate-rpm/*.rpm \
               cosmian@package.cosmian.com:$DESTINATION_DIR/rockylinux8
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa rockylinux9-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/generate-rpm/*.rpm \
+              -i /root/.ssh/id_rsa rockylinux9-${{ inputs.debug_or_release }}/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/generate-rpm/*.rpm \
               cosmian@package.cosmian.com:$DESTINATION_DIR/rockylinux9
 
             # Ubuntu packages
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa ubuntu_22_04-${{ inputs.debug_or_release }}/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
+              -i /root/.ssh/id_rsa ubuntu_22_04-${{ inputs.debug_or_release }}/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/debian/*.deb \
               cosmian@package.cosmian.com:$DESTINATION_DIR/ubuntu-22.04
             scp -o 'StrictHostKeyChecking no' \
-              -i /root/.ssh/id_rsa *ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb \
+              -i /root/.ssh/id_rsa *ubuntu_24_04-${{ inputs.debug_or_release }}/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/debian/*.deb \
               cosmian@package.cosmian.com:$DESTINATION_DIR/ubuntu-24.04
           fi
 
@@ -97,7 +88,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            *.zip
-            debian10-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb
-            rockylinux9-release/__w/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/generate-rpm/*.rpm
-            ubuntu_24_04-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/target/x86_64-unknown-linux-gnu/debian/*.deb
+            ubuntu_24_04-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/debian/*.deb
+            ubuntu_24_04-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/generate-rpm/*.rpm
+            macos_arm-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/${{ inputs.debug_or_release }}/*.dmg
+            windows-release/home/runner/work/${{ inputs.project-name }}/${{ inputs.project-name }}/${{ inputs.debug_or_release }}/*.exe
