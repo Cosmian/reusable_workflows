@@ -6,7 +6,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 
 ## Repository Structure
 
-```
+```text
 .github/workflows/          # Reusable workflow definitions
 ├── build_*.yml            # Build workflows for different platforms/contexts
 ├── cargo-*.yml             # Rust/Cargo specific workflows
@@ -18,13 +18,17 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 ## Key Workflow Categories
 
 ### Build Workflows
-- `build_all.yml` - Orchestrates builds across multiple platforms
-- `build_generic.yml` - Generic build workflow for standard projects
-- `build_in_container.yml` - Containerized builds (Rocky Linux)
+
+- `build_all.yml` - Main orchestration workflow with parallel package builds and tests using Nix
+  - **packages** job: Matrix build for DMG (macOS), DEB, and RPM packages with FIPS/non-FIPS variants
+  - **test** job: Matrix-based parallel testing on multiple database backends (sqlite, mysql, psql, redis, google_cse, hsm)
+  - **windows-2022** job: Windows builds via reusable workflow
+  - All jobs run in parallel for maximum efficiency
 - `build_windows.yml` - Windows-specific builds
 - `build_docker_image.yml` - Docker image building
 
 ### Cargo/Rust Workflows
+
 - `cargo.yml` - Core Rust compilation workflow
 - `cargo-lint.yml` - Linting and testing with services (Redis, PostgreSQL)
 - `cargo-audit.yml` - Security auditing
@@ -37,6 +41,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 - `clippy.yml` - Rust linting
 
 ### Cloudproof Workflows
+
 - `cloudproof.yml` - Main Cloudproof build orchestration
 - `cloudproof_flutter.yml` / `cloudproof_flutter_darwin.yml` - Flutter builds
 - `cloudproof_java.yml` - Java package builds
@@ -44,6 +49,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 - `cloudproof_python.yml` - Python package builds
 
 ### Publishing & Distribution
+
 - `package-cosmian-com.yml` - Publishing to package.cosmian.com
 - `push-artifacts.yml` - Artifact distribution
 
@@ -52,11 +58,13 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 Most workflows follow these common input patterns:
 
 ### Required Inputs
+
 - `toolchain`: Rust toolchain version (e.g., "stable", "nightly-2025-03-31")
 - `target`: Build target (e.g., "x86_64-unknown-linux-gnu")
 - `os`: Runner OS (e.g., "ubuntu-22.04", "windows-latest")
 
 ### Optional Inputs
+
 - `exclusions`: Package exclusions for testing
 - `pre-requisites`: System dependencies to install
 - `artifacts`: Build artifacts to collect
@@ -75,6 +83,7 @@ Most workflows follow these common input patterns:
 6. **Add service dependencies**: Include Redis/PostgreSQL services when needed for tests
 
 ### Workflow File Structure
+
 ```yaml
 ---
 name: Descriptive Workflow Name
@@ -95,7 +104,7 @@ jobs:
     services:
       postgres: # PostgreSQL service config
       redis: # Redis service config
-    
+
     steps:
       # Implementation steps
 ```
@@ -110,6 +119,7 @@ jobs:
 ### Code Quality Standards
 
 The repository uses extensive pre-commit hooks including:
+
 - **YAML formatting**: yamlfmt with specific indentation rules
 - **Markdown linting**: markdownlint with customized rules
 - **Security checks**: typos, private key detection
@@ -118,11 +128,14 @@ The repository uses extensive pre-commit hooks including:
 
 ### Common Patterns to Follow
 
-1. **Container Builds**: Use Cosmian's standardized container images (cosmian/rockylinux9)
-2. **Artifact Naming**: Use descriptive archive names that match the build context
-3. **Toolchain Management**: Support both stable and nightly Rust toolchains
-4. **Cross-Platform**: Consider Windows, macOS, and Linux compatibility
-5. **Feature Flags**: Support FIPS and other conditional compilation features
+1. **Nix-based Builds**: Use Nix for reproducible builds via `nix.sh` scripts
+2. **Matrix Strategy**: Use matrix builds for parallel execution across platforms and feature sets
+3. **Conditional Environment Variables**: Only export environment variables when defined in matrix (e.g., `${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}`)
+4. **Artifact Naming**: Use descriptive archive names that match the build context
+5. **Toolchain Management**: Support both stable and nightly Rust toolchains
+6. **Cross-Platform**: Consider Windows, macOS, and Linux compatibility
+7. **Feature Flags**: Support FIPS and non-FIPS builds via feature flags
+8. **Package Testing**: Install and test packages after build (DEB/RPM validation)
 
 ### When Modifying Existing Workflows
 
@@ -134,16 +147,19 @@ The repository uses extensive pre-commit hooks including:
 ## Debugging Common Issues
 
 ### Build Failures
+
 - Check toolchain compatibility with target platform
 - Verify all required pre-requisites are installed
 - Ensure artifact paths are correct for the target OS
 
 ### Container Issues
+
 - Verify Docker image availability
 - Check that container has required build dependencies
 - Ensure proper volume mounting for artifacts
 
 ### Publishing Problems
+
 - Verify secrets are properly configured
 - Check package registry connectivity
 - Ensure version constraints are met
@@ -151,7 +167,7 @@ The repository uses extensive pre-commit hooks including:
 ## Integration with External Systems
 
 - **package.cosmian.com**: Custom package repository
-- **PyPI**: Python package publishing  
+- **PyPI**: Python package publishing
 - **crates.io**: Rust crate publishing
 - **Docker registries**: Container image publishing
 - **GitHub Packages**: Artifact storage

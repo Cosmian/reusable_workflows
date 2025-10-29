@@ -14,7 +14,7 @@ on:
 
 jobs:
   packages:
-    name: Build packages ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    name: Build package ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -51,12 +51,28 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build packages
+      - name: Build package
         env:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
         run: |
           ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh package ${{ matrix.package-type }}
+
+      - name: Install package
+        run: |
+          if [ "${{ matrix.package-type }}" = "deb" ]; then
+            sudo dpkg -i target/debian/*.deb
+          elif [ "${{ matrix.package-type }}" = "rpm" ]; then
+            sudo rpm -i target/generate-rpm/*.rpm
+          fi
+
+      - name: Run executable file
+        run: |
+          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
+            # cosmian --version
+            cosmian_kms --info
+            # cosmian_findex_server --version
+          fi
 
       - name: Upload for ${{ matrix.os }}
         uses: actions/upload-artifact@v4
@@ -68,7 +84,7 @@ jobs:
           if-no-files-found: error
 
   test:
-    name: Test ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
