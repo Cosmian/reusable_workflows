@@ -13,53 +13,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_in_containers:
-    strategy:
-      matrix:
-        include:
-          - name: rocky linux 9.3
-            archive-name: rockylinux9
-            docker_image: cosmian/rockylinux9
-
-    name: ${{ matrix.name }}
-    uses: ./.github/workflows/build_in_container.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      archive-name: ${{ matrix.archive-name }}
-      target: x86_64-unknown-linux-gnu
-      debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: ${{ matrix.docker_image }}
-      artifacts: |
-        /usr/local/openssl/lib64/ossl-modules/legacy.so
-      features: non-fips
-
-  rockylinux8:
-    if: inputs.debug_or_release == 'release'
-    strategy:
-      matrix:
-        include:
-          - name: rocky linux 8.9
-            archive-name: rockylinux8
-            docker_image: cosmian/rockylinux8
-
-          - name: debian 10
-            archive-name: debian10
-            docker_image: rust:1.79.0-buster
-
-    name: ${{ matrix.name }}
-    uses: ./.github/workflows/build_in_container.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      archive-name: ${{ matrix.archive-name }}
-      target: x86_64-unknown-linux-gnu
-      debug_or_release: ${{ inputs.debug_or_release }}
-      docker_image: ${{ matrix.docker_image }}
-      artifacts: |
-        /usr/local/openssl/lib64/ossl-modules/legacy.so
-      features: non-fips
-
   linux-mac:
     strategy:
       fail-fast: false
@@ -67,36 +20,15 @@ jobs:
         include:
           - distribution: ubuntu-24.04
             archive-name: fips_ubuntu_24_04
-            target: x86_64-unknown-linux-gnu
-            artifacts: |
-              /usr/local/openssl/lib64/ossl-modules/fips.so
-              /usr/local/openssl/ssl/openssl.cnf
-              /usr/local/openssl/ssl/fipsmodule.cnf
-              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
-              crate/server/ui
             docker_compose: true
-            prerequisites: |
-              sudo apt-get update
-              sudo apt-get install -qq pkg-config jq
 
           - distribution: ubuntu-24.04
             archive-name: ubuntu_24_04
-            target: x86_64-unknown-linux-gnu
-            artifacts: |
-              /usr/local/openssl/lib64/ossl-modules/legacy.so
-              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
             docker_compose: true
-            prerequisites: |
-              sudo apt-get update
-              sudo apt-get install -qq pkg-config jq
             features: non-fips
 
           - distribution: macos-15
             archive-name: macos_arm
-            target: aarch64-apple-darwin
-            artifacts: |
-              /usr/local/openssl/lib/ossl-modules/legacy.dylib
-              target/aarch64-apple-darwin/${{ inputs.debug_or_release }}/libcosmian_pkcs11.dylib
             docker_compose: false
             features: non-fips
 
@@ -107,43 +39,8 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
       distribution: ${{ matrix.distribution }}
       archive-name: ${{ matrix.archive-name }}
-      artifacts: ${{ matrix.artifacts }}
-      target: ${{ matrix.target }}
       debug_or_release: ${{ inputs.debug_or_release }}
       features: ${{ matrix.features }}
-      prerequisites: ${{ matrix.prerequisites }}
-      docker_compose: ${{ matrix.docker_compose }}
-
-  linux-release:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - distribution: ubuntu-22.04
-            archive-name: ubuntu_22_04
-            target: x86_64-unknown-linux-gnu
-            artifacts: |
-              /usr/local/openssl/lib64/ossl-modules/legacy.so
-              target/x86_64-unknown-linux-gnu/${{ inputs.debug_or_release }}/libcosmian_pkcs11.so
-            prerequisites: |
-              sudo apt-get update
-              sudo apt-get install -qq pkg-config jq
-            docker_compose: true
-            features: non-fips
-
-    name: ${{ matrix.distribution }}
-    if: inputs.debug_or_release == 'release'
-    uses: ./.github/workflows/build_generic.yml
-    secrets: inherit
-    with:
-      toolchain: ${{ inputs.toolchain }}
-      distribution: ${{ matrix.distribution }}
-      archive-name: ${{ matrix.archive-name }}
-      target: ${{ matrix.target }}
-      debug_or_release: ${{ inputs.debug_or_release }}
-      features: ${{ matrix.features }}
-      artifacts: ${{ matrix.artifacts }}
-      prerequisites: ${{ matrix.prerequisites }}
       docker_compose: ${{ matrix.docker_compose }}
 
   windows-2022:
@@ -155,10 +52,7 @@ jobs:
 
   cleanup:
     needs:
-      - rockylinux8
-      - build_in_containers
       - linux-mac
-      - linux-release
       - windows-2022
     uses: ./.github/workflows/cleanup_cache.yml
     secrets: inherit

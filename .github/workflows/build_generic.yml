@@ -13,19 +13,10 @@ on:
       archive-name:
         required: true
         type: string
-      artifacts:
-        required: false
-        type: string
-      target:
-        required: true
-        type: string
       debug_or_release:
         required: true
         type: string
       features:
-        required: false
-        type: string
-      prerequisites:
         required: false
         type: string
       docker_compose:
@@ -34,14 +25,10 @@ on:
         default: false
 
 jobs:
-  build:
-    name: ${{ inputs.archive-name }}
+  build-packages:
+    name: Build packages ${{ inputs.archive-name }}
     runs-on: ${{ inputs.distribution }}
     steps:
-      - name: Display cpuinfo
-        if: contains(runner.os, 'Linux')
-        run: cat /proc/cpuinfo
-
       - name: Nix installation
         uses: cachix/install-nix-action@v31
 
@@ -49,10 +36,37 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@master
+      - name: Build packages
+        env:
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+        run: |
+          bash .github/scripts/nix.sh packages
+
+      - name: Upload for ${{ inputs.distribution }}
+        uses: actions/upload-artifact@v4
         with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
+          path: |
+            target/${{ inputs.debug_or_release }}/cosmian
+            target/${{ inputs.debug_or_release }}/cosmian_kms
+            target/${{ inputs.debug_or_release }}/cosmian_findex_server
+            target/debian/*.deb
+            target/generate-rpm/*.rpm
+            target/${{ inputs.debug_or_release }}/*.dmg
+          retention-days: 1
+          if-no-files-found: error
+
+  tests:
+    name: Tests ${{ inputs.archive-name }}
+    runs-on: ${{ inputs.distribution }}
+    steps:
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Run docker containers
         if: ${{ inputs.docker_compose }}
@@ -60,31 +74,8 @@ jobs:
           docker compose -h
           docker compose up -d
 
-      - name: Prerequisites
-        if: ${{ inputs.prerequisites }}
-        run: |
-          set -ex
-          ${{ inputs.prerequisites }}
-
-      - name: Build
-        env:
-          TARGET: ${{ inputs.target }}
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
-        run: |
-          bash .github/scripts/nix.sh build
-
-      - name: Build packages
-        env:
-          TARGET: ${{ inputs.target }}
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
-        run: |
-          bash .github/scripts/nix.sh packages
-
       - name: Tests
         env:
-          TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           FEATURES: ${{ inputs.features }}
 
@@ -116,57 +107,3 @@ jobs:
 
         run: |
           bash .github/scripts/nix.sh test
-
-      - name: Upload for ${{ inputs.distribution }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-          path: |
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_kms
-            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_findex_server
-            target/${{ inputs.target }}/debian/*.deb
-            target/${{ inputs.debug_or_release }}/*.dmg
-            ${{ inputs.artifacts }}
-          retention-days: 1
-          if-no-files-found: error
-  test:
-    needs: build
-    name: Clean env. ${{ inputs.archive-name }}
-    runs-on: ${{ inputs.distribution }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
-
-      - run: find .
-        if: contains(runner.os, 'linux')
-
-      - name: Linux launch binaries
-        run: |
-          set -ex
-          # The current path should be /home/runner/work/kms/kms
-          pwd
-          env
-          find . -type f
-
-          if [ -d usr/local/openssl ]; then
-            # Copy openssl build for Legacy mode
-            sudo mkdir /usr/local/openssl
-            sudo chown -R $USER /usr/local/openssl
-            rsync -ru usr/local/openssl/ /usr/local/openssl/
-            find /usr/local/openssl
-            chmod u+x /usr/local/openssl/*/ossl-modules/*
-          fi
-
-          # There are 2 subdirectories in the current path
-          #   usr/local/openssl/
-          #   home/runner/work/kms/kms/target/
-          KMS_PATH="${GITHUB_WORKSPACE}/target/${{ inputs.target }}/${{ inputs.debug_or_release }}"
-
-          for binary in .$KMS_PATH/cosmian*; do
-            if [ -f "$binary" ]; then
-              chmod u+x "$binary"
-              $binary -V
-            fi
-          done
