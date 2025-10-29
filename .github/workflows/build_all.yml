@@ -53,9 +53,9 @@ jobs:
 
       - name: Build packages
         env:
-          FEATURES: ${{ matrix.features }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
         run: |
+          ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh package ${{ matrix.package-type }}
 
       - name: Upload for ${{ matrix.os }}
@@ -103,9 +103,9 @@ jobs:
 
       - name: Test
         env:
-          FEATURES: ${{ matrix.features }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
         run: |
+          ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh test ${{ matrix.type }}
 
   windows-2022:
