@@ -77,7 +77,7 @@ jobs:
           - type: sqlite
           - type: mysql
           - type: psql
-          - type: redis
+          # - type: redis # exclusively for non-fips
           - type: google_cse
           - type: hsm
           - type: sqlite
@@ -109,6 +109,31 @@ jobs:
       - name: Test
         env:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          POSTGRES_USER: kms
+          PGUSER: kms
+          POSTGRES_PASSWORD: kms
+          POSTGRES_DB: kms
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          KMS_POSTGRES_URL: postgresql://kms:kms@127.0.0.1:5432/kms
+
+          MYSQL_DATABASE: kms
+          MYSQL_ROOT_PASSWORD: kms
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          KMS_MYSQL_URL: mysql://root:kms@localhost:3306/kms
+
+          KMS_SQLITE_PATH: data/shared
+
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          KMS_REDIS_URL: redis://localhost:6379
+
+          # Google variables
+          TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
+          TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
+          TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
         run: |
           ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh test ${{ matrix.type }}
