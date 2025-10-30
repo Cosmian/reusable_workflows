@@ -59,10 +59,15 @@ jobs:
           bash .github/scripts/nix.sh package ${{ matrix.package-type }}
 
       - name: Install package
+        shell: bash
         run: |
           if [ "${{ matrix.package-type }}" = "deb" ]; then
             sudo dpkg -i ./target/debian/*.deb
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
+            # Create /bin/sh symlink if it doesn't exist (Ubuntu has sh in /usr/bin)
+            if [ ! -e /bin/sh ]; then
+              sudo ln -s /usr/bin/sh /bin/sh
+            fi
             sudo rpm -i ./target/generate-rpm/*.rpm
           fi
 
