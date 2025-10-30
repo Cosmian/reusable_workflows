@@ -68,7 +68,7 @@ jobs:
             if [ ! -e /bin/sh ]; then
               sudo ln -s /usr/bin/sh /bin/sh
             fi
-            sudo rpm -i ./target/generate-rpm/*.rpm
+            sudo rpm -i ./target/generate-rpm/*.rpm --nodeps
           fi
 
       - name: Fix permissions
@@ -77,6 +77,12 @@ jobs:
             sudo chmod +x /usr/sbin/cosmian_kms || true
             sudo chmod +x /usr/sbin/cosmian || true
             sudo chmod +x /usr/sbin/cosmian_findex_server || true
+
+            sudo chmod +x /etc/cosmian/kms.toml || true
+            sudo chmod +x /usr/local/lib/openssl/openssl.cnf || true
+            sudo chmod +x /usr/local/lib/openssl/fipsmodule.cnf || true
+            sudo chmod +x /usr/local/lib/openssl/ossl-modules/fips.so || true
+            sudo chmod +x /usr/local/lib/openssl/ossl-modules/legacy.so || true
           fi
 
       - name: Run executable file
