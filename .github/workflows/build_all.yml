@@ -61,9 +61,17 @@ jobs:
       - name: Install package
         run: |
           if [ "${{ matrix.package-type }}" = "deb" ]; then
-            sudo dpkg -i target/debian/*.deb
+            sudo dpkg -i ./target/debian/*.deb
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo rpm -i target/generate-rpm/*.rpm
+            sudo rpm -i ./target/generate-rpm/*.rpm
+          fi
+
+      - name: Fix permissions
+        run: |
+          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
+            sudo chmod +x /usr/sbin/cosmian_kms || true
+            sudo chmod +x /usr/sbin/cosmian || true
+            sudo chmod +x /usr/sbin/cosmian_findex_server || true
           fi
 
       - name: Run executable file
