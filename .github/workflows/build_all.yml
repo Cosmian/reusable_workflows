@@ -64,11 +64,11 @@ jobs:
           if [ "${{ matrix.package-type }}" = "deb" ]; then
             dpkg --contents ./target/debian/*.deb
             sudo dpkg -i ./target/debian/*.deb
-            dpkg -L cosmian_kms
+            dpkg -L cosmian-kms-server
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
             rpm -qpl ./target/generate-rpm/*.rpm
             sudo rpm -i ./target/generate-rpm/*.rpm --nodeps
-            rpm -ql cosmian_kms
+            rpm -ql cosmian_kms_server
           fi
 
       - name: Fix permissions
