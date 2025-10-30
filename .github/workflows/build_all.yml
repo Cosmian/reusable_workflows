@@ -78,9 +78,9 @@ jobs:
             sudo chmod +x /usr/sbin/cosmian || true
             sudo chmod +x /usr/sbin/cosmian_findex_server || true
 
-            sudo chmod +x /etc/cosmian/kms.toml || true
-            sudo chmod +x /usr/local/lib/openssl/openssl.cnf || true
-            sudo chmod +x /usr/local/lib/openssl/fipsmodule.cnf || true
+            sudo chmod 644 /etc/cosmian/kms.toml || true
+            sudo chmod 644 /usr/local/lib/openssl/openssl.cnf || true
+            sudo chmod 644 /usr/local/lib/openssl/fipsmodule.cnf || true
             sudo chmod +x /usr/local/lib/openssl/ossl-modules/fips.so || true
             sudo chmod +x /usr/local/lib/openssl/ossl-modules/legacy.so || true
           fi

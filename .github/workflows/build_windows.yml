@@ -15,8 +15,8 @@ on:
         type: string
 
 jobs:
-  build:
-    name: ${{ inputs.archive-name }}
+  cargo-build:
+    name: Cargo Build - ${{ inputs.archive-name }}
     runs-on: windows-2022
     steps:
       - name: Print ENV
@@ -30,11 +30,6 @@ jobs:
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
-
-      # - name: Discover dumpbin location
-      #   shell: pwsh
-      #   run: |
-      #     Get-ChildItem -Recurse "C:\Program Files\Microsoft Visual Studio"
 
       - name: Discover environment variables on Runner
         shell: pwsh
@@ -60,11 +55,62 @@ jobs:
           $ErrorActionPreference = "Stop"
           . .\.github\scripts\cargo_build.ps1
           BuildProject -BuildType ${{ inputs.debug_or_release }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-build-${{ inputs.debug_or_release }}
+          path: |
+            target/${{ inputs.debug_or_release }}/*.exe
+            target/${{ inputs.debug_or_release }}/*cosmian_pkcs11.dll
+          retention-days: 1
+          if-no-files-found: error
+
+  cargo-test:
+    name: Cargo Test - ${{ inputs.archive-name }}
+    needs: cargo-build
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt, clippy
+
+      - name: Build static OpenSSL
+        shell: pwsh
+        run: |
+          vcpkg install --triplet x64-windows-static
+          vcpkg integrate install
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cargo-build-${{ inputs.debug_or_release }}
+          path: target/${{ inputs.debug_or_release }}
+
+      - name: Tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          . .\.github\scripts\cargo_test.ps1
+          TestProject -BuildType ${{ inputs.debug_or_release }}
         env:
           # Google variables
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
           TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
+
+  fips-build:
+    name: FIPS OpenSSL Build - ${{ inputs.archive-name }}
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Build FIPS OpenSSL
         shell: pwsh
@@ -79,22 +125,55 @@ jobs:
             # Copy fips.dll to the specified directory
             Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\legacy.dll" -Destination "$env:GITHUB_WORKSPACE"
             Copy-Item -Path "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows\bin\fips.dll" -Destination "$env:GITHUB_WORKSPACE"
+          } else {
+            Write-Host "vcpkg_fips.json not found, skipping FIPS build"
+            New-Item -ItemType File -Path "$env:GITHUB_WORKSPACE\fips.dll" -Force
+            New-Item -ItemType File -Path "$env:GITHUB_WORKSPACE\legacy.dll" -Force
           }
 
-      - name: Upload for windows-2022
+      - name: Upload FIPS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fips-dlls
+          path: |
+            fips.dll
+            legacy.dll
+          retention-days: 1
+          if-no-files-found: error
+
+  combine-artifacts:
+    name: Combine Artifacts - ${{ inputs.archive-name }}
+    needs: [cargo-build, cargo-test, fips-build]
+    runs-on: windows-2022
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cargo-build-${{ inputs.debug_or_release }}
+
+      - name: Download FIPS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: fips-dlls
+
+      - name: List files
+        shell: pwsh
+        run: Get-ChildItem -Recurse
+
+      - name: Upload combined artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
           path: |
-            target/${{ inputs.debug_or_release }}/*.exe
-            target/${{ inputs.debug_or_release }}/*cosmian_pkcs11.dll
+            *.exe
+            *cosmian_pkcs11.dll
             fips.dll
             legacy.dll
           retention-days: 1
           if-no-files-found: error
 
   test:
-    needs: build
+    needs: combine-artifacts
     name: Clean env. ${{ inputs.archive-name }}
     runs-on: windows-2022
     steps:
