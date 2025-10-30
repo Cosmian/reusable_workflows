@@ -62,13 +62,13 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.package-type }}" = "deb" ]; then
+            dpkg --contents ./target/debian/*.deb
             sudo dpkg -i ./target/debian/*.deb
+            dpkg -L cosmian_kms
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
-            # Create /bin/sh symlink if it doesn't exist (Ubuntu has sh in /usr/bin)
-            if [ ! -e /bin/sh ]; then
-              sudo ln -s /usr/bin/sh /bin/sh
-            fi
+            rpm -qpl ./target/generate-rpm/*.rpm
             sudo rpm -i ./target/generate-rpm/*.rpm --nodeps
+            rpm -ql cosmian_kms
           fi
 
       - name: Fix permissions
