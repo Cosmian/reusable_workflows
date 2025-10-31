@@ -66,7 +66,7 @@ jobs:
             sudo dpkg -i ./target/debian/*.deb
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
             rpm -qpl ./target/generate-rpm/*.rpm
-            sudo rpm -i ./target/generate-rpm/*.rpm --nodeps || true
+            sudo rpm -i ./target/generate-rpm/*.rpm --nodeps || true # exception here.
           # elif [ "${{ matrix.package-type }}" = "dmg" ]; then
           #   hdiutil attach ./target/${{ inputs.debug_or_release }}/*.dmg -readonly -mountpoint /tmp/dmg_mount
           #   ls -laR /tmp/dmg_mount
@@ -76,11 +76,9 @@ jobs:
       - name: Display dependencies
         run: |
           if [ "${{ matrix.package-type }}" = "deb" ]; then
-            sudo ldd /usr/sbin/cosmian_kms || true
-            # ldd /usr/sbin/cosmian_findex_server || true
+            sudo ldd /usr/sbin/cosmian_kms
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo ldd /usr/sbin/cosmian_kms || true
-            # ldd /usr/sbin/cosmian_findex_server || true
+            sudo ldd /usr/sbin/cosmian_kms
           fi
 
       - name: Run executable file
@@ -90,7 +88,6 @@ jobs:
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
             sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
-            # sudo /usr/sbin/cosmian_findex_server --version
           fi
 
       - name: Upload for ${{ matrix.os }}
