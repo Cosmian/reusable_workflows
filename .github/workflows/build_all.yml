@@ -84,9 +84,11 @@ jobs:
           fi
 
       - name: Run executable file
+        shell: bash
         run: |
+          set -x
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            # sudo /usr/sbin/cosmian --version
+            sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
             # sudo /usr/sbin/cosmian_findex_server --version
           fi
