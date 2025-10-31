@@ -142,6 +142,9 @@ jobs:
             sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
           fi
+        env:
+          OPENSSL_CONF: /usr/local/lib/openssl/ssl/openssl.cnf
+          OPENSSL_MODULES: /usr/local/lib/openssl/lib64/ossl-modules
 
   test:
     name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
