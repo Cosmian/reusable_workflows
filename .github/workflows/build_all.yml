@@ -73,6 +73,16 @@ jobs:
             hdiutil detach /tmp/dmg_mount
           fi
 
+      - name: Display dependencies
+        run: |
+          if [ "${{ matrix.package-type }}" = "deb" ]; then
+            sudo ldd /usr/sbin/cosmian_kms || true
+            # ldd /usr/sbin/cosmian_findex_server || true
+          elif [ "${{ matrix.package-type }}" = "rpm" ]; then
+            sudo ldd /usr/sbin/cosmian_kms || true
+            # ldd /usr/sbin/cosmian_findex_server || true
+          fi
+
       - name: Run executable file
         run: |
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
