@@ -81,6 +81,13 @@ jobs:
             sudo ldd /usr/sbin/cosmian_kms
           fi
 
+      - name: Enable info flag in config
+        shell: bash
+        run: |
+          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
+            sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
+          fi
+
       - name: Run executable file
         shell: bash
         run: |
