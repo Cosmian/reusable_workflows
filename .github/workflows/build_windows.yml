@@ -16,7 +16,7 @@ on:
 
 jobs:
   cargo-build:
-    name: Cargo Build - ${{ inputs.archive-name }}
+    name: cargo build - ${{ inputs.archive-name }}
     runs-on: windows-2022
     steps:
       - name: Print ENV
@@ -67,7 +67,7 @@ jobs:
           if-no-files-found: error
 
   cargo-test:
-    name: Cargo Test - ${{ inputs.archive-name }}
+    name: cargo test - ${{ inputs.archive-name }}
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
