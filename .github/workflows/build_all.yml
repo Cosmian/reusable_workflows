@@ -29,18 +29,18 @@ jobs:
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: fips_ubuntu_22_04
-            artifact-path: target/debian/*.deb
+            artifact-path: result-deb-fips/*.deb
 
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: ubuntu_22_04
-            artifact-path: target/debian/*.deb
+            artifact-path: result-deb-non-fips/*.deb
             features: non-fips
 
           - os: ubuntu-22.04
             package-type: rpm
             artifact-name: ubuntu_22_04_rpm
-            artifact-path: target/generate-rpm/*.rpm
+            artifact-path: result-rpm-non-fips/*.rpm
             features: non-fips
 
     steps:
@@ -56,7 +56,7 @@ jobs:
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
         run: |
           ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
-          bash nix/scripts/package_${{ matrix.package-type }}.sh
+          bash .github/scripts/nix.sh package ${{ matrix.package-type }}
 
       - name: Install package
         shell: bash
@@ -142,6 +142,8 @@ jobs:
             sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
           fi
+          OPENSSL_CONF: /usr/local/lib/openssl/ssl/openssl.cnf
+          OPENSSL_MODULES: /usr/local/lib/openssl/lib64/ossl-modules
 
   test:
     name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
