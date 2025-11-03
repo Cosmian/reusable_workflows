@@ -58,21 +58,6 @@ jobs:
           ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh package ${{ matrix.package-type }}
 
-      - name: Install package
-        shell: bash
-        run: |
-          if [ "${{ matrix.package-type }}" = "deb" ]; then
-            dpkg --contents ${{ matrix.artifact-path }}
-            sudo dpkg -i  ${{ matrix.artifact-path }}
-          elif [ "${{ matrix.package-type }}" = "rpm" ]; then
-            rpm -qpl ${{ matrix.artifact-path }}
-            sudo rpm -i ${{ matrix.artifact-path }} --nodeps || true # exception here.
-          elif [ "${{ matrix.package-type }}" = "dmg" ]; then
-            hdiutil attach ${{ matrix.artifact-path }} -readonly -mountpoint /tmp/dmg_mount
-            ls -laR /tmp/dmg_mount
-            hdiutil detach /tmp/dmg_mount
-          fi
-
       - name: Upload for ${{ matrix.os }}
         uses: actions/upload-artifact@v4
         with:
@@ -90,6 +75,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: macos-15
+            package-type: dmg
+            artifact-name: macos_arm
+
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: fips_ubuntu_22_04
@@ -123,6 +112,10 @@ jobs:
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
             rpm -qpl ./*.rpm
             sudo rpm -i ./*.rpm --nodeps || true
+          elif [ "${{ matrix.package-type }}" = "dmg" ]; then
+            hdiutil attach ./*.dmg -readonly -mountpoint /tmp/dmg_mount
+            ls -laR /tmp/dmg_mount
+            hdiutil detach /tmp/dmg_mount
           fi
 
       - name: Display dependencies
