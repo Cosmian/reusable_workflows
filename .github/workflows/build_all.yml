@@ -118,12 +118,6 @@ jobs:
             hdiutil detach /tmp/dmg_mount
           fi
 
-      - name: Display dependencies
-        run: |
-          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo ldd /usr/sbin/cosmian_kms
-          fi
-
       - name: Enable info flag in config
         shell: bash
         run: |
