@@ -75,9 +75,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-15
-            package-type: dmg
-            artifact-name: macos_arm
+          # - os: macos-15
+          #   package-type: dmg
+          #   artifact-name: macos_arm
 
           - os: ubuntu-22.04
             package-type: deb
@@ -140,8 +140,9 @@ jobs:
         run: |
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo /usr/sbin/cosmian_kms --version
-            sudo /usr/sbin/cosmian_kms --info
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            /usr/bin/cosmian_kms --version
+            /usr/bin/cosmian_kms --info
           fi
 
   test:
