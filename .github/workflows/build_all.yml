@@ -126,23 +126,22 @@ jobs:
             sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
           fi
 
-      - name: Install FUSE for AppImage
-        shell: bash
-        run: |
-          set -ex
-          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo apt-get update
-            sudo apt-get install -y libfuse2
-          fi
+      # - name: Install FUSE for AppImage
+      #   shell: bash
+      #   run: |
+      #     set -ex
+      #     if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
+      #       sudo apt-get update
+      #       sudo apt-get install -y libfuse2
+      #     fi
 
       - name: Run executable file
         shell: bash
         run: |
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            export APPIMAGE_EXTRACT_AND_RUN=1
-            /usr/bin/cosmian_kms --version
-            /usr/bin/cosmian_kms --info
+            /usr/sbin/cosmian_kms --version
+            /usr/sbin/cosmian_kms --info
           fi
 
   test:
