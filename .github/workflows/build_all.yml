@@ -110,9 +110,13 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}-${{ inputs.debug_or_release }}
 
+      - name: List downloaded artifacts
+        run: find .
+
       - name: Install package
         shell: bash
         run: |
+          set -ex
           if [ "${{ matrix.package-type }}" = "deb" ]; then
             dpkg --contents ./*.deb
             sudo dpkg -i ./*.deb
@@ -130,6 +134,7 @@ jobs:
       - name: Enable info flag in config
         shell: bash
         run: |
+          set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
             sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
           fi
@@ -137,13 +142,11 @@ jobs:
       - name: Run executable file
         shell: bash
         run: |
-          set -x
+          set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
             sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
           fi
-          OPENSSL_CONF: /usr/local/lib/openssl/ssl/openssl.cnf
-          OPENSSL_MODULES: /usr/local/lib/openssl/lib64/ossl-modules
 
   test:
     name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
