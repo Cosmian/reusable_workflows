@@ -23,20 +23,24 @@ jobs:
           - os: macos-15
             package-type: dmg
             artifact-name: macos_arm
+            artifact-path: result-dmg-non-fips/*.dmg
             features: non-fips
 
           - os: ubuntu-22.04
             package-type: deb
+            artifact-path: result-deb-fips/*.deb
             artifact-name: fips_ubuntu_22_04
 
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: ubuntu_22_04
+            artifact-path: result-deb-non-fips/*.deb
             features: non-fips
 
           - os: ubuntu-22.04
             package-type: rpm
             artifact-name: ubuntu_22_04_rpm
+            artifact-path: result-rpm-non-fips/*.rpm
             features: non-fips
 
     steps:
@@ -59,7 +63,7 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}-${{ inputs.debug_or_release }}
           path: |
-            result-${{ matrix.package-type }}-${{ matrix.features }}/*${{ matrix.package-type }}
+            ${{ matrix.artifact-path }}
           retention-days: 1
           if-no-files-found: error
 
