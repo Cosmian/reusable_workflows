@@ -23,24 +23,24 @@ jobs:
           - os: macos-15
             package-type: dmg
             artifact-name: macos_arm
-            artifact-path: result-dmg-non-fips/*.dmg
+            artifact-path: result/*.dmg
             features: non-fips
 
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: fips_ubuntu_22_04
-            artifact-path: result-deb-fips/*.deb
+            artifact-path: result/*.deb
 
           - os: ubuntu-22.04
             package-type: deb
             artifact-name: ubuntu_22_04
-            artifact-path: result-deb-non-fips/*.deb
+            artifact-path: result/*.deb
             features: non-fips
 
           - os: ubuntu-22.04
             package-type: rpm
             artifact-name: ubuntu_22_04_rpm
-            artifact-path: result-rpm-non-fips/*.rpm
+            artifact-path: result/*.rpm
             features: non-fips
 
     steps:
@@ -125,15 +125,6 @@ jobs:
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
             sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
           fi
-
-      # - name: Install FUSE for AppImage
-      #   shell: bash
-      #   run: |
-      #     set -ex
-      #     if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-      #       sudo apt-get update
-      #       sudo apt-get install -y libfuse2
-      #     fi
 
       - name: Run executable file
         shell: bash
