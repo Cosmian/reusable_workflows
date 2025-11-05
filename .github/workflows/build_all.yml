@@ -31,41 +31,22 @@ jobs:
           submodules: recursive
 
       - name: Build package
-        env:
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
         run: |
-          ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
-          bash .github/scripts/nix.sh package ${{ matrix.package-type }}
+          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} package ${{ matrix.package-type }}
 
       - name: Compute artifact metadata
         id: artifact_meta
         shell: bash
         run: |
           set -euo pipefail
-          case "${{ matrix.package-type }}" in
-            deb)
-              echo "name=${{ matrix.features }}_ubuntu_latest" >> "$GITHUB_OUTPUT"
-              echo "path=result-deb-${{ matrix.features }}/*.deb" >> "$GITHUB_OUTPUT"
-              ;;
-            rpm)
-              echo "name=${{ matrix.features }}_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
-              echo "path=result-rpm-${{ matrix.features }}/*.rpm" >> "$GITHUB_OUTPUT"
-              ;;
-            dmg)
-              echo "name=${{ matrix.features }}_macos_arm" >> "$GITHUB_OUTPUT"
-              echo "path=result-dmg-${{ matrix.features }}/*.dmg" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "Unknown package-type: ${{ matrix.package-type }}" >&2
-              exit 1
-              ;;
-          esac
+          echo "name=${{ matrix.features }}_ubuntu_latest" >> "$GITHUB_OUTPUT"
+          echo "path=result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}" >> "$GITHUB_OUTPUT"
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.artifact_meta.outputs.name }}-${{ inputs.debug_or_release }}
-          path: ${{ steps.artifact_meta.outputs.path }}
+          name: ${{ matrix.features }}_ubuntu_latest-${{ matrix.package-type }}-${{ inputs.debug_or_release }}
+          path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}
           retention-days: 1
           if-no-files-found: error
 
@@ -200,7 +181,6 @@ jobs:
 
       - name: Test
         env:
-          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
           POSTGRES_USER: kms
           PGUSER: kms
           POSTGRES_PASSWORD: kms
@@ -227,8 +207,7 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
         run: |
-          ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
-          bash .github/scripts/nix.sh test ${{ matrix.type }}
+          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test ${{ matrix.type }}
 
   windows-2022:
     uses: ./.github/workflows/build_windows.yml
