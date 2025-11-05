@@ -15,33 +15,12 @@ on:
 jobs:
   packages:
     name: Build package ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-15
-            package-type: dmg
-            artifact-name: macos_arm
-            artifact-path: result-dmg-non-fips/*.dmg
-            features: non-fips
-
-          - os: ubuntu-22.04
-            package-type: deb
-            artifact-path: result-deb-fips/*.deb
-            artifact-name: fips_ubuntu_22_04
-
-          - os: ubuntu-22.04
-            package-type: deb
-            artifact-name: ubuntu_22_04
-            artifact-path: result-deb-non-fips/*.deb
-            features: non-fips
-
-          - os: ubuntu-22.04
-            package-type: rpm
-            artifact-name: ubuntu_22_04_rpm
-            artifact-path: result-rpm-non-fips/*.rpm
-            features: non-fips
+        package-type: [deb, rpm, dmg]
+        features: [fips, non-fips]
 
     steps:
       - name: Nix installation
@@ -58,46 +37,97 @@ jobs:
           ${{ matrix.features && format('export FEATURES={0}', matrix.features) || '' }}
           bash .github/scripts/nix.sh package ${{ matrix.package-type }}
 
-      - name: Upload for ${{ matrix.os }}
+      - name: Compute artifact metadata
+        id: artifact_meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ matrix.package-type }}" in
+            deb)
+              if [ "${{ matrix.features }}" = "fips" ]; then
+                echo "name=fips_ubuntu_latest" >> "$GITHUB_OUTPUT"
+                echo "path=result-deb-fips/*.deb" >> "$GITHUB_OUTPUT"
+              else
+                echo "name=ubuntu_latest" >> "$GITHUB_OUTPUT"
+                echo "path=result-deb-non-fips/*.deb" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+            rpm)
+              if [ "${{ matrix.features }}" = "fips" ]; then
+                echo "name=fips_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
+                echo "path=result-rpm-fips/*.rpm" >> "$GITHUB_OUTPUT"
+              else
+                echo "name=ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
+                echo "path=result-rpm-non-fips/*.rpm" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+            dmg)
+              echo "name=macos_arm" >> "$GITHUB_OUTPUT"
+              echo "path=result-dmg-non-fips/*.dmg" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unknown package-type: ${{ matrix.package-type }}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}-${{ inputs.debug_or_release }}
-          path: |
-            ${{ matrix.artifact-path }}
+          name: ${{ steps.artifact_meta.outputs.name }}-${{ inputs.debug_or_release }}
+          path: ${{ steps.artifact_meta.outputs.path }}
           retention-days: 1
           if-no-files-found: error
 
   packages-test:
     needs: packages
-    name: Test package ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
-    runs-on: ${{ matrix.os }}
+    name: Test package ${{ matrix.container }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # - os: macos-15
-          #   package-type: dmg
-          #   artifact-name: macos_arm
-
-          - os: ubuntu-22.04
-            package-type: deb
-            artifact-name: fips_ubuntu_22_04
-
-          - os: ubuntu-22.04
-            package-type: deb
-            artifact-name: ubuntu_22_04
-            features: non-fips
-
-          - os: ubuntu-22.04
-            package-type: rpm
-            artifact-name: ubuntu_22_04_rpm
-            features: non-fips
+        container:
+          # Ubuntu LTS releases within the last ~10 years
+          - ubuntu:24.04
+          - ubuntu:22.04
+          - ubuntu:20.04
+          - ubuntu:18.04
+          # Debian stable releases within the last ~10 years
+          - debian:trixie-slim
+          - debian:bookworm-slim
+          - debian:bullseye-slim
+          - debian:buster-slim
+          # Rocky Linux releases
+          - rockylinux/rockylinux:9
+          - rockylinux/rockylinux:8
+        features: [fips, non-fips]
 
     steps:
+      - name: Compute artifact name to download
+        id: artifact_name
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.container }}" == rockylinux/* ]]; then
+            if [ "${{ matrix.features }}" = "fips" ]; then
+              echo "name=fips_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
+            else
+              echo "name=ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            if [ "${{ matrix.features }}" = "fips" ]; then
+              echo "name=fips_ubuntu_latest" >> "$GITHUB_OUTPUT"
+            else
+              echo "name=ubuntu_latest" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
       - name: Download package artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}-${{ inputs.debug_or_release }}
+          # Select artifact based on computed distro family and features
+          name: ${{ steps.artifact_name.outputs.name }}-${{ inputs.debug_or_release }}
 
       - name: List downloaded artifacts
         run: find .
@@ -106,82 +136,64 @@ jobs:
         shell: bash
         run: |
           set -ex
-          if [ "${{ matrix.package-type }}" = "deb" ]; then
+          if [ "${{ startsWith(matrix.container, 'rockylinux') }}" = "true" ]; then
+            # RPM-based (Rocky Linux)
+            rpm -qpl ./*.rpm
+            rpm -i ./*.rpm --nodeps || true
+          else
+            # DEB-based (Ubuntu/Debian)
             dpkg --contents ./*.deb
             # Use apt to handle dependencies when installing local .deb files
-            sudo apt-get update
-            sudo apt-get install -y ./$(ls -1 *.deb | head -n1)
-          elif [ "${{ matrix.package-type }}" = "rpm" ]; then
-            # Ensure rpm is available on Ubuntu runners
-            if ! command -v rpm >/dev/null 2>&1; then
-              sudo apt-get update
-              sudo apt-get install -y rpm
-            fi
-            rpm -qpl ./*.rpm
-            sudo rpm -i ./*.rpm --nodeps || true
-          elif [ "${{ matrix.package-type }}" = "dmg" ]; then
-            hdiutil attach ./*.dmg -readonly -mountpoint /tmp/dmg_mount
-            ls -laR /tmp/dmg_mount
-            hdiutil detach /tmp/dmg_mount
+            apt-get update
+            apt-get install -y ./$(ls -1 *.deb | head -n1)
           fi
 
       - name: Enable info flag in config
         shell: bash
         run: |
           set -ex
-          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            if [ -f /etc/cosmian/kms.toml ]; then
-              sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
-            else
-              echo "Config file /etc/cosmian/kms.toml not found; skipping info flag enable."
-              exit 1
-            fi
+          if [ -f /etc/cosmian/kms.toml ]; then
+            sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
+          else
+            echo "Config file /etc/cosmian/kms.toml not found; skipping info flag enable."
+            exit 1
           fi
 
       - name: Run executable file
         shell: bash
         run: |
           set -ex
-          if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            # Determine installed binary path
-            BIN="/usr/sbin/cosmian_kms"
-            if [ ! -x "$BIN" ]; then
-              if [ -f "/usr/bin/cosmian_kms" ]; then
-                BIN="/usr/bin/cosmian_kms"
-              fi
+          # Determine installed binary path
+          BIN="/usr/sbin/cosmian_kms"
+          if [ ! -x "$BIN" ]; then
+            if [ -f "/usr/bin/cosmian_kms" ]; then
+              BIN="/usr/bin/cosmian_kms"
             fi
-            # Show libs and run
-            sudo ldd "$BIN" || true
-            sudo chmod +x "$BIN" || true
-            sudo "$BIN" --version
-            sudo "$BIN" --info
           fi
+          # Show libs and run
+          ldd "$BIN"
+          chmod +x "$BIN"
+          "$BIN" --version
+          "$BIN" --info
 
   test:
     name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - type: sqlite
-          - type: mysql
-          - type: psql
-          # - type: redis # exclusively for non-fips
-          - type: google_cse
-          - type: hsm
-          - type: sqlite
-            features: non-fips
-          - type: mysql
-            features: non-fips
-          - type: psql
-            features: non-fips
+        type:
+          - sqlite
+          - mysql
+          - psql
+          - google_cse
+          - hsm
+          - redis
+        features: [fips, non-fips]
+        exclude:
+          # redis is exclusively for non-fips
           - type: redis
-            features: non-fips
-          - type: google_cse
-            features: non-fips
-          - type: hsm
-            features: non-fips
+            features: fips
 
     steps:
       - name: Nix installation
