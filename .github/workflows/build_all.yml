@@ -132,7 +132,7 @@ jobs:
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
             # Set executable permissions
-            ldd /usr/sbin/cosmian_kms
+            sudo ldd /usr/sbin/cosmian_kms
             sudo chmod +x /usr/sbin/cosmian_kms
             sudo /usr/sbin/cosmian_kms --version
             sudo /usr/sbin/cosmian_kms --info
