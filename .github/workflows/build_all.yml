@@ -65,10 +65,10 @@ jobs:
           - ubuntu:20.04
           - ubuntu:18.04
           # Debian stable releases within the last ~10 years
-          - debian:trixie-slim
-          - debian:bookworm-slim
-          - debian:bullseye-slim
-          - debian:buster-slim
+          - debian:trixie-slim # Debian 13
+          - debian:bookworm-slim # Debian 12
+          - debian:bullseye-slim # Debian 11
+          - debian:buster-slim # Debian 10
           # Rocky Linux releases
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
@@ -80,19 +80,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Determine package type based on distro family
           if [[ "${{ matrix.container }}" == rockylinux/* ]]; then
-            if [ "${{ matrix.features }}" = "fips" ]; then
-              echo "name=fips_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
-            else
-              echo "name=ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
-            fi
+            pkg_type="rpm"
           else
-            if [ "${{ matrix.features }}" = "fips" ]; then
-              echo "name=fips_ubuntu_latest" >> "$GITHUB_OUTPUT"
-            else
-              echo "name=ubuntu_latest" >> "$GITHUB_OUTPUT"
-            fi
+            pkg_type="deb"
           fi
+
+          echo "name=${{ matrix.features }}_ubuntu_latest-${pkg_type}" >> "$GITHUB_OUTPUT"
 
       - name: Download package artifacts
         uses: actions/download-artifact@v4
