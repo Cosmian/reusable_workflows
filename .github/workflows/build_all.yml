@@ -108,8 +108,15 @@ jobs:
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ]; then
             dpkg --contents ./*.deb
-            sudo dpkg -i ./*.deb
+            # Use apt to handle dependencies when installing local .deb files
+            sudo apt-get update
+            sudo apt-get install -y ./$(ls -1 *.deb | head -n1)
           elif [ "${{ matrix.package-type }}" = "rpm" ]; then
+            # Ensure rpm is available on Ubuntu runners
+            if ! command -v rpm >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y rpm
+            fi
             rpm -qpl ./*.rpm
             sudo rpm -i ./*.rpm --nodeps || true
           elif [ "${{ matrix.package-type }}" = "dmg" ]; then
@@ -123,7 +130,12 @@ jobs:
         run: |
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
+            if [ -f /etc/cosmian/kms.toml ]; then
+              sudo sed -i 's/info = false/info = true/g' /etc/cosmian/kms.toml
+            else
+              echo "Config file /etc/cosmian/kms.toml not found; skipping info flag enable."
+              exit 1
+            fi
           fi
 
       - name: Run executable file
@@ -131,11 +143,18 @@ jobs:
         run: |
           set -ex
           if [ "${{ matrix.package-type }}" = "deb" ] || [ "${{ matrix.package-type }}" = "rpm" ]; then
-            # Set executable permissions
-            sudo ldd /usr/sbin/cosmian_kms
-            sudo chmod +x /usr/sbin/cosmian_kms
-            sudo /usr/sbin/cosmian_kms --version
-            sudo /usr/sbin/cosmian_kms --info
+            # Determine installed binary path
+            BIN="/usr/sbin/cosmian_kms"
+            if [ ! -x "$BIN" ]; then
+              if [ -f "/usr/bin/cosmian_kms" ]; then
+                BIN="/usr/bin/cosmian_kms"
+              fi
+            fi
+            # Show libs and run
+            sudo ldd "$BIN" || true
+            sudo chmod +x "$BIN" || true
+            sudo "$BIN" --version
+            sudo "$BIN" --info
           fi
 
   test:
