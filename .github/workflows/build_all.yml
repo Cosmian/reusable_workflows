@@ -44,26 +44,16 @@ jobs:
           set -euo pipefail
           case "${{ matrix.package-type }}" in
             deb)
-              if [ "${{ matrix.features }}" = "fips" ]; then
-                echo "name=fips_ubuntu_latest" >> "$GITHUB_OUTPUT"
-                echo "path=result-deb-fips/*.deb" >> "$GITHUB_OUTPUT"
-              else
-                echo "name=ubuntu_latest" >> "$GITHUB_OUTPUT"
-                echo "path=result-deb-non-fips/*.deb" >> "$GITHUB_OUTPUT"
-              fi
+              echo "name=${{ matrix.features }}_ubuntu_latest" >> "$GITHUB_OUTPUT"
+              echo "path=result-deb-${{ matrix.features }}/*.deb" >> "$GITHUB_OUTPUT"
               ;;
             rpm)
-              if [ "${{ matrix.features }}" = "fips" ]; then
-                echo "name=fips_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
-                echo "path=result-rpm-fips/*.rpm" >> "$GITHUB_OUTPUT"
-              else
-                echo "name=ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
-                echo "path=result-rpm-non-fips/*.rpm" >> "$GITHUB_OUTPUT"
-              fi
+              echo "name=${{ matrix.features }}_ubuntu_latest_rpm" >> "$GITHUB_OUTPUT"
+              echo "path=result-rpm-${{ matrix.features }}/*.rpm" >> "$GITHUB_OUTPUT"
               ;;
             dmg)
-              echo "name=macos_arm" >> "$GITHUB_OUTPUT"
-              echo "path=result-dmg-non-fips/*.dmg" >> "$GITHUB_OUTPUT"
+              echo "name=${{ matrix.features }}_macos_arm" >> "$GITHUB_OUTPUT"
+              echo "path=result-dmg-${{ matrix.features }}/*.dmg" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "Unknown package-type: ${{ matrix.package-type }}" >&2
