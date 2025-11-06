@@ -14,7 +14,7 @@ on:
 
 jobs:
   packages:
-    name: Build package ${{ matrix.package-type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    name: Build package ${{ matrix.package-type }} - ${{ matrix.features }}
     runs-on: ${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
@@ -40,15 +40,14 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.features }}_${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}-${{ matrix.package-type }}-${{ inputs.debug_or_release
-            }}
+          name: ${{ matrix.features }}_${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}-${{ matrix.package-type }}-${{ inputs.debug_or_release}}
           path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}
           retention-days: 1
           if-no-files-found: error
 
   packages-test:
     needs: packages
-    name: Test package ${{ matrix.container }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    name: Test package ${{ matrix.container }} - ${{ matrix.features }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     strategy:
@@ -56,6 +55,7 @@ jobs:
       matrix:
         container:
           # Ubuntu LTS releases within the last ~10 years
+          - ubuntu:25.04
           - ubuntu:24.04
           - ubuntu:22.04
           - ubuntu:20.04
@@ -65,7 +65,9 @@ jobs:
           - debian:bookworm-slim # Debian 12
           - debian:bullseye-slim # Debian 11
           - debian:buster-slim # Debian 10
+          - debian:stretch-slim # Debian 9
           # Rocky Linux releases
+          - rockylinux/rockylinux:10
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
         features: [fips, non-fips]
@@ -86,11 +88,71 @@ jobs:
           # Artifacts for deb/rpm are built on ubuntu-latest
           echo "name=${{ matrix.features }}_ubuntu-latest-${pkg_type}" >> "$GITHUB_OUTPUT"
 
-      - name: Download package artifacts
-        uses: actions/download-artifact@v3
-        with:
-          # Select artifact based on computed distro family and features
-          name: ${{ steps.artifact_name.outputs.name }}-${{ inputs.debug_or_release }}
+      - name: Install curl, jq, unzip
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl ca-certificates jq unzip
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf -y install curl ca-certificates jq unzip || {
+              dnf makecache -y
+              dnf -y install curl ca-certificates jq unzip
+            }
+          elif command -v yum >/dev/null 2>&1; then
+            yum -y install curl ca-certificates jq unzip
+          else
+            echo "No supported package manager found (apt, dnf, yum)."
+            exit 1
+          fi
+
+      - name: Download package artifacts (REST)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_NAME: ${{ steps.artifact_name.outputs.name }}-${{ inputs.debug_or_release }}
+          RUN_ID: ${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${GH_TOKEN:?Missing GH_TOKEN}"
+
+          # Human-readable variables
+          OWNER="${REPOSITORY%/*}"
+          REPO="${REPOSITORY#*/}"
+          API="https://api.github.com"
+
+          echo "Artifact to download: ${ARTIFACT_NAME}"
+          echo "From run: ${RUN_ID} (repo: ${OWNER}/${REPO})"
+
+          # List artifacts for this run and find the ID of the named artifact
+          TMP_JSON="$(mktemp)"
+          curl -sSfL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API}/repos/${OWNER}/${REPO}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
+            > "$TMP_JSON"
+
+          ARTIFACT_ID=$(jq -r --arg NAME "$ARTIFACT_NAME" \
+            '.artifacts[] | select(.name == $NAME) | .id' "$TMP_JSON" | head -n1)
+
+          if [ -z "${ARTIFACT_ID}" ] || [ "${ARTIFACT_ID}" = "null" ]; then
+            echo "Artifact '${ARTIFACT_NAME}' not found. Available artifacts in this run:"
+            jq -r '.artifacts[].name' "$TMP_JSON" || true
+            exit 1
+          fi
+
+          echo "Downloading artifact id: ${ARTIFACT_ID}"
+          curl -sSfL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API}/repos/${OWNER}/${REPO}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -o artifact.zip
+
+          echo "Extracting..."
+          unzip -o artifact.zip
+          rm -f artifact.zip "$TMP_JSON"
 
       - name: List downloaded artifacts
         if: ${{ matrix.container != 'rockylinux/rockylinux:8' }}
@@ -140,7 +202,7 @@ jobs:
           "$BIN" --info
 
   test:
-    name: Test on ${{ matrix.type }} ${{ matrix.features && format('({0})', matrix.features) || '' }}
+    name: Test on ${{ matrix.type }} - ${{ matrix.features }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -150,7 +212,6 @@ jobs:
           - mysql
           - psql
           - google_cse
-          - hsm
           - redis
         features: [fips, non-fips]
         exclude:
@@ -198,12 +259,36 @@ jobs:
           TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
+        run: |
+          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test ${{ matrix.type }}
 
+  hsm:
+    name: HSM ${{ matrix.hsm-type }} - ${{ matrix.features }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        hsm-type:
+          - utimaco
+          - proteccio
+          - softhsm2
+        features: [fips]
+
+    steps:
+      - name: Nix installation
+        uses: cachix/install-nix-action@v31
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test
+        env:
           # HSM
           PROTECCIO_PASSWORD: ${{ secrets.PROTECCIO_PASSWORD }}
           PROTECCIO_SLOT: ${{ secrets.PROTECCIO_SLOT }}
         run: |
-          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test ${{ matrix.type }}
+          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test hsm ${{ matrix.hsm-type }}
 
   windows-2022:
     uses: ./.github/workflows/build_windows.yml
