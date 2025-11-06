@@ -311,7 +311,11 @@ jobs:
           - utimaco
           - proteccio
           - softhsm2
-        features: [fips]
+        features: [fips, non-fips]
+        exclude:
+          # parallel connections on proteccio is not supported
+          - hsm-type: proteccio
+            features: non-fips
 
     steps:
       - name: Nix installation
