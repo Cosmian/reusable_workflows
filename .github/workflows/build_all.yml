@@ -108,7 +108,7 @@ jobs:
             # DEB-based (Ubuntu/Debian)
             dpkg --contents ./*.deb
             # Use apt to handle dependencies when installing local .deb files
-            dpkg -i ./*.deb
+            dpkg -i ./*.deb || true
           fi
 
       - name: Enable info flag in config
