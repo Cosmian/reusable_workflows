@@ -34,14 +34,6 @@ jobs:
         run: |
           bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} package ${{ matrix.package-type }}
 
-      - name: Compute artifact metadata
-        id: artifact_meta
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "name=${{ matrix.features }}_ubuntu_latest" >> "$GITHUB_OUTPUT"
-          echo "path=result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}" >> "$GITHUB_OUTPUT"
-
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
@@ -96,6 +88,7 @@ jobs:
           name: ${{ steps.artifact_name.outputs.name }}-${{ inputs.debug_or_release }}
 
       - name: List downloaded artifacts
+        if: ${{ matrix.container != 'rockylinux/rockylinux:8' }}
         run: find .
 
       - name: Install package
@@ -110,8 +103,7 @@ jobs:
             # DEB-based (Ubuntu/Debian)
             dpkg --contents ./*.deb
             # Use apt to handle dependencies when installing local .deb files
-            apt-get update
-            apt-get install -y ./$(ls -1 *.deb | head -n1)
+            dpkg -i ./*.deb
           fi
 
       - name: Enable info flag in config
@@ -201,6 +193,10 @@ jobs:
           TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
+
+          # HSM
+          PROTECCIO_PASSWORD: ${{ secrets.PROTECCIO_PASSWORD }}
+          PROTECCIO_SLOT: ${{ secrets.PROTECCIO_SLOT }}
         run: |
           bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test ${{ matrix.type }}
 
