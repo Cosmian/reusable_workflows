@@ -47,7 +47,7 @@ jobs:
 
   packages-test:
     needs: packages
-    name: Test package ${{ matrix.container }} - ${{ matrix.features }}
+    name: Package tests ${{ matrix.container }} - ${{ matrix.features }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     strategy:
