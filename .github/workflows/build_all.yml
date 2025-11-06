@@ -142,6 +142,17 @@ jobs:
           "$BIN" --version
           "$BIN" --info
 
+      - name: Disable info flag in config
+        shell: bash
+        run: |
+          set -ex
+          if [ -f /etc/cosmian/kms.toml ]; then
+            sed -i 's/info = true/info = false/g' /etc/cosmian/kms.toml
+          else
+            echo "Config file /etc/cosmian/kms.toml not found; skipping info flag enable."
+            exit 1
+          fi
+
       - name: Run executable file
         shell: bash
         run: |
