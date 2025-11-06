@@ -160,6 +160,7 @@ jobs:
           # Determine installed binary path
           BIN="/usr/sbin/cosmian_kms"
           "$BIN" &
+          sleep 5
 
           # Test UI endpoints
           curl -I http://127.0.0.1:9998/ui/index.html
@@ -167,7 +168,7 @@ jobs:
 
   packages-test-dmg:
     needs: packages
-    name: Test package macos-15 - non-fips
+    name: Package test macos-15 - non-fips
     runs-on: macos-15
     strategy:
       fail-fast: false
@@ -200,26 +201,33 @@ jobs:
           set -euo pipefail
           DMG_FILE=$(ls -1 *.dmg | head -n1)
           echo "Attaching $DMG_FILE"
-          # Attach DMG and capture mount point
-          ATTACH_OUT=$(hdiutil attach -nobrowse -readonly "$DMG_FILE")
-          echo "$ATTACH_OUT"
-          # Grab full mount path (including spaces) by capturing everything after /Volumes/
-          MOUNT_POINT=$(printf "%s\n" "$ATTACH_OUT" | sed -n 's|.*\(/Volumes/.*\)$|\1|p' | head -n1)
-          if [ -z "$MOUNT_POINT" ]; then
-            echo "Failed to determine mount point" >&2
-            exit 1
-          fi
+          # Create a deterministic, private mountpoint to avoid parsing and space issues
+          MOUNT_POINT=$(mktemp -d "/tmp/cosmian_dmg.XXXXXX")
+          hdiutil attach -nobrowse -readonly -mountpoint "$MOUNT_POINT" "$DMG_FILE" 2>&1 | sed 's/^/hdiutil: /'
           echo "Mounted at: $MOUNT_POINT"
 
+          # Wait briefly until the filesystem is fully populated (APFS DMGs can appear before listing is ready)
+          for i in {1..15}; do
+            if ls -la "$MOUNT_POINT" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          echo "Top-level contents:" && ls -la "$MOUNT_POINT" || true
+
           # Find a pkg (bundle directories end with .pkg or .mpkg) in the mounted volume
-          PKG=$(find "$MOUNT_POINT" -maxdepth 1 \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit)
-          # Fallback: search a bit deeper
+          PKG=$(find "$MOUNT_POINT" \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit)
+          # Fallback: give the mount a few seconds and try again with a bounded depth
           if [ -z "$PKG" ]; then
-            PKG=$(find "$MOUNT_POINT" -maxdepth 3 \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit)
+            sleep 3
+            PKG=$(find "$MOUNT_POINT" -maxdepth 4 \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit || true)
           fi
           if [ -z "$PKG" ]; then
             echo "No .pkg found inside DMG at $MOUNT_POINT" >&2
+            echo "Mount tree (depth 2) for debugging:" >&2
+            find "$MOUNT_POINT" -maxdepth 2 -print || true
             hdiutil detach "$MOUNT_POINT" || hdiutil detach -force "$MOUNT_POINT" || true
+            rmdir "$MOUNT_POINT" 2>/dev/null || true
             exit 1
           fi
           echo "Installing package: $PKG"
@@ -227,6 +235,7 @@ jobs:
 
           # Detach after installation
           hdiutil detach "$MOUNT_POINT" || hdiutil detach -force "$MOUNT_POINT" || true
+          rmdir "$MOUNT_POINT" 2>/dev/null || true
 
       - name: Enable info flag in config (macOS)
         shell: bash
