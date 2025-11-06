@@ -125,7 +125,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run executable file
+      - name: Pre-check file
         shell: bash
         run: |
           set -ex
@@ -141,6 +141,18 @@ jobs:
           chmod +x "$BIN"
           "$BIN" --version
           "$BIN" --info
+
+      - name: Run executable file
+        shell: bash
+        run: |
+          set -ex
+          # Determine installed binary path
+          BIN="/usr/sbin/cosmian_kms"
+          "$BIN" &
+
+          # Test UI endpoints
+          curl -I http://127.0.0.1:9998/ui/index.html
+
 
   packages-test-dmg:
     needs: packages
@@ -188,11 +200,11 @@ jobs:
           fi
           echo "Mounted at: $MOUNT_POINT"
 
-          # Find a pkg in the mounted volume
-          PKG=$(find "$MOUNT_POINT" -maxdepth 1 -type f -name "*.pkg" -print -quit)
-          # Fallback: search one level deeper if not at root
+          # Find a pkg (bundle directories end with .pkg or .mpkg) in the mounted volume
+          PKG=$(find "$MOUNT_POINT" -maxdepth 1 \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit)
+          # Fallback: search a bit deeper
           if [ -z "$PKG" ]; then
-            PKG=$(find "$MOUNT_POINT" -maxdepth 2 -type f -name "*.pkg" -print -quit)
+            PKG=$(find "$MOUNT_POINT" -maxdepth 3 \( -iname "*.pkg" -o -iname "*.mpkg" \) -print -quit)
           fi
           if [ -z "$PKG" ]; then
             echo "No .pkg found inside DMG at $MOUNT_POINT" >&2
