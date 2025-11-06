@@ -21,6 +21,9 @@ jobs:
       matrix:
         package-type: [deb, rpm, dmg]
         features: [fips, non-fips]
+        exclude:
+          - package-type: dmg
+            features: fips
 
     steps:
       - name: Nix installation
@@ -37,7 +40,8 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.features }}_ubuntu_latest-${{ matrix.package-type }}-${{ inputs.debug_or_release }}
+          name: ${{ matrix.features }}_${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}-${{ matrix.package-type }}-${{ inputs.debug_or_release
+            }}
           path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}
           retention-days: 1
           if-no-files-found: error
@@ -79,7 +83,8 @@ jobs:
             pkg_type="deb"
           fi
 
-          echo "name=${{ matrix.features }}_ubuntu_latest-${pkg_type}" >> "$GITHUB_OUTPUT"
+          # Artifacts for deb/rpm are built on ubuntu-latest
+          echo "name=${{ matrix.features }}_ubuntu-latest-${pkg_type}" >> "$GITHUB_OUTPUT"
 
       - name: Download package artifacts
         uses: actions/download-artifact@v4
