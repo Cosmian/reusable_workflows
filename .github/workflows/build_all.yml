@@ -66,7 +66,8 @@ jobs:
           - debian:bookworm-slim # Debian 12
           - debian:bullseye-slim # Debian 11
           - debian:buster-slim # Debian 10
-          - debian:stretch-slim # Debian 9
+          # Cannot download artifacts using actions/download-artifact@v4 - Glibc v2.28 required
+          # - debian:stretch-slim # Debian 9
           # Rocky Linux releases
           - rockylinux/rockylinux:10
           - rockylinux/rockylinux:9
@@ -179,7 +180,8 @@ jobs:
           # Attach DMG and capture mount point
           ATTACH_OUT=$(hdiutil attach -nobrowse -readonly "$DMG_FILE")
           echo "$ATTACH_OUT"
-          MOUNT_POINT=$(echo "$ATTACH_OUT" | awk '/\/Volumes\//{print $3; exit}')
+          # Grab full mount path (including spaces) by capturing everything after /Volumes/
+          MOUNT_POINT=$(printf "%s\n" "$ATTACH_OUT" | sed -n 's|.*\(/Volumes/.*\)$|\1|p' | head -n1)
           if [ -z "$MOUNT_POINT" ]; then
             echo "Failed to determine mount point" >&2
             exit 1
@@ -188,16 +190,20 @@ jobs:
 
           # Find a pkg in the mounted volume
           PKG=$(find "$MOUNT_POINT" -maxdepth 1 -type f -name "*.pkg" -print -quit)
+          # Fallback: search one level deeper if not at root
+          if [ -z "$PKG" ]; then
+            PKG=$(find "$MOUNT_POINT" -maxdepth 2 -type f -name "*.pkg" -print -quit)
+          fi
           if [ -z "$PKG" ]; then
             echo "No .pkg found inside DMG at $MOUNT_POINT" >&2
-            hdiutil detach "$MOUNT_POINT" || true
+            hdiutil detach "$MOUNT_POINT" || hdiutil detach -force "$MOUNT_POINT" || true
             exit 1
           fi
           echo "Installing package: $PKG"
           sudo installer -pkg "$PKG" -target /
 
           # Detach after installation
-          hdiutil detach "$MOUNT_POINT" || true
+          hdiutil detach "$MOUNT_POINT" || hdiutil detach -force "$MOUNT_POINT" || true
 
       - name: Enable info flag in config (macOS)
         shell: bash
