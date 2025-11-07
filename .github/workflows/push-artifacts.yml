@@ -68,23 +68,23 @@ jobs:
 
           # Debian packages (non-FIPS and FIPS)
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
-            non-fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb \
+            non-fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb* \
             cosmian@package.cosmian.com:$DESTINATION_DIR/
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
-            fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb \
+            fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb* \
             cosmian@package.cosmian.com:$DESTINATION_DIR/
 
           # RPM packages (non-FIPS and FIPS)
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
-            non-fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm \
+            non-fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm* \
             cosmian@package.cosmian.com:$DESTINATION_DIR/
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
-            fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm \
+            fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm* \
             cosmian@package.cosmian.com:$DESTINATION_DIR/
 
           # macOS DMG packages (non-FIPS)
           scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
-            non-fips_macos-15-dmg-${{ inputs.debug_or_release }}/*.dmg \
+            non-fips_macos-15-dmg-${{ inputs.debug_or_release }}/*.dmg* \
             cosmian@package.cosmian.com:$DESTINATION_DIR/
 
           # Windows EXE packages
@@ -97,9 +97,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            non-fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb
-            fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb
-            non-fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm
-            fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm
-            non-fips_macos-15-dmg-${{ inputs.debug_or_release }}/*.dmg
+            non-fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb*
+            fips_ubuntu-latest-deb-${{ inputs.debug_or_release }}/*.deb*
+            non-fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm*
+            fips_ubuntu-latest-rpm-${{ inputs.debug_or_release }}/*.rpm*
+            non-fips_macos-15-dmg-${{ inputs.debug_or_release }}/*.dmg*
             windows-${{ inputs.debug_or_release }}/*.exe

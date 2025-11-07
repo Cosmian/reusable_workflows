@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.features }}_${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}-${{ matrix.package-type }}-${{ inputs.debug_or_release}}
-          path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}
+          path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}*
           retention-days: 1
           if-no-files-found: error
 
