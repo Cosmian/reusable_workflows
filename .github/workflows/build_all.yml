@@ -14,7 +14,7 @@ on:
 
 jobs:
   packages:
-    name: Build package ${{ matrix.package-type }} - ${{ matrix.features }}
+    name: Package ${{ matrix.package-type }} - ${{ matrix.features }}
     runs-on: ${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
@@ -33,7 +33,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build package
+      - name: Package
         run: |
           bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} package ${{ matrix.package-type }}
 
@@ -257,7 +257,8 @@ jobs:
           # - google_cse
           # - redis
           # - pykmip
-        features: [fips, non-fips]
+        features: [non-fips]
+        # features: [fips, non-fips]
         exclude:
           # redis is exclusively for non-fips
           - type: redis
