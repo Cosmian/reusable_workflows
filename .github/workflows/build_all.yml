@@ -14,7 +14,8 @@ on:
 
 jobs:
   packages:
-    name: Package ${{ matrix.package-type }} - ${{ matrix.features }}
+    name: Package ${{ matrix.package-type }} - ${{ matrix.features }}${{ contains(matrix.runner, 'arm') && ' - ARM' || (matrix.runner == 'macos-15' && '
+      - macOS' || ' - AMD64') }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -59,8 +60,8 @@ jobs:
 
   packages-test:
     needs: packages
-    name: Package tests ${{ matrix.container }} - ${{ matrix.features }}
-    runs-on: ubuntu-latest
+    name: Package tests ${{ matrix.container }} - ${{ matrix.features }}${{ matrix.runner == 'ubuntu-24.04-arm' && ' - ARM' || ' - AMD64' }}
+    runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container }}
     strategy:
       fail-fast: false
@@ -85,6 +86,7 @@ jobs:
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
         features: [fips, non-fips]
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
 
     steps:
       - name: Compute artifact name to download
@@ -99,8 +101,8 @@ jobs:
             pkg_type="deb"
           fi
 
-          # Artifacts for deb/rpm are built on ubuntu-24.04
-          echo "name=${{ matrix.features }}_ubuntu-24.04-${pkg_type}" >> "$GITHUB_OUTPUT"
+          # Artifacts for deb/rpm are built per runner (amd64 or arm)
+          echo "name=${{ matrix.features }}_${{ matrix.runner }}-${pkg_type}" >> "$GITHUB_OUTPUT"
 
       - name: Download package artifacts (REST)
         uses: actions/download-artifact@v4
