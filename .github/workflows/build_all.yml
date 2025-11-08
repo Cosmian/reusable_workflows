@@ -271,8 +271,7 @@ jobs:
           # - google_cse
           # - redis
           # - pykmip
-        features: [non-fips]
-        # features: [fips, non-fips]
+        features: [fips, non-fips]
         exclude:
           # redis is exclusively for non-fips
           - type: redis
