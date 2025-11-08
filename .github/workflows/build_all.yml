@@ -15,15 +15,27 @@ on:
 jobs:
   packages:
     name: Package ${{ matrix.package-type }} - ${{ matrix.features }}
-    runs-on: ${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         package-type: [deb, rpm, dmg]
         features: [fips, non-fips]
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
         exclude:
+          # DMG is non-FIPS only
           - package-type: dmg
             features: fips
+          # DMG must not run on Ubuntu runners
+          - package-type: dmg
+            runner: ubuntu-24.04
+          - package-type: dmg
+            runner: ubuntu-24.04-arm
+          # Linux packages (deb/rpm) must not run on macOS
+          - package-type: deb
+            runner: macos-15
+          - package-type: rpm
+            runner: macos-15
 
     steps:
       - name: Nix installation
@@ -40,7 +52,7 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.features }}_${{ matrix.package-type == 'dmg' && 'macos-15' || 'ubuntu-latest' }}-${{ matrix.package-type }}-${{ inputs.debug_or_release}}
+          name: ${{ matrix.features }}_${{ matrix.runner }}-${{ matrix.package-type }}-${{ inputs.debug_or_release}}
           path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}*
           retention-days: 1
           if-no-files-found: error
@@ -87,8 +99,8 @@ jobs:
             pkg_type="deb"
           fi
 
-          # Artifacts for deb/rpm are built on ubuntu-latest
-          echo "name=${{ matrix.features }}_ubuntu-latest-${pkg_type}" >> "$GITHUB_OUTPUT"
+          # Artifacts for deb/rpm are built on ubuntu-24.04
+          echo "name=${{ matrix.features }}_ubuntu-24.04-${pkg_type}" >> "$GITHUB_OUTPUT"
 
       - name: Download package artifacts (REST)
         uses: actions/download-artifact@v4
