@@ -4,27 +4,27 @@ name: Docker build
 on:
   workflow_call:
     inputs:
-      prefix:
-        required: true
-        type: string
       registry-image:
         required: true
         type: string
-      platforms:
+      os:
         required: true
         type: string
-      fips:
+      features:
+        required: true
+        type: string
+      debug_or_release:
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: release
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
   build-and-push-image:
-    name: ${{ inputs.prefix }} Image
-    runs-on: ubuntu-24.04
+    name: Image ${{ inputs.features }} - ${{ inputs.os }}
+    runs-on: ${{ inputs.os }}
     container: docker:28.0.0
 
     steps:
@@ -37,6 +37,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Download package artifacts
+        id: download_artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.features }}_${{ inputs.os }}-${{ inputs.debug_or_release }}
+
+      - name: List downloaded artifacts
+        run: find .
+
+      - name: Set Debian package path
+        id: deb_path
+        run: |
+          ART_PATH="${{ steps.download_artifacts.outputs.download-path }}"
+          echo "download-path: $ART_PATH"
+          DEB_FILE="$(find "$ART_PATH" -type f -name '*.deb' | head -n 1)"
+          if [ -z "$DEB_FILE" ]; then
+            echo "No .deb file found in $ART_PATH" >&2
+            exit 1
+          fi
+          echo "DEB_FILE_PATH=$DEB_FILE" >> "$GITHUB_ENV"
+          echo "deb_file_path=$DEB_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Login to GitHub Packages
         uses: docker/login-action@v2
@@ -65,12 +87,12 @@ jobs:
         with:
           context: .
           push: true
-          platforms: ${{ inputs.platforms }}
+          platforms: ${{ inputs.os == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           network: host
           build-args: |
-            FIPS=${{ inputs.fips }}
+            DEB_FILE=${{ steps.deb_path.outputs.deb_file_path }}
 
       - name: Display metadata version ${{ steps.meta.outputs.version }}
         run: |
@@ -81,9 +103,9 @@ jobs:
       image-tag: ${{ inputs.registry-image }}:${{ steps.meta.outputs.version }}
 
   test-image:
-    name: ${{ inputs.prefix }} Test Image
+    name: Test Image ${{ inputs.features }}
     needs: build-and-push-image
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.os }}
     env:
       DOCKER_IMAGE_NAME: ${{ needs.build-and-push-image.outputs.image-tag }}
 

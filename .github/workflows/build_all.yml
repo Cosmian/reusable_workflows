@@ -21,6 +21,8 @@ jobs:
       matrix:
         features: [fips, non-fips]
         runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+    env:
+      DOCKER_BASE_IMAGE: ${{ matrix.features == 'fips' && 'ghcr.io/cosmian/kms-fips' || 'ghcr.io/cosmian/kms' }}
 
     steps:
       - name: Nix installation
@@ -41,6 +43,15 @@ jobs:
           path: result-${{ matrix.features }}/*
           retention-days: 1
           if-no-files-found: error
+
+      - name: Build Docker image
+        if: ${{ matrix.runner != 'macos-15' }}
+        uses: ./.github/workflows/build_docker_image.yml
+        with:
+          registry-image: ${{ env.DOCKER_BASE_IMAGE }}
+          os: ${{ matrix.runner }}
+          features: ${{ matrix.features }}
+          debug_or_release: ${{ inputs.debug_or_release }}
 
   packages-test:
     needs: packages
@@ -73,7 +84,7 @@ jobs:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
 
     steps:
-      - name: Download package artifacts (REST)
+      - name: Download package artifacts
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.features }}_${{ matrix.runner }}-${{ inputs.debug_or_release }}
@@ -291,7 +302,6 @@ jobs:
         run: |
           set -ex
           bash .github/scripts/test_${{ matrix.type }}.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }}
-
 
   hsm:
     name: HSM ${{ matrix.hsm-type }} - ${{ matrix.features }}
