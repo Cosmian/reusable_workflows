@@ -25,14 +25,10 @@ jobs:
   build-and-push-image:
     name: Image ${{ inputs.features }} - ${{ inputs.os }}
     runs-on: ${{ inputs.os }}
-    container: docker:28.0.0
 
     steps:
       - name: Display cpuinfo
         run: cat /proc/cpuinfo
-
-      - name: Install tar
-        run: apk add --no-cache tar
 
       - uses: actions/checkout@v4
         with:
