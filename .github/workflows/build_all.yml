@@ -14,29 +14,13 @@ on:
 
 jobs:
   packages:
-    name: Package ${{ matrix.package-type }} - ${{ matrix.features }}${{ contains(matrix.runner, 'arm') && ' - ARM' || (matrix.runner == 'macos-15' && '
-      - macOS' || ' - AMD64') }}
+    name: Package ${{ matrix.features }}${{ contains(matrix.runner, 'arm') && ' - ARM' || (matrix.runner == 'macos-15' && ' - macOS' || ' - AMD64') }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        package-type: [deb, rpm, dmg]
         features: [fips, non-fips]
         runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
-        exclude:
-          # DMG is non-FIPS only
-          - package-type: dmg
-            features: fips
-          # DMG must not run on Ubuntu runners
-          - package-type: dmg
-            runner: ubuntu-24.04
-          - package-type: dmg
-            runner: ubuntu-24.04-arm
-          # Linux packages (deb/rpm) must not run on macOS
-          - package-type: deb
-            runner: macos-15
-          - package-type: rpm
-            runner: macos-15
 
     steps:
       - name: Nix installation
@@ -48,13 +32,13 @@ jobs:
 
       - name: Package
         run: |
-          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} package ${{ matrix.package-type }}
+          bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} package
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.features }}_${{ matrix.runner }}-${{ matrix.package-type }}-${{ inputs.debug_or_release}}
-          path: result-${{ matrix.package-type }}-${{ matrix.features }}/*.${{ matrix.package-type }}*
+          name: ${{ matrix.features }}_${{ matrix.runner }}-${{ inputs.debug_or_release }}
+          path: result-${{ matrix.features }}/*
           retention-days: 1
           if-no-files-found: error
 
@@ -89,25 +73,10 @@ jobs:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
 
     steps:
-      - name: Compute artifact name to download
-        id: artifact_name
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Determine package type based on distro family
-          if [[ "${{ matrix.container }}" == rockylinux/* ]]; then
-            pkg_type="rpm"
-          else
-            pkg_type="deb"
-          fi
-
-          # Artifacts for deb/rpm are built per runner (amd64 or arm)
-          echo "name=${{ matrix.features }}_${{ matrix.runner }}-${pkg_type}" >> "$GITHUB_OUTPUT"
-
       - name: Download package artifacts (REST)
         uses: actions/download-artifact@v4
         with:
-          name: ${{ steps.artifact_name.outputs.name }}-${{ inputs.debug_or_release }}
+          name: ${{ matrix.features }}_${{ matrix.runner }}-${{ inputs.debug_or_release }}
 
       - name: List downloaded artifacts
         if: ${{ matrix.container != 'rockylinux/rockylinux:8' }}
@@ -196,7 +165,7 @@ jobs:
           fi
 
   test-nix:
-    name: Nix test on ${{ matrix.type }} - ${{ matrix.features }}
+    name: Test on ${{ matrix.type }} - ${{ matrix.features }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -259,7 +228,7 @@ jobs:
           bash .github/scripts/nix.sh --profile ${{ inputs.debug_or_release }} --variant ${{ matrix.features }} test ${{ matrix.type }}
 
   test:
-    name: Test on ${{ matrix.type }} - ${{ matrix.features }}
+    name: Test on ${{ matrix.type }} - ${{ matrix.features }} - without Nix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
