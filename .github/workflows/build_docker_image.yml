@@ -88,7 +88,8 @@ jobs:
         with:
           context: .
           push: true
-          platforms: ${{ inputs.os == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
+          platforms: linux/arm64,linux/amd64
+          # platforms: ${{ inputs.os == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           network: host
