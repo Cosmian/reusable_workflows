@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.features }}_${{ matrix.runner }}-${{ inputs.debug_or_release }}
-          path: result-${{ matrix.features }}/*
+          path: result-*-${{ matrix.features }}/*
           retention-days: 1
           if-no-files-found: error
 
