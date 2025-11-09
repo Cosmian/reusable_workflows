@@ -44,14 +44,21 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-      - name: Build Docker image
-        if: ${{ matrix.runner != 'macos-15' }}
-        uses: ./.github/workflows/build_docker_image.yml
-        with:
-          registry-image: ${{ env.DOCKER_BASE_IMAGE }}
-          os: ${{ matrix.runner }}
-          features: ${{ matrix.features }}
-          debug_or_release: ${{ inputs.debug_or_release }}
+  docker-image:
+    name: Docker image build ${{ matrix.runner }} - ${{ matrix.features }}
+    needs: packages
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [fips, non-fips]
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    uses: ./.github/workflows/build_docker_image.yml
+    with:
+      registry-image: ${{ (matrix.features == 'fips' && 'ghcr.io/cosmian/kms-fips' || 'ghcr.io/cosmian/kms') }}
+      os: ${{ matrix.runner }}
+      features: ${{ matrix.features }}
+      debug_or_release: ${{ inputs.debug_or_release }}
+    secrets: inherit
 
   packages-test:
     needs: packages
