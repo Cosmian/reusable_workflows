@@ -14,7 +14,7 @@ on:
 
 jobs:
   packages:
-    name: Package ${{ matrix.features }}${{ contains(matrix.runner, 'arm') && ' - ARM' || (matrix.runner == 'macos-15' && ' - macOS' || ' - AMD64') }}
+    name: Package ${{ matrix.runner }} - ${{ matrix.features }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
