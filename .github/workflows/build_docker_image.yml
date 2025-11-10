@@ -132,6 +132,11 @@ jobs:
           docker pull "$DOCKER_IMAGE_NAME"
           docker image inspect "$DOCKER_IMAGE_NAME" | jq '.[0].Architecture'
 
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
       - name: test image
         run: |
           bash .github/scripts/test_docker_image.sh
