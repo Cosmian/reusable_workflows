@@ -18,6 +18,7 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
       debug_or_release: ${{ inputs.debug_or_release }}
+    secrets: inherit
 
   test-nix:
     name: Test on ${{ matrix.type }} - ${{ matrix.features }}
