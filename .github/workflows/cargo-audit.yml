@@ -23,6 +23,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          rust-version: ${{ inputs.toolchain }}
+      - name: Install latest cargo-deny
+        run: |
+          cargo install --locked cargo-deny || echo "Failed to install cargo-deny"
+          cargo deny --version
+
+      - name: Run cargo-deny check
+        run: |
+          cargo deny --log-level warn --all-features check
+        continue-on-error: false
