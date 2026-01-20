@@ -41,33 +41,34 @@ jobs:
           df -h
 
       - name: Dump context for debug
-        uses: crazy-max/ghaction-dump-context@v1
+        uses: crazy-max/ghaction-dump-context@v2
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt, clippy
 
       - name: Publishing - dry run
         if: startsWith(github.ref, 'refs/tags/') != true
         shell: bash
         run: |
-          if [[ "${{ inputs.toolchain }}" == *nightly* ]]; then
-            TOOLCHAIN="${{ inputs.toolchain }}"
-          else
-            TOOLCHAIN="nightly-2025-03-31"
-          fi
-          cargo +$TOOLCHAIN publish --dry-run --workspace -Z package-workspace
+          cargo publish --all-features --workspace --dry-run
 
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.token }}
         run: |
-          if [[ "${{ inputs.toolchain }}" == *nightly* ]]; then
-            TOOLCHAIN="${{ inputs.toolchain }}"
-          else
-            TOOLCHAIN="nightly-2025-03-31"
-          fi
-          cargo +$TOOLCHAIN publish --workspace --token ${{ secrets.token }} -Z package-workspace
+          cargo publish --all-features --workspace
+
+      - name: Check disk space after build
+        if: always()
+        run: df -h
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
