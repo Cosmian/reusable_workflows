@@ -18,11 +18,6 @@ jobs:
         with:
           submodules: recursive
 
-      # The interest of audit-check is to create automatically a GitHub issue in case of audit failures
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install latest cargo-deny
         run: |
           cargo install --locked cargo-deny || echo "Failed to install cargo-deny"
