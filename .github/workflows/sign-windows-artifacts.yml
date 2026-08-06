@@ -5,9 +5,15 @@ on:
   workflow_call:
     inputs:
       files-folder:
-        description: Path to the folder containing files to sign (relative to workspace root)
-        required: true
+        description: Path to the folder containing files to sign. Required unless file-list is provided.
+        required: false
         type: string
+        default: ""
+      file-list:
+        description: Path to a text file listing files to sign (one path per line). Takes precedence over files-folder when provided.
+        required: false
+        type: string
+        default: ""
       files-folder-filter:
         description: Comma-separated list of file extensions to sign
         required: false
@@ -56,7 +62,23 @@ jobs:
           name: ${{ inputs.artifact-to-download }}
           path: ${{ inputs.files-folder }}
 
-      - name: Sign files
+      - name: Sign files (file-list mode)
+        if: inputs.file-list != ''
+        uses: azure/artifact-signing-action@v2
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ inputs.endpoint }}
+          signing-account-name: ${{ inputs.signing-account-name }}
+          certificate-profile-name: ${{ inputs.certificate-profile-name }}
+          file-list: ${{ inputs.file-list }}
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Sign files (folder mode)
+        if: inputs.file-list == ''
         uses: azure/artifact-signing-action@v2
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
