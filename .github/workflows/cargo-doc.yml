@@ -4,9 +4,6 @@ name: Cargo doc
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       exclusions:
         required: false
         type: string
@@ -19,10 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Check doc
         run: cargo doc --all-features --workspace ${{ inputs.exclusions }}

@@ -3,10 +3,6 @@ name: Release and cargo publish
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
     secrets:
       token:
         required: true
@@ -47,10 +43,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Publishing - dry run
         if: startsWith(github.ref, 'refs/tags/') != true

@@ -4,9 +4,6 @@ name: Windows
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       archive-name:
         required: true
         type: string
@@ -26,10 +23,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       # - name: Discover dumpbin location
       #   shell: pwsh

@@ -4,9 +4,6 @@ name: cargo build - no docker
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       distribution:
         required: true
         type: string
@@ -49,10 +46,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Run docker containers
         if: ${{ inputs.docker_compose }}

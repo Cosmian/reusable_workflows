@@ -4,9 +4,6 @@ name: Cargo in Docker
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       target:
         required: true
         type: string
@@ -60,7 +57,7 @@ jobs:
             }}
 
       # `curl` in Centos 7 is too old (1.29) regarding
-      # what `dtolnay/rust-toolchain` needs  because it is
+      # what the rustup installer needs because it is
       # using `--retry-connrefused` option (curl 1.52).
       # Drop this when moving to Centos 8
       - name: Update curl for Centos 7
@@ -85,10 +82,9 @@ jobs:
           rm -rf curl-${VERSION}
           curl --version
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
         with:
-          toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          targets: ${{ inputs.target }}
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}

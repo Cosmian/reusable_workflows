@@ -4,9 +4,6 @@ name: Cargo
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       target:
         required: true
         type: string
@@ -46,10 +43,9 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
           restore-keys: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ github.head_ref }}-${{ github.ref_name }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
         with:
-          toolchain: ${{ inputs.toolchain }}
-          target: ${{ inputs.target }}
+          targets: ${{ inputs.target }}
 
       - name: specific-pre-requisites
         run: ${{ inputs.pre-requisites }}

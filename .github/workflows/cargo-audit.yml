@@ -3,10 +3,6 @@ name: Cargo deny
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   audit:

@@ -4,9 +4,6 @@ name: Release and cargo publish
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       publish:
         required: false
         default: true
@@ -29,12 +26,12 @@ jobs:
       - name: Publishing - dry run
         if: inputs.publish == false
         run: |
-          cargo +{{ inputs.toolchain }} publish --dry-run
+          cargo publish --dry-run
 
       - name: Publishing
         if: inputs.publish == true
         run: |
-          cargo +{{ inputs.toolchain }} publish --token ${{ secrets.token }}
+          cargo publish --token ${{ secrets.token }}
 
       - name: Release
         if: inputs.publish == true

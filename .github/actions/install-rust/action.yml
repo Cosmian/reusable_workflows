@@ -1,0 +1,41 @@
+---
+name: Install Rust
+description: >
+  Install the Rust toolchain and components pinned in the caller's rust-toolchain.toml
+  (rustup toolchain-file precedence). Must run after actions/checkout.
+  Without a toolchain file, the runner/container default toolchain applies.
+
+inputs:
+  targets:
+    description: Space-separated extra rustup targets to add (optional)
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rust toolchain from rust-toolchain file
+      shell: bash
+      env:
+        TARGETS: ${{ inputs.targets }}
+      run: |
+        set -euo pipefail
+        fresh=false
+        if ! command -v rustup >/dev/null 2>&1; then
+          fresh=true
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+        fi
+        # No toolchain file: the runner/container default toolchain applies (rustup precedence);
+        # a rustup we just installed has none, so give it stable.
+        if [ -f rust-toolchain.toml ] || [ -f rust-toolchain ]; then
+          rustup toolchain install
+        elif [ "$fresh" = true ]; then
+          rustup default stable
+        fi
+        if [ -n "$TARGETS" ]; then
+          # shellcheck disable=SC2086 # word-splitting the target list is intended
+          rustup target add $TARGETS
+        fi
+        rustc --version

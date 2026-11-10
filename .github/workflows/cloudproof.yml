@@ -7,9 +7,6 @@ on:
       project-name:
         required: true
         type: string
-      toolchain:
-        required: true
-        type: string
       kms-version:
         required: true
         type: string
@@ -47,13 +44,11 @@ jobs:
   pre-build:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       exclusions: ${{ inputs.exclusions }}
 
   cargo-bench:
     uses: ./.github/workflows/cargo-bench.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       features: ${{ inputs.bench-features }}
       exclusions: ${{ inputs.exclusions }}
 
@@ -63,7 +58,6 @@ jobs:
   windows:
     uses: ./.github/workflows/cargo.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       target: x86_64-pc-windows-gnu
       os: ubuntu-20.04
       pre-requisites: |
@@ -81,7 +75,6 @@ jobs:
   darwin:
     uses: ./.github/workflows/cargo.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       target: x86_64-apple-darwin
       os: macos-12
       pre-requisites: |
@@ -103,7 +96,6 @@ jobs:
   wasm:
     uses: ./.github/workflows/cargo.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       target: wasm32-unknown-unknown
       os: ubuntu-20.04
       pre-requisites: |
@@ -149,13 +141,11 @@ jobs:
   android:
     uses: ./.github/workflows/ndk.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       feature: ffi
 
   linux-centos7:
     uses: ./.github/workflows/cargo_in_docker.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       target: x86_64-unknown-linux-gnu
       os: ubuntu-20.04
       pre-requisites: |
@@ -175,7 +165,7 @@ jobs:
       options: --entrypoint ''
     steps:
       - uses: actions/checkout@v4
-      - run: rustup default ${{ inputs.toolchain }}
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Python maturin build
         run: |
@@ -652,10 +642,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
         with:
-          toolchain: ${{ inputs.toolchain }}
-          target: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
         run: |

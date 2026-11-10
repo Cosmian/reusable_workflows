@@ -4,9 +4,6 @@ name: Build all
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       debug_or_release:
         required: true
         type: string
@@ -25,7 +22,6 @@ jobs:
     uses: ./.github/workflows/build_in_container.yml
     secrets: inherit
     with:
-      toolchain: ${{ inputs.toolchain }}
       archive-name: ${{ matrix.archive-name }}
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
@@ -51,7 +47,6 @@ jobs:
     uses: ./.github/workflows/build_in_container.yml
     secrets: inherit
     with:
-      toolchain: ${{ inputs.toolchain }}
       archive-name: ${{ matrix.archive-name }}
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
@@ -104,7 +99,6 @@ jobs:
     uses: ./.github/workflows/build_generic.yml
     secrets: inherit
     with:
-      toolchain: ${{ inputs.toolchain }}
       distribution: ${{ matrix.distribution }}
       archive-name: ${{ matrix.archive-name }}
       artifacts: ${{ matrix.artifacts }}
@@ -136,7 +130,6 @@ jobs:
     uses: ./.github/workflows/build_generic.yml
     secrets: inherit
     with:
-      toolchain: ${{ inputs.toolchain }}
       distribution: ${{ matrix.distribution }}
       archive-name: ${{ matrix.archive-name }}
       target: ${{ matrix.target }}
@@ -149,7 +142,6 @@ jobs:
   windows-2022:
     uses: ./.github/workflows/build_windows.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       archive-name: windows
       debug_or_release: ${{ inputs.debug_or_release }}
 

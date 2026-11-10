@@ -4,9 +4,6 @@ name: Cargo benchmarks
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       features:
         required: false
         default: ''
@@ -26,11 +23,11 @@ on:
       redis-host:
         required: false
         type: string
-        default: 'redis'
+        default: redis
       postgres-host:
         required: false
         type: string
-        default: 'postgres'
+        default: postgres
 
 env:
   REDIS_HOST: ${{ inputs.redis-host }}
@@ -100,9 +97,7 @@ jobs:
           key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Install tooling for benchmarks
         run: |

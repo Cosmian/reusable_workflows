@@ -3,10 +3,6 @@ name: Cargo semver
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   semver:
@@ -29,16 +25,14 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-semver-${{ inputs.toolchain }}-checks-0.51.0
-          restore-keys: ${{ runner.os }}-cargo-semver-${{ inputs.toolchain }}-checks-0.51.0
+          key: ${{ runner.os }}-cargo-semver-${{ hashFiles('rust-toolchain.toml', 'rust-toolchain') }}-checks-0.51.0
+          restore-keys: ${{ runner.os }}-cargo-semver-${{ hashFiles('rust-toolchain.toml', 'rust-toolchain') }}-checks-0.51.0
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ inputs.toolchain }}
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Install semver
         if: steps.github-cache.outputs.cache-hit != 'true'
-        run: cargo +${{ inputs.toolchain }} install --locked --version 0.51.0 cargo-semver-checks
+        run: cargo install --locked --version 0.51.0 cargo-semver-checks
 
       - name: Verify semver integrity
-        run: cargo +${{ inputs.toolchain }} semver-checks check-release --baseline-root=. --all-features
+        run: cargo semver-checks check-release --baseline-root=. --all-features

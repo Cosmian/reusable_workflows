@@ -6,7 +6,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 
 ## Repository Structure
 
-```
+```text
 .github/workflows/          # Reusable workflow definitions
 ├── build_*.yml            # Build workflows for different platforms/contexts
 ├── cargo-*.yml             # Rust/Cargo specific workflows
@@ -18,6 +18,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 ## Key Workflow Categories
 
 ### Build Workflows
+
 - `build_all.yml` - Orchestrates builds across multiple platforms
 - `build_generic.yml` - Generic build workflow for standard projects
 - `build_in_container.yml` - Containerized builds (Rocky Linux)
@@ -25,6 +26,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 - `build_docker_image.yml` - Docker image building
 
 ### Cargo/Rust Workflows
+
 - `cargo.yml` - Core Rust compilation workflow
 - `cargo-lint.yml` - Linting and testing with services (Redis, PostgreSQL)
 - `cargo-audit.yml` - Security auditing
@@ -37,6 +39,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 - `clippy.yml` - Rust linting
 
 ### Cloudproof Workflows
+
 - `cloudproof.yml` - Main Cloudproof build orchestration
 - `cloudproof_flutter.yml` / `cloudproof_flutter_darwin.yml` - Flutter builds
 - `cloudproof_java.yml` - Java package builds
@@ -44,6 +47,7 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 - `cloudproof_python.yml` - Python package builds
 
 ### Publishing & Distribution
+
 - `package-cosmian-com.yml` - Publishing to package.cosmian.com
 - `push-artifacts.yml` - Artifact distribution
 
@@ -52,11 +56,12 @@ This repository contains a comprehensive collection of reusable GitHub Actions w
 Most workflows follow these common input patterns:
 
 ### Required Inputs
-- `toolchain`: Rust toolchain version (e.g., "stable", "nightly-2025-03-31")
+
 - `target`: Build target (e.g., "x86_64-unknown-linux-gnu")
 - `os`: Runner OS (e.g., "ubuntu-22.04", "windows-latest")
 
 ### Optional Inputs
+
 - `exclusions`: Package exclusions for testing
 - `pre-requisites`: System dependencies to install
 - `artifacts`: Build artifacts to collect
@@ -67,7 +72,7 @@ Most workflows follow these common input patterns:
 
 ### When Creating New Workflows
 
-1. **Use consistent input naming**: Follow existing patterns for `toolchain`, `target`, `os`
+1. **Use consistent input naming**: Follow existing patterns for `target`, `os`
 2. **Add proper documentation**: Include clear descriptions in workflow files
 3. **Support exclusions**: Most workflows should support package exclusions
 4. **Use matrix builds**: For multi-platform support
@@ -75,6 +80,7 @@ Most workflows follow these common input patterns:
 6. **Add service dependencies**: Include Redis/PostgreSQL services when needed for tests
 
 ### Workflow File Structure
+
 ```yaml
 ---
 name: Descriptive Workflow Name
@@ -83,9 +89,6 @@ on:
   workflow_call:
     inputs:
       # Define required and optional inputs
-      toolchain:
-        required: true
-        type: string
       # ... other inputs
 
 jobs:
@@ -95,7 +98,7 @@ jobs:
     services:
       postgres: # PostgreSQL service config
       redis: # Redis service config
-    
+
     steps:
       # Implementation steps
 ```
@@ -110,6 +113,7 @@ jobs:
 ### Code Quality Standards
 
 The repository uses extensive pre-commit hooks including:
+
 - **YAML formatting**: yamlfmt with specific indentation rules
 - **Markdown linting**: markdownlint with customized rules
 - **Security checks**: typos, private key detection
@@ -120,7 +124,7 @@ The repository uses extensive pre-commit hooks including:
 
 1. **Container Builds**: Use Cosmian's standardized container images (cosmian/rockylinux9)
 2. **Artifact Naming**: Use descriptive archive names that match the build context
-3. **Toolchain Management**: Support both stable and nightly Rust toolchains
+3. **Toolchain Management**: install Rust with `Cosmian/reusable_workflows/.github/actions/install-rust@develop`; the version comes from the caller repo's `rust-toolchain.toml`
 4. **Cross-Platform**: Consider Windows, macOS, and Linux compatibility
 5. **Feature Flags**: Support FIPS and other conditional compilation features
 
@@ -134,16 +138,19 @@ The repository uses extensive pre-commit hooks including:
 ## Debugging Common Issues
 
 ### Build Failures
+
 - Check toolchain compatibility with target platform
 - Verify all required pre-requisites are installed
 - Ensure artifact paths are correct for the target OS
 
 ### Container Issues
+
 - Verify Docker image availability
 - Check that container has required build dependencies
 - Ensure proper volume mounting for artifacts
 
 ### Publishing Problems
+
 - Verify secrets are properly configured
 - Check package registry connectivity
 - Ensure version constraints are met
@@ -151,7 +158,7 @@ The repository uses extensive pre-commit hooks including:
 ## Integration with External Systems
 
 - **package.cosmian.com**: Custom package repository
-- **PyPI**: Python package publishing  
+- **PyPI**: Python package publishing
 - **crates.io**: Rust crate publishing
 - **Docker registries**: Container image publishing
 - **GitHub Packages**: Artifact storage

@@ -4,9 +4,6 @@ name: Cargo lints & tests
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       exclusions:
         required: false
         type: string
@@ -62,10 +59,7 @@ jobs:
           key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       - name: Static analysis
         run: cargo clippy --workspace ${{ inputs.exclusions }} --all-targets -- -D warnings

@@ -4,9 +4,6 @@ name: Cargo
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       feature:
         required: true
         type: string
@@ -34,10 +31,9 @@ jobs:
           key: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-android-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
         with:
-          toolchain: ${{ inputs.toolchain }}
-          target: aarch64-linux-android
+          targets: aarch64-linux-android
 
       - name: specific-pre-requisites
         run: |

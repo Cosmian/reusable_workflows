@@ -4,9 +4,6 @@ name: Cargo nursery
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       exclusions:
         required: false
         type: string
@@ -23,29 +20,22 @@ jobs:
   cargo-nursery-base:
     uses: ./.github/workflows/cargo-nursery-base.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       exclusions: ${{ inputs.exclusions }}
   cargo-doc:
     uses: ./.github/workflows/cargo-doc.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       exclusions: ${{ inputs.exclusions }}
   cargo-semver:
     uses: ./.github/workflows/cargo-semver.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
   cargo-dry-publish-standard:
     if: inputs.workspace == ''
     uses: ./.github/workflows/cargo-publish.yml
     with:
-      toolchain: ${{ inputs.toolchain }}
       publish: false
     secrets:
       token: ${{ secrets.token }}
   cargo-dry-publish-workspace:
     if: inputs.workspace != ''
     uses: ./.github/workflows/cargo-publish-workspace.yml
-    with:
-      toolchain: ${{ inputs.toolchain }}
     secrets:
       token: ${{ secrets.token }}

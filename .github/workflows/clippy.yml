@@ -4,9 +4,6 @@ name: Cargo lint
 on:
   workflow_call:
     inputs:
-      toolchain:
-        required: true
-        type: string
       prerequisites:
         required: false
         type: string
@@ -30,10 +27,8 @@ jobs:
         with:
           key: ${{ runner.os }}
 
-      - uses: dtolnay/rust-toolchain@master
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
         with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt, clippy
           targets: ${{ inputs.targets || 'x86_64-unknown-linux-gnu' }}
 
       - name: Prerequisites
@@ -44,7 +39,7 @@ jobs:
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
+        run: cargo fmt --all -- --check --color always
 
       - name: Static analysis
         run: cargo clippy --workspace --all-targets -- -D warnings

@@ -3,10 +3,6 @@ name: Cargo format
 
 on:
   workflow_call:
-    inputs:
-      toolchain:
-        required: true
-        type: string
 
 jobs:
   format:
@@ -30,11 +26,8 @@ jobs:
           key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ inputs.toolchain }}
-          components: rustfmt
+      - uses: Cosmian/reusable_workflows/.github/actions/install-rust@develop
 
       # Ensure all code has been formatted with rustfmt
       - name: Check formatting
-        run: cargo +${{ inputs.toolchain }} fmt --all -- --check --color always
+        run: cargo fmt --all -- --check --color always
